@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wellforge.example/schema/wellforge-analysis-exchange.schema.json",
+  "title": "WellForge analysis exchange",
+  "type": "object",
+  "required": ["schemaVersion", "caseId", "createdAt", "producer", "metadata", "unitPreferences", "trajectory", "holeSections", "tubulars", "bhaComponents", "fluids", "operatingPoint", "rigLimits", "pumpNozzle", "analyses", "provenance", "warnings"],
+  "properties": {
+    "schemaVersion": { "type": "string", "pattern": "^1\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:(?:0|[1-9][0-9]*)|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:(?:0|[1-9][0-9]*)|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$" },
+    "caseId": { "type": "string", "minLength": 1 },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "producer": { "$ref": "#/$defs/producer" },
+    "metadata": { "type": "object" },
+    "unitPreferences": { "type": "object", "additionalProperties": { "type": "string", "enum": ["1", "m", "ft", "km", "mm", "in", "m2", "ft2", "in2", "cm2", "m3", "bbl", "gal", "L", "m3/s", "L/s", "L/min", "gpm", "kg/m3", "ppg", "lb/ft3", "N", "lbf", "klbf", "kN", "Pa", "kPa", "GPa", "psi", "Mpsi", "bar", "N*m", "N-m", "kN*m", "kN-m", "ft-lbf", "MPa", "ksi", "rad", "deg", "m/s", "ft/min", "m/min", "rad/m", "deg/100ft", "deg/30m", "Pa*s", "cP", "Hz", "rad/s", "rpm", "d", "K", "C", "F"] } },
+    "trajectory": { "$ref": "#/$defs/trajectory" },
+    "holeSections": { "$ref": "#/$defs/identifiedArray" },
+    "tubulars": { "$ref": "#/$defs/identifiedArray" },
+    "bhaComponents": { "$ref": "#/$defs/identifiedArray" },
+    "fluids": { "$ref": "#/$defs/identifiedArray" },
+    "operatingPoint": { "type": "object", "additionalProperties": { "$ref": "#/$defs/quantity" } },
+    "rigLimits": { "type": "object" },
+    "pumpNozzle": { "$ref": "#/$defs/pumpNozzle" },
+    "analyses": { "type": "object" },
+    "provenance": { "type": "object", "required": ["notes"], "properties": { "notes": { "type": "array" } } },
+    "warnings": { "type": "array" }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "quantity": {
+      "type": "object",
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": "number" },
+        "unit": { "type": "string", "enum": ["1", "m", "ft", "km", "mm", "in", "m2", "ft2", "in2", "cm2", "m3", "bbl", "gal", "L", "m3/s", "L/s", "L/min", "gpm", "kg/m3", "ppg", "lb/ft3", "N", "lbf", "klbf", "kN", "Pa", "kPa", "GPa", "psi", "Mpsi", "bar", "N*m", "N-m", "kN*m", "kN-m", "ft-lbf", "MPa", "ksi", "rad", "deg", "m/s", "ft/min", "m/min", "rad/m", "deg/100ft", "deg/30m", "Pa*s", "cP", "Hz", "rad/s", "rpm", "d", "K", "C", "F"] },
+        "quality": { "type": "string" },
+        "source": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "identifiedRecord": { "type": "object", "required": ["id"], "properties": { "id": { "type": "string", "minLength": 1 } } },
+    "identifiedArray": { "type": "array", "items": { "$ref": "#/$defs/identifiedRecord" } },
+    "trajectory": {
+      "type": "object",
+      "required": ["plan", "survey", "targets", "slideIntervals", "formationTops"],
+      "properties": {
+        "plan": { "$ref": "#/$defs/identifiedArray" },
+        "survey": { "$ref": "#/$defs/identifiedArray" },
+        "targets": { "$ref": "#/$defs/identifiedArray" },
+        "slideIntervals": { "$ref": "#/$defs/identifiedArray" },
+        "formationTops": { "$ref": "#/$defs/identifiedArray" }
+      }
+    },
+    "pumpNozzle": {
+      "type": "object",
+      "required": ["pumps", "nozzles"],
+      "properties": {
+        "pumps": { "$ref": "#/$defs/identifiedArray" },
+        "nozzles": { "$ref": "#/$defs/identifiedArray" }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

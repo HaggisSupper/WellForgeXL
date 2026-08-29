@@ -1,0 +1,18 @@
+[package]
+name = "wellforge-trajectory-analysis"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+wellforge-trajectory-contract = { path = "../wellforge-trajectory-contract", version = "0.1.0" }
+wellforge-trajectory-core = { path = "../wellforge-trajectory-core", version = "0.1.0" }
+
+[dev-dependencies]
+uuid.workspace = true
+wellforge-witsml = { path = "../wellforge-witsml", version = "0.1.0" }
+
+[lints]
+workspace = true

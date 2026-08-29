@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "1.0.0",
+  "engineVersion": "2.0.0-vba",
+  "calculationAuthority": "Hybrid",
+  "canonicalUnitSystem": "SI",
+  "worksheetFormulasAllowed": false,
+  "unitModes": ["SI", "Imperial", "Mixed", "Custom"],
+  "builder": "tools/Build-WellForgeVbaSuite.ps1",
+  "outputDirectory": "outputs/vba-engine",
+  "sharedModules": [
+    "WellForgeCore",
+    "WellForgeJsonExchange"
+  ],
+  "workbooks": [
+    {
+      "kind": "api7g",
+      "template": "API_7G_Drill_String_Strength_and_Torque_SI.xlsx",
+      "output": "API_7G_Drill_String_Strength_and_Torque_SI.xlsm",
+      "entryPoint": "WF_CalcAPI7G",
+      "engineModule": "WellForgeApi7G",
+      "calculationAuthority": "VBA"
+    },
+    {
+      "kind": "hydraulics",
+      "template": "Steady_State_Hydraulics_and_Nozzle_Optimization_SI.xlsx",
+      "output": "Steady_State_Hydraulics_and_Nozzle_Optimization_SI.xlsm",
+      "entryPoint": "WF_CalcHydraulics",
+      "engineModule": "WellForgeHydraulics",
+      "calculationAuthority": "VBA"
+    },
+    {
+      "kind": "torqueDrag",
+      "template": "Torque_Drag_and_Buckling_SI.xlsx",
+      "output": "Torque_Drag_and_Buckling_SI.xlsm",
+      "entryPoint": "WF_CalcTorqueDrag",
+      "engineModule": "WellForgeTorqueDrag",
+      "calculationAuthority": "VBA"
+    },
+    {
+      "kind": "bha",
+      "template": "BHA_Vibration_Bending_and_Drill_Ahead_Tendency_SI.xlsx",
+      "output": "BHA_Vibration_Bending_and_Drill_Ahead_Tendency_SI.xlsm",
+      "entryPoint": "WF_RunBhaRustEngine",
+      "engineModule": "WellForgeBhaEngine",
+      "calculationAuthority": "Rust",
+      "executable": "wellforge-bha.exe",
+      "hashManifest": "wellforge-bha.exe.sha256"
+    },
+    {
+      "kind": "directional",
+      "template": "Directional_Drilling_Wellplan_and_Survey_SI.xlsx",
+      "output": "Directional_Drilling_Wellplan_and_Survey_SI.xlsm",
+      "entryPoint": "WF_RunTrajectoryRustEngine",
+      "engineModule": "WellForgeTrajectoryEngine",
+      "presentationModule": "WellForgeDirectional",
+      "calculationAuthority": "Rust",
+      "executable": "wellforge-trajectory.exe",
+      "hashManifest": "wellforge-trajectory.exe.sha256"
+    }
+  ]
+}

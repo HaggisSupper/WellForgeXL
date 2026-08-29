@@ -1,0 +1,10 @@
+outputs/
+qa_renders/
+package/
+package_previous_*/
+*.zip
+*.previous*.zip
+*.inspect.ndjson
+.worktrees/
+.superpowers/sdd/
+node_modules

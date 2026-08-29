@@ -1,0 +1,19 @@
+[package]
+name = "wellforge-bha-static"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+faer.workspace = true
+nalgebra.workspace = true
+thiserror.workspace = true
+wellforge-bha-contract = { path = "../wellforge-bha-contract", version = "0.1.0" }
+wellforge-bha-model = { path = "../wellforge-bha-model", version = "0.1.0" }
+
+[dev-dependencies]
+wellforge-bha-fixtures = { path = "../wellforge-bha-fixtures", version = "0.1.0" }
+
+[lints]
+workspace = true

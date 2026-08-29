@@ -1,0 +1,14 @@
+[package]
+name = "wellforge-bha-fixtures"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+wellforge-bha-contract = { path = "../wellforge-bha-contract", version = "0.1.0" }
+wellforge-witsml = { path = "../wellforge-witsml", version = "0.1.0" }
+uuid.workspace = true
+
+[lints]
+workspace = true

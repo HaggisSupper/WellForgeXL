@@ -1,0 +1,12 @@
+Option Explicit
+
+Private Sub Workbook_Open()
+    WellForge_InitializeWorkbook
+End Sub
+
+Private Sub Workbook_SheetChange(ByVal Sh As Object, ByVal Target As Range)
+    On Error GoTo SafeExit
+    WF_HandleSheetChange CStr(Sh.Name), CLng(Target.CountLarge)
+SafeExit:
+End Sub
+

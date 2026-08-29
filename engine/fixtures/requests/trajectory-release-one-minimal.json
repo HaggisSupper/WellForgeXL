@@ -1,0 +1,73 @@
+{
+  "contract_version": "1.0.0",
+  "analysis_id": "00000000-0000-0000-0000-000000000064",
+  "sources": {
+    "well": {
+      "uuid": "00000000-0000-0000-0000-000000000001",
+      "uri": "eml:///wellforge/trajectory/1",
+      "object_type": "well",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000001",
+      "citation_name": "trajectory-fixture-1",
+      "source_system": "wellforge-trajectory-fixtures/1.0"
+    },
+    "wellbore": {
+      "uuid": "00000000-0000-0000-0000-000000000002",
+      "uri": "eml:///wellforge/trajectory/2",
+      "object_type": "wellbore",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000002",
+      "citation_name": "trajectory-fixture-2",
+      "source_system": "wellforge-trajectory-fixtures/1.0"
+    },
+    "plan_trajectory": {
+      "uuid": "00000000-0000-0000-0000-000000000003",
+      "uri": "eml:///wellforge/trajectory/3",
+      "object_type": "trajectory",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000003",
+      "citation_name": "trajectory-fixture-3",
+      "source_system": "wellforge-trajectory-fixtures/1.0"
+    },
+    "survey_trajectory": {
+      "uuid": "00000000-0000-0000-0000-000000000004",
+      "uri": "eml:///wellforge/trajectory/4",
+      "object_type": "trajectory",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000004",
+      "citation_name": "trajectory-fixture-4",
+      "source_system": "wellforge-trajectory-fixtures/1.0"
+    }
+  },
+  "md_datum": {
+    "uid": "00000000-0000-0000-0000-000000000005",
+    "name": "RKB",
+    "kind": "rotary_kelly_bushing"
+  },
+  "azimuth_reference": "true_north",
+  "vertical_section_azimuth_rad": 0.0,
+  "plan": [
+    { "uid": "00000000-0000-0000-0000-00000000000a", "kind": "tie_in", "md_m": 0.0, "inclination_rad": 0.0, "azimuth_rad": 0.0 },
+    { "uid": "00000000-0000-0000-0000-00000000000b", "kind": "plan", "md_m": 40.0, "inclination_rad": 0.04, "azimuth_rad": 0.0 },
+    { "uid": "00000000-0000-0000-0000-00000000000c", "kind": "plan", "md_m": 80.0, "inclination_rad": 0.08, "azimuth_rad": 0.0 }
+  ],
+  "survey": [
+    { "uid": "00000000-0000-0000-0000-000000000014", "kind": "tie_in", "md_m": 0.0, "inclination_rad": 0.0, "azimuth_rad": 0.0 },
+    { "uid": "00000000-0000-0000-0000-000000000015", "kind": "survey", "md_m": 50.0, "inclination_rad": 0.05, "azimuth_rad": 0.0 },
+    { "uid": "00000000-0000-0000-0000-000000000016", "kind": "survey", "md_m": 100.0, "inclination_rad": 0.1, "azimuth_rad": 0.0 }
+  ],
+  "targets": [
+    { "uid": "00000000-0000-0000-0000-00000000001e", "name": "Actual target", "kind": "circle", "md_m": 60.0, "north_m": 2.0, "east_m": 0.0, "tvd_m": 60.0, "major_m": 20.0, "minor_m": 20.0, "rotation_rad": 0.0, "vertical_tolerance_m": 20.0 },
+    { "uid": "00000000-0000-0000-0000-00000000001f", "name": "Projected target", "kind": "circle", "md_m": 120.0, "north_m": 8.0, "east_m": 0.0, "tvd_m": 120.0, "major_m": 20.0, "minor_m": 20.0, "rotation_rad": 0.0, "vertical_tolerance_m": 20.0 }
+  ],
+  "slides": [
+    { "uid": "00000000-0000-0000-0000-000000000028", "md_in_m": 20.0, "md_out_m": 80.0, "slide_length_m": 30.0, "commanded_toolface_rad": 0.0, "rotary_build_rad_per_m": 0.0, "rotary_effective_turn_rad_per_m": 0.0, "low_inclination_threshold_rad": 0.0 },
+    { "uid": "00000000-0000-0000-0000-000000000029", "md_in_m": 90.0, "md_out_m": 120.0, "slide_length_m": 20.0, "commanded_toolface_rad": 0.0, "rotary_build_rad_per_m": 0.0, "rotary_effective_turn_rad_per_m": 0.0, "low_inclination_threshold_rad": 0.0 }
+  ],
+  "formations": [
+    { "uid": "00000000-0000-0000-0000-000000000032", "name": "Formation A", "prognosed_tvd_m": 94.0, "actual_md_m": 95.0, "tolerance_m": 5.0 }
+  ],
+  "projection": {
+    "bit_md_m": 110.0,
+    "ahead_m": 40.0,
+    "build_tendency_rad_per_m": 0.001,
+    "effective_turn_tendency_rad_per_m": 0.0,
+    "low_inclination_threshold_rad": 0.01
+  }
+}
