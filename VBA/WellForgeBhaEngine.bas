@@ -122,10 +122,11 @@ Private Sub WF_WriteBhaBridge(ByVal bridgeText As String, ByVal normalizedReques
     Dim firstFrequency As Double, headerSeen As Boolean
     Set ws = ThisWorkbook.Worksheets("Rust Calc")
     Set wsResults = ThisWorkbook.Worksheets("Rust Engine Results")
+    lines = Split(Replace$(bridgeText, vbCr, vbNullString), vbLf)
+    WF_ValidateBhaBridge lines, normalizedRequestHash, resultHash, rustEngineVersion
     ws.Range("A6:K505,L6:O25,L251:O750,A41:C440,E41:H640").ClearContents
     minClearance = 1E+99: minMargin = 1E+99
     wsResults.Range("A13:D32").ClearContents
-    lines = Split(Replace$(bridgeText, vbCr, vbNullString), vbLf)
     For Each line In lines
         If Len(CStr(line)) > 0 Then
             fields = Split(CStr(line), vbTab)
@@ -171,6 +172,62 @@ Private Sub WF_WriteBhaBridge(ByVal bridgeText As String, ByVal normalizedReques
     If Not headerSeen Or Len(resultHash) <> 64 Or staticCount < 2 Or modeCount < 1 Then Err.Raise vbObjectError + 8715, "WF_WriteBhaBridge", "INCOMPLETE BRIDGE RESULTS"
     wsResults.Range("B6").Value2 = minClearance: wsResults.Range("D6").Value2 = IIf(minClearance < 0#, "REVIEW", "CLEAR")
     wsResults.Range("B7").Value2 = peakStress: wsResults.Range("B8").Value2 = firstFrequency: wsResults.Range("B9").Value2 = minMargin
+End Sub
+
+Private Sub WF_ValidateBhaBridge(ByVal lines As Variant, ByVal normalizedRequestHash As String, _
+                                 ByRef resultHash As String, ByRef rustEngineVersion As String)
+    Dim line As Variant, fields As Variant, recordType As String
+    Dim staticCount As Long, modeCount As Long, frfCount As Long, campbellCount As Long
+    Dim shapeCount(1 To 3) As Long, modeNumber As Long, headerSeen As Boolean
+    For Each line In lines
+        If Len(CStr(line)) > 0 Then
+            fields = Split(CStr(line), vbTab)
+            recordType = CStr(fields(0))
+            Select Case recordType
+                Case "H"
+                    If UBound(fields) <> 7 Or CStr(fields(1)) <> "1.0.0" Then _
+                        Err.Raise vbObjectError + 8710, "WF_ValidateBhaBridge", "INVALID BRIDGE CONTRACT"
+                    If headerSeen Then Err.Raise vbObjectError + 8725, "WF_ValidateBhaBridge", "DUPLICATE BRIDGE HEADER"
+                    If CStr(fields(2)) <> WF_BHA_ANALYSIS_UUID Then _
+                        Err.Raise vbObjectError + 8711, "WF_ValidateBhaBridge", "INVALID BRIDGE ANALYSIS ID"
+                    If StrComp(CStr(fields(3)), normalizedRequestHash, vbTextCompare) <> 0 Then _
+                        Err.Raise vbObjectError + 8713, "WF_ValidateBhaBridge", "INVALID BRIDGE REQUEST HASH"
+                    If LCase$(CStr(fields(7))) <> "true" Then _
+                        Err.Raise vbObjectError + 8714, "WF_ValidateBhaBridge", "NON-CONVERGED BRIDGE"
+                    resultHash = CStr(fields(4))
+                    rustEngineVersion = CStr(fields(5))
+                    headerSeen = True
+                Case "S"
+                    If UBound(fields) <> 9 Then Err.Raise vbObjectError + 8726, "WF_ValidateBhaBridge", "INVALID STATIC RECORD"
+                    staticCount = staticCount + 1
+                    If staticCount > 500 Then Err.Raise vbObjectError + 8716, "WF_ValidateBhaBridge", "STATIC RESULT CAPACITY EXCEEDED"
+                Case "M"
+                    If UBound(fields) <> 3 Then Err.Raise vbObjectError + 8727, "WF_ValidateBhaBridge", "INVALID MODE RECORD"
+                    modeCount = modeCount + 1
+                    If modeCount > 20 Then Err.Raise vbObjectError + 8717, "WF_ValidateBhaBridge", "MODE RESULT CAPACITY EXCEEDED"
+                Case "P"
+                    If UBound(fields) <> 3 Then Err.Raise vbObjectError + 8728, "WF_ValidateBhaBridge", "INVALID MODE SHAPE RECORD"
+                    modeNumber = CLng(fields(1))
+                    If modeNumber >= 1 And modeNumber <= 3 Then
+                        shapeCount(modeNumber) = shapeCount(modeNumber) + 1
+                        If shapeCount(modeNumber) > 500 Then _
+                            Err.Raise vbObjectError + 8718, "WF_ValidateBhaBridge", "MODE SHAPE CAPACITY EXCEEDED"
+                    End If
+                Case "F"
+                    If UBound(fields) <> 3 Then Err.Raise vbObjectError + 8729, "WF_ValidateBhaBridge", "INVALID FRF RECORD"
+                    frfCount = frfCount + 1
+                    If frfCount > 400 Then Err.Raise vbObjectError + 8719, "WF_ValidateBhaBridge", "FRF CAPACITY EXCEEDED"
+                Case "C"
+                    If UBound(fields) <> 4 Then Err.Raise vbObjectError + 8730, "WF_ValidateBhaBridge", "INVALID CAMPBELL RECORD"
+                    campbellCount = campbellCount + 1
+                    If campbellCount > 600 Then Err.Raise vbObjectError + 8723, "WF_ValidateBhaBridge", "CAMPBELL CAPACITY EXCEEDED"
+                Case Else
+                    Err.Raise vbObjectError + 8724, "WF_ValidateBhaBridge", "UNKNOWN BRIDGE RECORD: " & recordType
+            End Select
+        End If
+    Next line
+    If Not headerSeen Or Len(resultHash) <> 64 Or staticCount < 2 Or modeCount < 1 Then _
+        Err.Raise vbObjectError + 8715, "WF_ValidateBhaBridge", "INCOMPLETE BRIDGE RESULTS"
 End Sub
 
 Private Function WF_BridgeRow(ByVal fields As Variant, ByVal firstIndex As Long, ByVal fieldCount As Long) As Variant

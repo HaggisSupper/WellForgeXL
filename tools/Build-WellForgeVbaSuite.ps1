@@ -13,7 +13,8 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $xlOpenXMLWorkbookMacroEnabled = 52
 $xlCellTypeFormulas = -4123
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-if ([string]::IsNullOrWhiteSpace($SourceDirectory)) { $SourceDirectory = Join-Path $repositoryRoot 'outputs' }
+$usingDefaultSourceDirectory = [string]::IsNullOrWhiteSpace($SourceDirectory)
+if ($usingDefaultSourceDirectory) { $SourceDirectory = Join-Path $repositoryRoot 'outputs' }
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot 'outputs\vba-engine' }
 $logDirectory = Join-Path $repositoryRoot 'logs'
 New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
@@ -138,6 +139,14 @@ try {
         if (-not (Test-Path -LiteralPath $modulePath -PathType Leaf)) { throw "Required VBA module was not found: $modulePath" }
     }
     if (-not (Test-Path -LiteralPath $eventCodePath -PathType Leaf)) { throw "ThisWorkbook event source was not found: $eventCodePath" }
+    $missingSourceWorkbooks = @($workbookNames | Where-Object { -not (Test-Path -LiteralPath (Join-Path $SourceDirectory $_) -PathType Leaf) })
+    if ($usingDefaultSourceDirectory -and $missingSourceWorkbooks.Count -gt 0) {
+        $sourceBuilder = Join-Path $repositoryRoot 'src\build_suite.mjs'
+        if (-not (Test-Path -LiteralPath $sourceBuilder -PathType Leaf)) { throw "Source workbook builder was not found: $sourceBuilder" }
+        Write-BuildEvent INFO 'Generating missing source XLSX workbooks from the checked-in workbook models.' @{ missing = $missingSourceWorkbooks }
+        & node $sourceBuilder
+        if ($LASTEXITCODE -ne 0) { throw 'Source workbook generation failed.' }
+    }
     foreach ($name in $workbookNames) {
         $sourcePath = Join-Path $SourceDirectory $name
         if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) { throw "Source workbook was not found: $sourcePath" }

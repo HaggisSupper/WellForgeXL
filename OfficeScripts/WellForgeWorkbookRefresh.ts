@@ -1,6 +1,7 @@
 /**
- * Optional Office Script companion for the WellForge formula workbooks.
- * It never writes engineering results: those remain Excel formulas.
+ * Optional Office Script companion for the WellForge workbooks.
+ * It only requests recalculation and stamps refresh status; VBA/Rust calculation authority
+ * remains responsible for the value-only engineering results.
  */
 function main(workbook: ExcelScript.Workbook) {
   workbook.getApplication().calculate(ExcelScript.CalculationType.full);
@@ -10,4 +11,3 @@ function main(workbook: ExcelScript.Workbook) {
   checks.getRange('B1').setValue(new Date().toISOString());
   summary.activate();
 }
-

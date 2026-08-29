@@ -120,6 +120,17 @@ pub fn validate_request(request: &BhaAnalysisRequest) -> Result<(), Vec<Contract
             "trajectory stations are required",
         );
     }
+    for station in &request.trajectory {
+        if !station.inclination_rad.is_finite()
+            || !(0.0..=std::f64::consts::PI).contains(&station.inclination_rad)
+        {
+            push(
+                &mut errors,
+                "WF-BHA-CONTRACT-022",
+                "trajectory inclination must be finite and within [0, pi] radians",
+            );
+        }
+    }
     for pair in request.trajectory.windows(2) {
         if pair[1].md_m <= pair[0].md_m {
             push(
