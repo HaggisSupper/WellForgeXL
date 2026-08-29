@@ -12,7 +12,7 @@ The workbooks are:
 
 ## Use
 
-1. On Windows, double-click `tools/Build-WellForgeVbaSuite.cmd`, or run `tools/Build-WellForgeVbaSuite.ps1`. The PowerShell window remains open on success or failure and prints the full JSONL log path.
+1. On Windows, double-click `tools/Build-WellForgeVbaSuite.cmd`, or run `tools/Build-WellForgeVbaSuite.ps1`. A fresh checkout uses the versioned source workbooks under `workbooks/source`; Node authoring dependencies are not required. The PowerShell window remains open on success or failure and prints the full JSONL log path.
 2. Open the resulting files in `outputs/vba-engine`, enable macros, and enter or paste source inputs in the blue input cells. In the directional workbook, Plan, Survey, Target, Slide, and Formation source values retain their declared raw input units.
 3. The three VBA prototype engines convert inputs to canonical SI in memory. The BHA and directional VBA clients invoke their colocated Rust engines. Rust/`serde_json` parses and validates each lane's JSON and emits a bounded versioned table bridge; the VBA clients do not parse result JSON. All lanes write value-only outputs and refresh charts.
 4. Use `Unit Map!B5` to select SI, Imperial, Mixed or Custom display values. In Custom mode, choose SI, Imperial or Mixed independently for every physical domain from the dropdowns in column J. VBA updates unit labels and displayed values together.

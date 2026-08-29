@@ -226,7 +226,8 @@ Private Sub WF_ValidateBhaBridge(ByVal lines As Variant, ByVal normalizedRequest
             End Select
         End If
     Next line
-    If Not headerSeen Or Len(resultHash) <> 64 Or staticCount < 2 Or modeCount < 1 Then _
+    If Not headerSeen Or Len(resultHash) <> 64 Or staticCount < 2 Or modeCount < 1 Or _
+       frfCount < 1 Or campbellCount < 1 Then _
         Err.Raise vbObjectError + 8715, "WF_ValidateBhaBridge", "INCOMPLETE BRIDGE RESULTS"
 End Sub
 

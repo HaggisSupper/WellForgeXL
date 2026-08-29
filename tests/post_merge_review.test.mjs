@@ -4,12 +4,14 @@ import fs from 'node:fs/promises';
 
 const read = async (relativePath) => fs.readFile(new URL(`../${relativePath}`, import.meta.url), 'utf8');
 
-test('fresh-checkout VBA build generates missing source workbooks before validation', async () => {
+test('fresh-checkout VBA build uses checked-in source workbooks without Node authoring dependencies', async () => {
   const source = await read('tools/Build-WellForgeVbaSuite.ps1');
-  const generation = source.indexOf('src\\build_suite.mjs');
-  const validation = source.indexOf('Assert-XlsxPackageIntegrity -Path $sourcePath');
-  assert.ok(generation >= 0, 'builder must invoke the checked-in source workbook generator');
-  assert.ok(generation < validation, 'source generation must precede package validation');
+  assert.match(source, /workbooks\\source/);
+  assert.doesNotMatch(source, /src\\build_suite\.mjs|& node /);
+  assert.match(source, /Assert-XlsxPackageIntegrity -Path \$sourcePath/);
+  assert.match(source, /Get-FileHash -Algorithm SHA256/);
+  assert.match(source, /source-workbooks\.sha256/);
+  assert.match(source, /GZipStream/);
 });
 
 test('Office Script allocates unseen stable IDs to blank rows transactionally', async () => {
@@ -44,6 +46,13 @@ test('BHA bridge is fully validated before accepted worksheet values are cleared
   const clearing = source.indexOf('.ClearContents', source.indexOf('Private Sub WF_WriteBhaBridge'));
   assert.ok(validation >= 0, 'bridge needs a complete validation pass');
   assert.ok(validation < clearing, 'bridge validation must finish before accepted values are cleared');
+});
+
+test('BHA bridge completeness requires value-backed FRF and Campbell records', async () => {
+  const source = await read('VBA/WellForgeBhaEngine.bas');
+  const validator = source.slice(source.indexOf('Private Sub WF_ValidateBhaBridge'));
+  assert.match(validator, /frfCount\s*<\s*1/);
+  assert.match(validator, /campbellCount\s*<\s*1/);
 });
 
 test('refresh companion describes value-only VBA and Rust calculation authority accurately', async () => {
