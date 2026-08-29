@@ -1,0 +1,30 @@
+{
+  "contract_version": "1.0.0",
+  "analysis_id": "00000000-0000-0000-0000-000000000064",
+  "sources": [
+    {"uuid":"00000000-0000-0000-0000-000000000001","uri":"eml:///wellforge/fixture/1","object_type":"well","content_hash":"sha256:0000000000000000000000000000000000000000000000000000000000000001","citation_name":"synthetic-Well","source_system":"wellforge-synthetic-1"},
+    {"uuid":"00000000-0000-0000-0000-000000000002","uri":"eml:///wellforge/fixture/2","object_type":"wellbore","content_hash":"sha256:0000000000000000000000000000000000000000000000000000000000000002","citation_name":"synthetic-Wellbore","source_system":"wellforge-synthetic-1"},
+    {"uuid":"00000000-0000-0000-0000-000000000003","uri":"eml:///wellforge/fixture/3","object_type":"trajectory","content_hash":"sha256:0000000000000000000000000000000000000000000000000000000000000003","citation_name":"synthetic-Trajectory","source_system":"wellforge-synthetic-1"},
+    {"uuid":"00000000-0000-0000-0000-000000000004","uri":"eml:///wellforge/fixture/4","object_type":"wellboreGeometry","content_hash":"sha256:0000000000000000000000000000000000000000000000000000000000000004","citation_name":"synthetic-WellboreGeometry","source_system":"wellforge-synthetic-1"},
+    {"uuid":"00000000-0000-0000-0000-000000000005","uri":"eml:///wellforge/fixture/5","object_type":"tubular","content_hash":"sha256:0000000000000000000000000000000000000000000000000000000000000005","citation_name":"synthetic-Tubular","source_system":"wellforge-synthetic-1"},
+    {"uuid":"00000000-0000-0000-0000-000000000006","uri":"eml:///wellforge/fixture/6","object_type":"bhaRun","content_hash":"sha256:0000000000000000000000000000000000000000000000000000000000000006","citation_name":"synthetic-BhaRun","source_system":"wellforge-synthetic-1"}
+  ],
+  "trajectory":[
+    {"md_m":0.0,"inclination_rad":1.5707963267948966,"azimuth_rad":0.0},
+    {"md_m":12.0,"inclination_rad":1.5707963267948966,"azimuth_rad":0.0}
+  ],
+  "components": [{
+    "id":"00000000-0000-0000-0000-0000000000c8",
+    "name":"Synthetic drill collar",
+    "representation":"beam",
+    "top_md_m":0.0,
+    "bottom_md_m":12.0,
+    "od_m":0.2032,
+    "id_m":0.0714,
+    "youngs_modulus_pa":206840000000.0,
+    "density_kg_m3":7850.0
+  }],
+  "hole":[{"top_md_m":0.0,"bottom_md_m":12.0,"diameter_m":0.31115}],
+  "operating":{"wob_n":0.0,"rpm":120.0,"fluid_density_kg_m3":1200.0},
+  "solver":{"max_element_length_m":0.5,"max_iterations":80,"residual_tolerance":1e-8,"contact_penalty_n_m":1e9,"requested_modes":6}
+}

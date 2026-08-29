@@ -1,0 +1,30 @@
+[package]
+name = "wellforge-trajectory-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+build = "build.rs"
+
+[[bin]]
+name = "wellforge-trajectory"
+path = "src/main.rs"
+
+[dependencies]
+clap.workspace = true
+hex.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+tempfile.workspace = true
+thiserror.workspace = true
+wellforge-trajectory-analysis = { path = "../wellforge-trajectory-analysis", version = "0.1.0" }
+wellforge-trajectory-contract = { path = "../wellforge-trajectory-contract", version = "0.1.0" }
+
+[dev-dependencies]
+tempfile.workspace = true
+wellforge-trajectory-fixtures = { path = "../wellforge-trajectory-fixtures", version = "0.1.0" }
+
+[lints]
+workspace = true

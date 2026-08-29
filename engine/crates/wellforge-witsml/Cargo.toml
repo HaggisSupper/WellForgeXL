@@ -1,0 +1,18 @@
+[package]
+name = "wellforge-witsml"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+schemars.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+url.workspace = true
+quick-xml.workspace = true
+sha2.workspace = true
+
+[lints]
+workspace = true

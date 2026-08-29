@@ -1,0 +1,30 @@
+[package]
+name = "wellforge-bha-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "wellforge-bha"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+hex.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+tempfile.workspace = true
+wellforge-bha-contract = { path = "../wellforge-bha-contract", version = "0.1.0" }
+wellforge-bha-modal = { path = "../wellforge-bha-modal", version = "0.1.0" }
+wellforge-bha-model = { path = "../wellforge-bha-model", version = "0.1.0" }
+wellforge-bha-static = { path = "../wellforge-bha-static", version = "0.1.0" }
+
+[dev-dependencies]
+wellforge-bha-fixtures = { path = "../wellforge-bha-fixtures", version = "0.1.0" }
+
+[lints]
+workspace = true

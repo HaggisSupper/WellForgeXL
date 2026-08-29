@@ -1,0 +1,14 @@
+[package]
+name = "wellforge-trajectory-fixtures"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+uuid.workspace = true
+wellforge-trajectory-contract = { path = "../wellforge-trajectory-contract", version = "0.1.0" }
+wellforge-witsml = { path = "../wellforge-witsml", version = "0.1.0" }
+
+[lints]
+workspace = true

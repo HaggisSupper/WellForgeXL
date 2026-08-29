@@ -1,0 +1,21 @@
+[package]
+name = "wellforge-bha-model"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+nalgebra.workspace = true
+parry3d-f64.workspace = true
+petgraph.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+wellforge-bha-contract = { path = "../wellforge-bha-contract", version = "0.1.0" }
+
+[dev-dependencies]
+approx = "0.5.1"
+wellforge-bha-fixtures = { path = "../wellforge-bha-fixtures", version = "0.1.0" }
+
+[lints]
+workspace = true

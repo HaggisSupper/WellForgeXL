@@ -1,0 +1,447 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BhaAnalysisResult",
+  "description": "Complete value-only analysis result.",
+  "type": "object",
+  "properties": {
+    "analysis_id": {
+      "description": "Request analysis identity.",
+      "type": "string",
+      "format": "uuid"
+    },
+    "campbell": {
+      "description": "Deterministic 1x, 2x and 3x Campbell order lines.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/CampbellPoint"
+      }
+    },
+    "contacts": {
+      "description": "Active contacts.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ContactPointResult"
+      }
+    },
+    "contract_version": {
+      "description": "Contract version used to interpret the payload.",
+      "type": "string"
+    },
+    "evidence": {
+      "description": "Solver evidence and hashes.",
+      "$ref": "#/$defs/SolverEvidence"
+    },
+    "frequency_response": {
+      "description": "Unit-force lateral receptance frequency sweep.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/FrequencyResponsePoint"
+      }
+    },
+    "modes": {
+      "description": "Linearized natural modes.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ModeResult"
+      }
+    },
+    "sources": {
+      "description": "Authoritative source references copied from the request.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/SourceObjectRef"
+      }
+    },
+    "static_nodes": {
+      "description": "Static centerline and projection results.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/StaticNodeResult"
+      }
+    },
+    "status": {
+      "description": "Calculation state.",
+      "$ref": "#/$defs/AnalysisStatus"
+    },
+    "warnings": {
+      "description": "Stable warning codes/messages.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "analysis_id",
+    "status",
+    "sources",
+    "static_nodes",
+    "contacts",
+    "modes",
+    "frequency_response",
+    "campbell",
+    "warnings",
+    "evidence"
+  ],
+  "$defs": {
+    "AnalysisStatus": {
+      "description": "Overall calculation state.",
+      "oneOf": [
+        {
+          "description": "All requested analyses converged.",
+          "type": "string",
+          "const": "converged"
+        },
+        {
+          "description": "Result is usable with explicit warnings.",
+          "type": "string",
+          "const": "warning"
+        },
+        {
+          "description": "Calculation did not converge or validation failed.",
+          "type": "string",
+          "const": "failed"
+        }
+      ]
+    },
+    "CampbellPoint": {
+      "description": "One Campbell-diagram excitation line sample.",
+      "type": "object",
+      "properties": {
+        "excitation_frequency_hz": {
+          "description": "Order frequency in hertz.",
+          "type": "number",
+          "format": "double"
+        },
+        "nearest_mode_margin_hz": {
+          "description": "Distance to the nearest natural mode in hertz.",
+          "type": "number",
+          "format": "double"
+        },
+        "order": {
+          "description": "Excitation order, e.g. 1x or 3x.",
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "rpm": {
+          "description": "Rotary speed in revolutions per minute.",
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "order",
+        "rpm",
+        "excitation_frequency_hz",
+        "nearest_mode_margin_hz"
+      ]
+    },
+    "ContactPointResult": {
+      "description": "Active normal-contact result.",
+      "type": "object",
+      "properties": {
+        "md_m": {
+          "description": "MD in metres.",
+          "type": "number",
+          "format": "double"
+        },
+        "normal_force_n": {
+          "description": "Recovered normal force in newtons.",
+          "type": "number",
+          "format": "double"
+        },
+        "penetration_m": {
+          "description": "Penetration before constraint recovery in metres.",
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "md_m",
+        "penetration_m",
+        "normal_force_n"
+      ]
+    },
+    "FrequencyResponsePoint": {
+      "description": "One value-backed frequency-response sample at the lower BHA node.",
+      "type": "object",
+      "properties": {
+        "frequency_hz": {
+          "description": "Excitation frequency in hertz.",
+          "type": "number",
+          "format": "double"
+        },
+        "phase_deg": {
+          "description": "Response phase in degrees.",
+          "type": "number",
+          "format": "double"
+        },
+        "receptance_m_n": {
+          "description": "Response magnitude in metres per newton.",
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "frequency_hz",
+        "receptance_m_n",
+        "phase_deg"
+      ]
+    },
+    "ModeResult": {
+      "description": "One undamped linearized mode.",
+      "type": "object",
+      "properties": {
+        "critical_speed_rpm": {
+          "description": "Critical rotary speed in revolutions per minute for synchronous excitation.",
+          "type": "number",
+          "format": "double"
+        },
+        "mode_number": {
+          "description": "One-based mode number.",
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "natural_frequency_hz": {
+          "description": "Natural frequency in hertz.",
+          "type": "number",
+          "format": "double"
+        },
+        "normalized_shape": {
+          "description": "Mass-normalized lateral amplitude by static node.",
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "mode_number",
+        "natural_frequency_hz",
+        "critical_speed_rpm",
+        "normalized_shape"
+      ]
+    },
+    "SolverEvidence": {
+      "description": "Deterministic numerical evidence.",
+      "type": "object",
+      "properties": {
+        "compiler": {
+          "description": "Pinned compiler identity.",
+          "type": "string"
+        },
+        "converged": {
+          "description": "Whether all convergence criteria passed.",
+          "type": "boolean"
+        },
+        "dependency_lock_hash": {
+          "description": "SHA-256 of the locked dependency graph.",
+          "type": "string"
+        },
+        "engine_version": {
+          "description": "Engine package version.",
+          "type": "string"
+        },
+        "iterations": {
+          "description": "Nonlinear iteration count.",
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "request_hash": {
+          "description": "SHA-256 of normalized request JSON.",
+          "type": "string"
+        },
+        "residual_norm": {
+          "description": "Final residual norm.",
+          "type": "number",
+          "format": "double"
+        },
+        "result_hash": {
+          "description": "SHA-256 of normalized result payload before this field is assigned.",
+          "type": "string"
+        },
+        "target": {
+          "description": "Compilation target family and architecture.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "engine_version",
+        "compiler",
+        "target",
+        "dependency_lock_hash",
+        "request_hash",
+        "result_hash",
+        "iterations",
+        "residual_norm",
+        "converged"
+      ]
+    },
+    "SourceObjectRef": {
+      "description": "Immutable reference to an authoritative source object.",
+      "type": "object",
+      "properties": {
+        "citation_name": {
+          "description": "Human-readable citation only; never used as a relationship key.",
+          "type": "string"
+        },
+        "content_hash": {
+          "description": "SHA-256 of normalized source content.",
+          "type": "string"
+        },
+        "object_type": {
+          "description": "Supported object type.",
+          "$ref": "#/$defs/WitsmlObjectType"
+        },
+        "source_system": {
+          "description": "Source system name/version.",
+          "type": "string"
+        },
+        "uri": {
+          "description": "Optional absolute Energistics URI.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "uuid": {
+          "description": "WITSML object UUID.",
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "uuid",
+        "object_type",
+        "content_hash",
+        "citation_name",
+        "source_system"
+      ]
+    },
+    "StaticNodeResult": {
+      "description": "Centerline and projected-envelope result at one MD.",
+      "type": "object",
+      "properties": {
+        "bending_moment_n_m": {
+          "description": "Bending moment magnitude in newton-metres.",
+          "type": "number",
+          "format": "double"
+        },
+        "bending_stress_pa": {
+          "description": "Bending stress in pascals.",
+          "type": "number",
+          "format": "double"
+        },
+        "hole_radius_m": {
+          "description": "Hole radius in metres.",
+          "type": "number",
+          "format": "double"
+        },
+        "id_radius_m": {
+          "description": "Tube inside radius in metres.",
+          "type": "number",
+          "format": "double"
+        },
+        "md_m": {
+          "description": "MD in metres.",
+          "type": "number",
+          "format": "double"
+        },
+        "od_radius_m": {
+          "description": "Tube outside radius in metres.",
+          "type": "number",
+          "format": "double"
+        },
+        "projected_clearance_m": {
+          "description": "Signed indicated clearance; negative means the projected OD crosses the hole envelope.",
+          "type": "number",
+          "format": "double"
+        },
+        "x_m": {
+          "description": "Lateral displacement in local high-side direction.",
+          "type": "number",
+          "format": "double"
+        },
+        "y_m": {
+          "description": "Lateral displacement in local cross direction.",
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "md_m",
+        "x_m",
+        "y_m",
+        "od_radius_m",
+        "id_radius_m",
+        "hole_radius_m",
+        "projected_clearance_m",
+        "bending_moment_n_m",
+        "bending_stress_pa"
+      ]
+    },
+    "WitsmlObjectType": {
+      "description": "WITSML object types accepted by BHA Release 1.",
+      "oneOf": [
+        {
+          "description": "Well.",
+          "type": "string",
+          "const": "well"
+        },
+        {
+          "description": "Wellbore.",
+          "type": "string",
+          "const": "wellbore"
+        },
+        {
+          "description": "Directional trajectory.",
+          "type": "string",
+          "const": "trajectory"
+        },
+        {
+          "description": "Hole geometry.",
+          "type": "string",
+          "const": "wellboreGeometry"
+        },
+        {
+          "description": "Tubular/BHA configuration.",
+          "type": "string",
+          "const": "tubular"
+        },
+        {
+          "description": "BHA run context.",
+          "type": "string",
+          "const": "bhaRun"
+        },
+        {
+          "description": "Log container.",
+          "type": "string",
+          "const": "log"
+        },
+        {
+          "description": "Channel set.",
+          "type": "string",
+          "const": "channelSet"
+        },
+        {
+          "description": "Channel.",
+          "type": "string",
+          "const": "channel"
+        }
+      ]
+    }
+  }
+}

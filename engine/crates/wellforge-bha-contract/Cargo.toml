@@ -1,0 +1,19 @@
+[package]
+name = "wellforge-bha-contract"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+schemars.workspace = true
+serde.workspace = true
+uuid.workspace = true
+wellforge-units = { path = "../wellforge-units", version = "0.1.0" }
+wellforge-witsml = { path = "../wellforge-witsml", version = "0.1.0" }
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints]
+workspace = true

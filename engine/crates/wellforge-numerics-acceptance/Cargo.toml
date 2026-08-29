@@ -1,0 +1,20 @@
+[package]
+name = "wellforge-numerics-acceptance"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+faer = "0.24.4"
+levenberg-marquardt = "0.15.0"
+nalgebra = "0.34.2"
+parry3d-f64 = "0.30.2"
+serde = { version = "1.0.229", features = ["derive"] }
+

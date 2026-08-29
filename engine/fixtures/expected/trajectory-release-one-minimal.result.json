@@ -1,0 +1,405 @@
+{
+  "contract_version": "1.0.0",
+  "analysis_id": "00000000-0000-0000-0000-000000000064",
+  "sources": {
+    "well": {
+      "uuid": "00000000-0000-0000-0000-000000000001",
+      "uri": "eml:///wellforge/trajectory/1",
+      "object_type": "well",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000001",
+      "citation_name": "trajectory-fixture-1",
+      "source_system": "wellforge-trajectory-fixtures/1.0"
+    },
+    "wellbore": {
+      "uuid": "00000000-0000-0000-0000-000000000002",
+      "uri": "eml:///wellforge/trajectory/2",
+      "object_type": "wellbore",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000002",
+      "citation_name": "trajectory-fixture-2",
+      "source_system": "wellforge-trajectory-fixtures/1.0"
+    },
+    "plan_trajectory": {
+      "uuid": "00000000-0000-0000-0000-000000000003",
+      "uri": "eml:///wellforge/trajectory/3",
+      "object_type": "trajectory",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000003",
+      "citation_name": "trajectory-fixture-3",
+      "source_system": "wellforge-trajectory-fixtures/1.0"
+    },
+    "survey_trajectory": {
+      "uuid": "00000000-0000-0000-0000-000000000004",
+      "uri": "eml:///wellforge/trajectory/4",
+      "object_type": "trajectory",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000004",
+      "citation_name": "trajectory-fixture-4",
+      "source_system": "wellforge-trajectory-fixtures/1.0"
+    }
+  },
+  "status": "complete_with_warnings",
+  "applicability": {
+    "method": "minimum_curvature_closed_form",
+    "deterministic": true,
+    "limitations": [
+      "one or more survey stations are outside plan coverage",
+      "one or more slides are outside survey coverage"
+    ]
+  },
+  "evidence": {
+    "engine_version": "0.1.0",
+    "compiler_version": "rustc 1.98.0 (88d9e12ae 2026-08-18) | binary: rustc | commit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea | commit-date: 2026-08-18 | host: x86_64-unknown-linux-gnu | release: 1.98.0 | LLVM version: 22.1.8",
+    "target_triple": "x86_64-unknown-linux-gnu",
+    "lockfile_hash": "ed86a8c619d63303d776e3b12d110d80be307f0119a29dfd4b58c586f017582d",
+    "request_hash": "87b7e1a6b6ef981b4cbb1a24c67124ae479aa19336df41617b7f489b3a116771",
+    "result_hash": "cbe910bb6b9b926dedb6648c0fcc10d0923e22acfe2da9f9596b4fd864e47317"
+  },
+  "calculation": {
+    "plan": [
+      {
+        "source_uid": "00000000-0000-0000-0000-00000000000a",
+        "kind": "tie_in",
+        "lower_source_uid": null,
+        "upper_source_uid": null,
+        "md_m": 0.0,
+        "inclination_rad": 0.0,
+        "azimuth_rad": 0.0,
+        "north_m": 0.0,
+        "east_m": 0.0,
+        "tvd_m": 0.0,
+        "delta_md_m": 0.0,
+        "dogleg_rad": 0.0,
+        "ratio_factor": 1.0,
+        "dls_rad_per_m": 0.0
+      },
+      {
+        "source_uid": "00000000-0000-0000-0000-00000000000b",
+        "kind": "plan",
+        "lower_source_uid": null,
+        "upper_source_uid": null,
+        "md_m": 40.0,
+        "inclination_rad": 0.04,
+        "azimuth_rad": 0.0,
+        "north_m": 0.7998933390220597,
+        "east_m": 0.0,
+        "tvd_m": 39.98933418663416,
+        "delta_md_m": 40.0,
+        "dogleg_rad": 0.04000000000000061,
+        "ratio_factor": 1.0001333546701212,
+        "dls_rad_per_m": 0.0010000000000000152
+      },
+      {
+        "source_uid": "00000000-0000-0000-0000-00000000000c",
+        "kind": "plan",
+        "lower_source_uid": null,
+        "upper_source_uid": null,
+        "md_m": 80.0,
+        "inclination_rad": 0.08,
+        "azimuth_rad": 0.0,
+        "north_m": 3.1982936973806155,
+        "east_m": 0.0,
+        "tvd_m": 79.9146939691727,
+        "delta_md_m": 40.0,
+        "dogleg_rad": 0.039999999999997836,
+        "ratio_factor": 1.0001333546701212,
+        "dls_rad_per_m": 0.0009999999999999458
+      }
+    ],
+    "survey": [
+      {
+        "source_uid": "00000000-0000-0000-0000-000000000014",
+        "kind": "tie_in",
+        "lower_source_uid": null,
+        "upper_source_uid": null,
+        "md_m": 0.0,
+        "inclination_rad": 0.0,
+        "azimuth_rad": 0.0,
+        "north_m": 0.0,
+        "east_m": 0.0,
+        "tvd_m": 0.0,
+        "delta_md_m": 0.0,
+        "dogleg_rad": 0.0,
+        "ratio_factor": 1.0,
+        "dls_rad_per_m": 0.0
+      },
+      {
+        "source_uid": "00000000-0000-0000-0000-000000000015",
+        "kind": "survey",
+        "lower_source_uid": null,
+        "upper_source_uid": null,
+        "md_m": 50.0,
+        "inclination_rad": 0.05,
+        "azimuth_rad": 0.0,
+        "north_m": 1.2497396050337533,
+        "east_m": 0.0,
+        "tvd_m": 49.97916927067833,
+        "delta_md_m": 50.0,
+        "dogleg_rad": 0.049999999999999274,
+        "ratio_factor": 1.0002083854298458,
+        "dls_rad_per_m": 0.0009999999999999855
+      },
+      {
+        "source_uid": "00000000-0000-0000-0000-000000000016",
+        "kind": "survey",
+        "lower_source_uid": null,
+        "upper_source_uid": null,
+        "md_m": 100.0,
+        "inclination_rad": 0.1,
+        "azimuth_rad": 0.0,
+        "north_m": 4.995834721974234,
+        "east_m": 0.0,
+        "tvd_m": 99.83341664682814,
+        "delta_md_m": 50.0,
+        "dogleg_rad": 0.049999999999999274,
+        "ratio_factor": 1.0002083854298458,
+        "dls_rad_per_m": 0.0009999999999999855
+      }
+    ],
+    "plan_survey_residuals": [
+      {
+        "survey_uid": "00000000-0000-0000-0000-000000000014",
+        "md_m": 0.0,
+        "plan": {
+          "md_m": 0.0,
+          "status": "ok",
+          "station": {
+            "source_uid": "00000000-0000-0000-0000-00000000000a",
+            "kind": "tie_in",
+            "lower_source_uid": null,
+            "upper_source_uid": null,
+            "md_m": 0.0,
+            "inclination_rad": 0.0,
+            "azimuth_rad": 0.0,
+            "north_m": 0.0,
+            "east_m": 0.0,
+            "tvd_m": 0.0,
+            "delta_md_m": 0.0,
+            "dogleg_rad": 0.0,
+            "ratio_factor": 1.0,
+            "dls_rad_per_m": 0.0
+          }
+        },
+        "residual": {
+          "north_m": 0.0,
+          "east_m": 0.0,
+          "tvd_m": 0.0,
+          "along_track_m": 0.0,
+          "crossline_m": 0.0,
+          "horizontal_m": 0.0,
+          "error_3d_m": 0.0
+        }
+      },
+      {
+        "survey_uid": "00000000-0000-0000-0000-000000000015",
+        "md_m": 50.0,
+        "plan": {
+          "md_m": 50.0,
+          "status": "ok",
+          "station": {
+            "source_uid": null,
+            "kind": "interpolated",
+            "lower_source_uid": "00000000-0000-0000-0000-00000000000b",
+            "upper_source_uid": "00000000-0000-0000-0000-00000000000c",
+            "md_m": 50.0,
+            "inclination_rad": 0.05000000000000372,
+            "azimuth_rad": 0.0,
+            "north_m": 1.249739605033772,
+            "east_m": 0.0,
+            "tvd_m": 49.97916927067833,
+            "delta_md_m": 10.0,
+            "dogleg_rad": 0.010000000000001442,
+            "ratio_factor": 1.0000083334166674,
+            "dls_rad_per_m": 0.0010000000000001442
+          }
+        },
+        "residual": {
+          "north_m": -1.865174681370263e-14,
+          "east_m": 0.0,
+          "tvd_m": 0.0,
+          "along_track_m": -1.865174681370263e-14,
+          "crossline_m": 0.0,
+          "horizontal_m": 1.865174681370263e-14,
+          "error_3d_m": 1.865174681370263e-14
+        }
+      },
+      {
+        "survey_uid": "00000000-0000-0000-0000-000000000016",
+        "md_m": 100.0,
+        "plan": {
+          "md_m": 100.0,
+          "status": "beyond_td",
+          "station": null
+        },
+        "residual": null
+      }
+    ],
+    "targets": [
+      {
+        "target_uid": "00000000-0000-0000-0000-00000000001e",
+        "md_m": 60.0,
+        "basis": "actual",
+        "position": {
+          "north_m": 1.7994600647958139,
+          "east_m": 0.0,
+          "tvd_m": 59.96400647944459
+        },
+        "evaluation": {
+          "target_uid": "00000000-0000-0000-0000-00000000001e",
+          "status": "hit",
+          "horizontal_utilization": 0.010026996760209305,
+          "vertical_utilization": 0.0017996760277704028,
+          "local_major_m": -0.20053993520418611,
+          "local_minor_m": 0.0,
+          "vertical_difference_m": -0.035993520555408054
+        }
+      },
+      {
+        "target_uid": "00000000-0000-0000-0000-00000000001f",
+        "md_m": 120.0,
+        "basis": "projected",
+        "position": {
+          "north_m": 7.191364146133752,
+          "east_m": 0.0,
+          "tvd_m": 119.71220728891934
+        },
+        "evaluation": {
+          "target_uid": "00000000-0000-0000-0000-00000000001f",
+          "status": "hit",
+          "horizontal_utilization": 0.04043179269331239,
+          "vertical_utilization": 0.014389635554032765,
+          "local_major_m": -0.8086358538662477,
+          "local_minor_m": 0.0,
+          "vertical_difference_m": -0.2877927110806553
+        }
+      }
+    ],
+    "slides": [
+      {
+        "slide_uid": "00000000-0000-0000-0000-000000000028",
+        "start": {
+          "md_m": 20.0,
+          "status": "ok",
+          "station": {
+            "source_uid": null,
+            "kind": "interpolated",
+            "lower_source_uid": "00000000-0000-0000-0000-000000000014",
+            "upper_source_uid": "00000000-0000-0000-0000-000000000015",
+            "md_m": 20.0,
+            "inclination_rad": 0.019999999999995553,
+            "azimuth_rad": 0.0,
+            "north_m": 0.1999933334221771,
+            "east_m": 0.0,
+            "tvd_m": 19.998666693333078,
+            "delta_md_m": 20.0,
+            "dogleg_rad": 0.019999999999995553,
+            "ratio_factor": 1.0000333346667205,
+            "dls_rad_per_m": 0.0009999999999997775
+          }
+        },
+        "end": {
+          "md_m": 80.0,
+          "status": "ok",
+          "station": {
+            "source_uid": null,
+            "kind": "interpolated",
+            "lower_source_uid": "00000000-0000-0000-0000-000000000015",
+            "upper_source_uid": "00000000-0000-0000-0000-000000000016",
+            "md_m": 80.0,
+            "inclination_rad": 0.07999999999999793,
+            "azimuth_rad": 0.0,
+            "north_m": 3.198293697380584,
+            "east_m": 0.0,
+            "tvd_m": 79.91469396917269,
+            "delta_md_m": 30.0,
+            "dogleg_rad": 0.029999999999999107,
+            "ratio_factor": 1.0000750067506148,
+            "dls_rad_per_m": 0.0009999999999999703
+          }
+        },
+        "response": {
+          "slide_uid": "00000000-0000-0000-0000-000000000028",
+          "status": "ok",
+          "build_rad_per_m": 0.0010000000000000397,
+          "effective_turn_rad_per_m": 0.0,
+          "residual_build_rad_per_m": 0.0020000000000000794,
+          "residual_turn_rad_per_m": 0.0,
+          "yield_rad_per_m": 0.0020000000000000794,
+          "response_toolface_rad": 0.0,
+          "toolface_error_rad": 0.0
+        }
+      },
+      {
+        "slide_uid": "00000000-0000-0000-0000-000000000029",
+        "start": {
+          "md_m": 90.0,
+          "status": "ok",
+          "station": {
+            "source_uid": null,
+            "kind": "interpolated",
+            "lower_source_uid": "00000000-0000-0000-0000-000000000015",
+            "upper_source_uid": "00000000-0000-0000-0000-000000000016",
+            "md_m": 90.0,
+            "inclination_rad": 0.08999999999999854,
+            "azimuth_rad": 0.0,
+            "north_m": 4.047266988005719,
+            "east_m": 0.0,
+            "tvd_m": 89.87854919801106,
+            "delta_md_m": 40.0,
+            "dogleg_rad": 0.039999999999997836,
+            "ratio_factor": 1.0001333546701212,
+            "dls_rad_per_m": 0.0009999999999999458
+          }
+        },
+        "end": {
+          "md_m": 120.0,
+          "status": "beyond_td",
+          "station": null
+        },
+        "response": null
+      }
+    ],
+    "formations": [
+      {
+        "formation_uid": "00000000-0000-0000-0000-000000000032",
+        "coverage": "ok",
+        "actual_tvd_m": 94.85716863455728,
+        "high_low_m": -0.8571686345572829,
+        "sense": "low",
+        "within_tolerance": true
+      }
+    ],
+    "projection": {
+      "bit": {
+        "source_uid": null,
+        "kind": "projection",
+        "lower_source_uid": "00000000-0000-0000-0000-000000000016",
+        "upper_source_uid": null,
+        "md_m": 110.0,
+        "inclination_rad": 0.11,
+        "azimuth_rad": 0.0,
+        "north_m": 6.04390204330315,
+        "east_m": 0.0,
+        "tvd_m": 109.7783008371748,
+        "delta_md_m": 10.0,
+        "dogleg_rad": 0.00999999999999034,
+        "ratio_factor": 1.0000083334166674,
+        "dls_rad_per_m": 0.000999999999999034
+      },
+      "projected": {
+        "source_uid": null,
+        "kind": "projection",
+        "lower_source_uid": "00000000-0000-0000-0000-000000000016",
+        "upper_source_uid": null,
+        "md_m": 150.0,
+        "inclination_rad": 0.15,
+        "azimuth_rad": 0.0,
+        "north_m": 11.228922063957715,
+        "east_m": 0.0,
+        "tvd_m": 149.4381324735992,
+        "delta_md_m": 40.0,
+        "dogleg_rad": 0.04000000000000061,
+        "ratio_factor": 1.0001333546701212,
+        "dls_rad_per_m": 0.0010000000000000152
+      },
+      "low_inclination_turn_guard": false
+    }
+  }
+}

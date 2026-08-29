@@ -1,0 +1,3910 @@
+{
+  "schemaVersion": "1.0.0",
+  "caseId": "wellforge-mock-case",
+  "createdAt": "2026-08-27T00:00:00.000Z",
+  "producer": {
+    "name": "WellForge",
+    "version": "1.0.0"
+  },
+  "metadata": {
+    "well": "MOCK HAWK RIDGE 7H",
+    "field": "DEMO PAD WEST",
+    "pad": "DEMO PAD WEST",
+    "rig": "RIG SIM-7",
+    "datum": "RKB",
+    "northReference": "Grid North",
+    "surfaceNorth": {
+      "value": 0,
+      "unit": "ft"
+    },
+    "surfaceEast": {
+      "value": 0,
+      "unit": "ft"
+    },
+    "groundElevation": {
+      "value": 5000,
+      "unit": "ft"
+    },
+    "verticalSectionAzimuth": {
+      "value": 55,
+      "unit": "deg"
+    }
+  },
+  "unitPreferences": {
+    "length": "ft",
+    "diameter": "in",
+    "density": "ppg",
+    "force": "klbf",
+    "pressure": "psi",
+    "torque": "ft-lbf",
+    "angle": "deg",
+    "flowRate": "gpm",
+    "viscosity": "cP"
+  },
+  "trajectory": {
+    "plan": [
+      {
+        "id": "plan-000",
+        "station": 0,
+        "md": {
+          "value": 0,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-001",
+        "station": 1,
+        "md": {
+          "value": 500,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-002",
+        "station": 2,
+        "md": {
+          "value": 1000,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-003",
+        "station": 3,
+        "md": {
+          "value": 1500,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-004",
+        "station": 4,
+        "md": {
+          "value": 2000,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-005",
+        "station": 5,
+        "md": {
+          "value": 2500,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-006",
+        "station": 6,
+        "md": {
+          "value": 3000,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-007",
+        "station": 7,
+        "md": {
+          "value": 3500,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-008",
+        "station": 8,
+        "md": {
+          "value": 4000,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-009",
+        "station": 9,
+        "md": {
+          "value": 4500,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-010",
+        "station": 10,
+        "md": {
+          "value": 5000,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-011",
+        "station": 11,
+        "md": {
+          "value": 5125,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 10,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 22.222,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-012",
+        "station": 12,
+        "md": {
+          "value": 5250,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 24.444,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-013",
+        "station": 13,
+        "md": {
+          "value": 5375,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 30,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 26.667,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-014",
+        "station": 14,
+        "md": {
+          "value": 5500,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 40,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 28.889,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-015",
+        "station": 15,
+        "md": {
+          "value": 5625,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 50,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 31.111,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-016",
+        "station": 16,
+        "md": {
+          "value": 5750,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 60,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 33.333,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-017",
+        "station": 17,
+        "md": {
+          "value": 5875,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 70,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 35.556,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-018",
+        "station": 18,
+        "md": {
+          "value": 6000,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 80,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 37.778,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-019",
+        "station": 19,
+        "md": {
+          "value": 6125,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 40,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-020",
+        "station": 20,
+        "md": {
+          "value": 6375,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.021,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 41.657,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-021",
+        "station": 21,
+        "md": {
+          "value": 6625,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.072,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 43.295,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-022",
+        "station": 22,
+        "md": {
+          "value": 6875,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.173,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 44.895,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-023",
+        "station": 23,
+        "md": {
+          "value": 7125,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.324,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 46.439,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-024",
+        "station": 24,
+        "md": {
+          "value": 7375,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.505,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 47.911,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-025",
+        "station": 25,
+        "md": {
+          "value": 7625,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.681,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 49.295,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-026",
+        "station": 26,
+        "md": {
+          "value": 7875,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.81,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 50.58,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-027",
+        "station": 27,
+        "md": {
+          "value": 8125,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.856,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 51.755,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-028",
+        "station": 28,
+        "md": {
+          "value": 8375,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.797,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 52.813,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-029",
+        "station": 29,
+        "md": {
+          "value": 8625,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.636,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 53.75,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-030",
+        "station": 30,
+        "md": {
+          "value": 8875,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.398,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 54.563,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-031",
+        "station": 31,
+        "md": {
+          "value": 9125,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.124,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 55.255,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-032",
+        "station": 32,
+        "md": {
+          "value": 9375,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.861,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 55.83,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-033",
+        "station": 33,
+        "md": {
+          "value": 9625,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.651,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 56.295,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-034",
+        "station": 34,
+        "md": {
+          "value": 9875,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.52,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 56.661,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-035",
+        "station": 35,
+        "md": {
+          "value": 10125,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.471,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 56.939,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-036",
+        "station": 36,
+        "md": {
+          "value": 10375,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.486,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 57.145,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-037",
+        "station": 37,
+        "md": {
+          "value": 10625,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.534,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 57.295,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-038",
+        "station": 38,
+        "md": {
+          "value": 10875,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.581,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 57.407,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-039",
+        "station": 39,
+        "md": {
+          "value": 11125,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.6,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 57.5,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-040",
+        "station": 40,
+        "md": {
+          "value": 11375,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.581,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 57.593,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-041",
+        "station": 41,
+        "md": {
+          "value": 11625,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.534,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 57.705,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-042",
+        "station": 42,
+        "md": {
+          "value": 11875,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.486,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 57.855,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-043",
+        "station": 43,
+        "md": {
+          "value": 12125,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.471,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 58.061,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-044",
+        "station": 44,
+        "md": {
+          "value": 12375,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.52,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 58.339,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-045",
+        "station": 45,
+        "md": {
+          "value": 12625,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.651,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 58.705,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-046",
+        "station": 46,
+        "md": {
+          "value": 12875,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.861,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 59.17,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-047",
+        "station": 47,
+        "md": {
+          "value": 13125,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.124,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 59.745,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-048",
+        "station": 48,
+        "md": {
+          "value": 13375,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.398,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 60.437,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-049",
+        "station": 49,
+        "md": {
+          "value": 13625,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.636,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 61.25,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-050",
+        "station": 50,
+        "md": {
+          "value": 13875,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.797,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 62.187,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-051",
+        "station": 51,
+        "md": {
+          "value": 14125,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.856,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 63.245,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-052",
+        "station": 52,
+        "md": {
+          "value": 14375,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.81,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 64.42,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-053",
+        "station": 53,
+        "md": {
+          "value": 14625,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.681,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 65.705,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-054",
+        "station": 54,
+        "md": {
+          "value": 14875,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.505,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 67.089,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-055",
+        "station": 55,
+        "md": {
+          "value": 15125,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.324,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 68.561,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-056",
+        "station": 56,
+        "md": {
+          "value": 15375,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.173,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 70.105,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-057",
+        "station": 57,
+        "md": {
+          "value": 15625,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.072,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 71.705,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-058",
+        "station": 58,
+        "md": {
+          "value": 15875,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90.021,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 73.343,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      },
+      {
+        "id": "plan-059",
+        "station": 59,
+        "md": {
+          "value": 16125,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 90,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 75,
+          "unit": "deg"
+        },
+        "source": "Directional reference plan"
+      }
+    ],
+    "survey": [
+      {
+        "id": "survey-000",
+        "station": 0,
+        "md": {
+          "value": 0,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-001",
+        "station": 1,
+        "md": {
+          "value": 508.887,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0.487,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20.782,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-002",
+        "station": 2,
+        "md": {
+          "value": 1010.415,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0.599,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 21.186,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-003",
+        "station": 3,
+        "md": {
+          "value": 1509.917,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0.445,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 21.017,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-004",
+        "station": 4,
+        "md": {
+          "value": 2007.759,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0.238,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20.356,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-005",
+        "station": 5,
+        "md": {
+          "value": 2505.153,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0.524,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 19.523,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-006",
+        "station": 6,
+        "md": {
+          "value": 3003.539,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0.591,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 18.921,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-007",
+        "station": 7,
+        "md": {
+          "value": 3503.852,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0.397,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 18.84,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-008",
+        "station": 8,
+        "md": {
+          "value": 4006.045,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0.295,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 19.319,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-009",
+        "station": 9,
+        "md": {
+          "value": 4509.112,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0.554,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20.128,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-010",
+        "station": 10,
+        "md": {
+          "value": 5011.602,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 0.575,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 20.875,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-011",
+        "station": 11,
+        "md": {
+          "value": 5137.358,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 11.802,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 24.711,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-012",
+        "station": 12,
+        "md": {
+          "value": 5261.108,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 22.09,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 27.432,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-013",
+        "station": 13,
+        "md": {
+          "value": 5383.599,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 31.569,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 29.414,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-014",
+        "station": 14,
+        "md": {
+          "value": 5506.224,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 40.593,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 30.777,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-015",
+        "station": 15,
+        "md": {
+          "value": 5630.304,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 49.826,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 31.947,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-016",
+        "station": 16,
+        "md": {
+          "value": 5756.421,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 59.789,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 33.447,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-017",
+        "station": 17,
+        "md": {
+          "value": 5884.117,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 70.508,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 35.635,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-018",
+        "station": 18,
+        "md": {
+          "value": 6012.131,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 81.493,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 38.528,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-019",
+        "station": 19,
+        "md": {
+          "value": 6139.038,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 92.075,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 41.793,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-020",
+        "station": 20,
+        "md": {
+          "value": 6388.979,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.387,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 44.424,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-021",
+        "station": 21,
+        "md": {
+          "value": 6637.096,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.502,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 46.803,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-022",
+        "station": 22,
+        "md": {
+          "value": 6884.461,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.551,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 49.094,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-023",
+        "station": 23,
+        "md": {
+          "value": 7132.528,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.548,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 51.257,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-024",
+        "station": 24,
+        "md": {
+          "value": 7382.396,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.515,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 53.258,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-025",
+        "station": 25,
+        "md": {
+          "value": 7634.243,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.468,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 55.07,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-026",
+        "station": 26,
+        "md": {
+          "value": 7887.24,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.414,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 56.674,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-027",
+        "station": 27,
+        "md": {
+          "value": 8139.973,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.35,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 58.057,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-028",
+        "station": 28,
+        "md": {
+          "value": 8391.159,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.263,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 59.219,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-029",
+        "station": 29,
+        "md": {
+          "value": 8640.308,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.141,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 60.164,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-030",
+        "station": 30,
+        "md": {
+          "value": 8887.964,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.978,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 60.908,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-031",
+        "station": 31,
+        "md": {
+          "value": 9135.435,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.779,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 61.473,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-032",
+        "station": 32,
+        "md": {
+          "value": 9384.121,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.564,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 61.887,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-033",
+        "station": 33,
+        "md": {
+          "value": 9634.805,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.366,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 62.182,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-034",
+        "station": 34,
+        "md": {
+          "value": 9887.249,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.223,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 62.395,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-035",
+        "station": 35,
+        "md": {
+          "value": 10140.321,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.172,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 62.563,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-036",
+        "station": 36,
+        "md": {
+          "value": 10392.567,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.234,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 62.724,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-037",
+        "station": 37,
+        "md": {
+          "value": 10642.954,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.41,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 62.913,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-038",
+        "station": 38,
+        "md": {
+          "value": 10891.397,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.679,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 63.162,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-039",
+        "station": 39,
+        "md": {
+          "value": 11138.802,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 63.5,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-040",
+        "station": 40,
+        "md": {
+          "value": 11386.604,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.321,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 63.948,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-041",
+        "station": 41,
+        "md": {
+          "value": 11636.034,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.59,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 64.523,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-042",
+        "station": 42,
+        "md": {
+          "value": 11887.496,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.766,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 65.234,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-043",
+        "station": 43,
+        "md": {
+          "value": 12140.356,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.828,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 66.086,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-044",
+        "station": 44,
+        "md": {
+          "value": 12393.269,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.777,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 67.074,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-045",
+        "station": 45,
+        "md": {
+          "value": 12644.863,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.634,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 68.192,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-046",
+        "station": 46,
+        "md": {
+          "value": 12894.436,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.436,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 69.427,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-047",
+        "station": 47,
+        "md": {
+          "value": 13142.32,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.221,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 70.763,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-048",
+        "station": 48,
+        "md": {
+          "value": 13389.704,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 89.022,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 72.182,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-049",
+        "station": 49,
+        "md": {
+          "value": 13638.034,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.859,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 73.664,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-050",
+        "station": 50,
+        "md": {
+          "value": 13888.273,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.737,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 75.192,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-051",
+        "station": 51,
+        "md": {
+          "value": 14140.412,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.65,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 76.747,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-052",
+        "station": 52,
+        "md": {
+          "value": 14393.472,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.586,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 78.314,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-053",
+        "station": 53,
+        "md": {
+          "value": 14646.006,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.532,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 79.88,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-054",
+        "station": 54,
+        "md": {
+          "value": 14896.835,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.485,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 81.437,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-055",
+        "station": 55,
+        "md": {
+          "value": 15145.648,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.452,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 82.979,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-056",
+        "station": 56,
+        "md": {
+          "value": 15393.163,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.449,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 84.504,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-057",
+        "station": 57,
+        "md": {
+          "value": 15640.757,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.498,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 86.013,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-058",
+        "station": 58,
+        "md": {
+          "value": 15889.77,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.613,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 87.51,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      },
+      {
+        "id": "survey-059",
+        "station": 59,
+        "md": {
+          "value": 16140.816,
+          "unit": "ft"
+        },
+        "inclination": {
+          "value": 88.8,
+          "unit": "deg"
+        },
+        "azimuth": {
+          "value": 89,
+          "unit": "deg"
+        },
+        "source": "Directional reference survey",
+        "holeDiameter": {
+          "value": 0.216,
+          "unit": "m"
+        }
+      }
+    ],
+    "targets": [
+      {
+        "id": "T1 - Landing / Heel Target",
+        "name": "T1 - Landing / Heel Target",
+        "md": {
+          "value": 6125,
+          "unit": "ft"
+        },
+        "centerTvd": {
+          "value": 5716.226822119378,
+          "unit": "ft"
+        },
+        "centerNorth": {
+          "value": 599.9517688193293,
+          "unit": "ft"
+        },
+        "centerEast": {
+          "value": 386.6362472673295,
+          "unit": "ft"
+        },
+        "radius": {
+          "value": 35,
+          "unit": "ft"
+        },
+        "type": "Circle",
+        "major": {
+          "value": 35,
+          "unit": "ft"
+        },
+        "minor": {
+          "value": 35,
+          "unit": "ft"
+        },
+        "rotation": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "verticalTolerance": {
+          "value": 35,
+          "unit": "ft"
+        },
+        "entryInclination": {
+          "value": 90,
+          "unit": "deg"
+        },
+        "entryAzimuth": {
+          "value": 40,
+          "unit": "deg"
+        },
+        "note": "Landing target tied to planned station 19"
+      },
+      {
+        "id": "T2 - Mid-Lateral Turn Target",
+        "name": "T2 - Mid-Lateral Turn Target",
+        "md": {
+          "value": 11125,
+          "unit": "ft"
+        },
+        "centerTvd": {
+          "value": 5706.186399741192,
+          "unit": "ft"
+        },
+        "centerNorth": {
+          "value": 3669.7574999966523,
+          "unit": "ft"
+        },
+        "centerEast": {
+          "value": 4306.196772472447,
+          "unit": "ft"
+        },
+        "radius": {
+          "value": 50,
+          "unit": "ft"
+        },
+        "type": "Circle",
+        "major": {
+          "value": 50,
+          "unit": "ft"
+        },
+        "minor": {
+          "value": 50,
+          "unit": "ft"
+        },
+        "rotation": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "verticalTolerance": {
+          "value": 50,
+          "unit": "ft"
+        },
+        "entryInclination": {
+          "value": 89.6,
+          "unit": "deg"
+        },
+        "entryAzimuth": {
+          "value": 57.5,
+          "unit": "deg"
+        },
+        "note": "Mid-lateral target highlights planned azimuth turn"
+      },
+      {
+        "id": "T3 - Planned TD Target",
+        "name": "T3 - Planned TD Target",
+        "md": {
+          "value": 16125,
+          "unit": "ft"
+        },
+        "centerTvd": {
+          "value": 5696.145977363006,
+          "unit": "ft"
+        },
+        "centerNorth": {
+          "value": 5924.729763759714,
+          "unit": "ft"
+        },
+        "centerEast": {
+          "value": 8744.86346727784,
+          "unit": "ft"
+        },
+        "radius": {
+          "value": 75,
+          "unit": "ft"
+        },
+        "type": "Circle",
+        "major": {
+          "value": 75,
+          "unit": "ft"
+        },
+        "minor": {
+          "value": 75,
+          "unit": "ft"
+        },
+        "rotation": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "verticalTolerance": {
+          "value": 75,
+          "unit": "ft"
+        },
+        "entryInclination": {
+          "value": 90,
+          "unit": "deg"
+        },
+        "entryAzimuth": {
+          "value": 75,
+          "unit": "deg"
+        },
+        "note": "TD target tied to planned station 59"
+      }
+    ],
+    "slideIntervals": [
+      {
+        "id": "slide-01",
+        "stand": 1,
+        "date": {
+          "value": 46255,
+          "unit": "d"
+        },
+        "mdIn": {
+          "value": 5000,
+          "unit": "ft"
+        },
+        "mdOut": {
+          "value": 5090,
+          "unit": "ft"
+        },
+        "slideLength": {
+          "value": 88,
+          "unit": "ft"
+        },
+        "rotateLength": {
+          "value": 2,
+          "unit": "ft"
+        },
+        "commandedToolface": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "source": "Sanitized reference fixture"
+      },
+      {
+        "id": "slide-02",
+        "stand": 2,
+        "date": {
+          "value": 46256,
+          "unit": "d"
+        },
+        "mdIn": {
+          "value": 5090,
+          "unit": "ft"
+        },
+        "mdOut": {
+          "value": 5180,
+          "unit": "ft"
+        },
+        "slideLength": {
+          "value": 87,
+          "unit": "ft"
+        },
+        "rotateLength": {
+          "value": 3,
+          "unit": "ft"
+        },
+        "commandedToolface": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "source": "Sanitized reference fixture"
+      },
+      {
+        "id": "slide-03",
+        "stand": 3,
+        "date": {
+          "value": 46257,
+          "unit": "d"
+        },
+        "mdIn": {
+          "value": 5180,
+          "unit": "ft"
+        },
+        "mdOut": {
+          "value": 5270,
+          "unit": "ft"
+        },
+        "slideLength": {
+          "value": 86,
+          "unit": "ft"
+        },
+        "rotateLength": {
+          "value": 4,
+          "unit": "ft"
+        },
+        "commandedToolface": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "source": "Sanitized reference fixture"
+      },
+      {
+        "id": "slide-04",
+        "stand": 4,
+        "date": {
+          "value": 46258,
+          "unit": "d"
+        },
+        "mdIn": {
+          "value": 5270,
+          "unit": "ft"
+        },
+        "mdOut": {
+          "value": 5360,
+          "unit": "ft"
+        },
+        "slideLength": {
+          "value": 85,
+          "unit": "ft"
+        },
+        "rotateLength": {
+          "value": 5,
+          "unit": "ft"
+        },
+        "commandedToolface": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "source": "Sanitized reference fixture"
+      },
+      {
+        "id": "slide-05",
+        "stand": 5,
+        "date": {
+          "value": 46259,
+          "unit": "d"
+        },
+        "mdIn": {
+          "value": 5360,
+          "unit": "ft"
+        },
+        "mdOut": {
+          "value": 5450,
+          "unit": "ft"
+        },
+        "slideLength": {
+          "value": 84,
+          "unit": "ft"
+        },
+        "rotateLength": {
+          "value": 6,
+          "unit": "ft"
+        },
+        "commandedToolface": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "source": "Sanitized reference fixture"
+      },
+      {
+        "id": "slide-06",
+        "stand": 6,
+        "date": {
+          "value": 46260,
+          "unit": "d"
+        },
+        "mdIn": {
+          "value": 5450,
+          "unit": "ft"
+        },
+        "mdOut": {
+          "value": 5540,
+          "unit": "ft"
+        },
+        "slideLength": {
+          "value": 83,
+          "unit": "ft"
+        },
+        "rotateLength": {
+          "value": 7,
+          "unit": "ft"
+        },
+        "commandedToolface": {
+          "value": 0,
+          "unit": "deg"
+        },
+        "source": "Sanitized reference fixture"
+      }
+    ],
+    "formationTops": [
+      {
+        "id": "formation-niobrara-a",
+        "name": "Top Niobrara A",
+        "prognosedMd": {
+          "value": 4600,
+          "unit": "ft"
+        },
+        "prognosedTvd": {
+          "value": 4550,
+          "unit": "ft"
+        },
+        "localDip": {
+          "value": 1,
+          "unit": "deg"
+        },
+        "note": "Local dip 1 deg; sanitized reference fixture"
+      },
+      {
+        "id": "formation-niobrara-b",
+        "name": "Top Niobrara B",
+        "prognosedMd": {
+          "value": 5100,
+          "unit": "ft"
+        },
+        "prognosedTvd": {
+          "value": 5040,
+          "unit": "ft"
+        },
+        "localDip": {
+          "value": 1,
+          "unit": "deg"
+        },
+        "note": "Local dip 1 deg; sanitized reference fixture"
+      },
+      {
+        "id": "formation-niobrara-c",
+        "name": "Top Niobrara C",
+        "prognosedMd": {
+          "value": 5350,
+          "unit": "ft"
+        },
+        "prognosedTvd": {
+          "value": 5280,
+          "unit": "ft"
+        },
+        "localDip": {
+          "value": 1,
+          "unit": "deg"
+        },
+        "note": "Local dip 1 deg; sanitized reference fixture"
+      },
+      {
+        "id": "formation-codell-landing-zone",
+        "name": "Top Codell / Landing Zone",
+        "prognosedMd": {
+          "value": 5600,
+          "unit": "ft"
+        },
+        "prognosedTvd": {
+          "value": 5716,
+          "unit": "ft"
+        },
+        "localDip": {
+          "value": 1,
+          "unit": "deg"
+        },
+        "note": "Local dip 1 deg; sanitized reference fixture"
+      }
+    ]
+  },
+  "holeSections": [
+    {
+      "id": "hole-01",
+      "name": "8-1/2 in open hole",
+      "topMd": {
+        "value": 0,
+        "unit": "m"
+      },
+      "bottomMd": {
+        "value": 2660,
+        "unit": "m"
+      },
+      "holeDiameter": {
+        "value": 0.216,
+        "unit": "m"
+      }
+    }
+  ],
+  "tubulars": [
+    {
+      "id": "dp-01",
+      "name": "Drill Pipe",
+      "length": {
+        "value": 2100,
+        "unit": "m"
+      },
+      "outerDiameter": {
+        "value": 0.127,
+        "unit": "m"
+      },
+      "innerDiameter": {
+        "value": 0.1086,
+        "unit": "m"
+      },
+      "materialDensity": {
+        "value": 7850,
+        "unit": "kg/m3"
+      },
+      "youngModulus": {
+        "value": 206842718795.04,
+        "unit": "Pa"
+      }
+    },
+    {
+      "id": "hwdp-01",
+      "name": "HWDP",
+      "length": {
+        "value": 300,
+        "unit": "m"
+      },
+      "outerDiameter": {
+        "value": 0.14,
+        "unit": "m"
+      },
+      "innerDiameter": {
+        "value": 0.076,
+        "unit": "m"
+      },
+      "materialDensity": {
+        "value": 7850,
+        "unit": "kg/m3"
+      },
+      "youngModulus": {
+        "value": 206842718795.04,
+        "unit": "Pa"
+      }
+    },
+    {
+      "id": "dc-01",
+      "name": "Drill Collar",
+      "length": {
+        "value": 210,
+        "unit": "m"
+      },
+      "outerDiameter": {
+        "value": 0.171,
+        "unit": "m"
+      },
+      "innerDiameter": {
+        "value": 0.071,
+        "unit": "m"
+      },
+      "materialDensity": {
+        "value": 7850,
+        "unit": "kg/m3"
+      },
+      "youngModulus": {
+        "value": 206842718795.04,
+        "unit": "Pa"
+      }
+    },
+    {
+      "id": "mwd-lwd-01",
+      "name": "MWD / LWD",
+      "length": {
+        "value": 30,
+        "unit": "m"
+      },
+      "outerDiameter": {
+        "value": 0.171,
+        "unit": "m"
+      },
+      "innerDiameter": {
+        "value": 0.057,
+        "unit": "m"
+      },
+      "materialDensity": {
+        "value": 7850,
+        "unit": "kg/m3"
+      },
+      "youngModulus": {
+        "value": 206842718795.04,
+        "unit": "Pa"
+      }
+    },
+    {
+      "id": "motor-rss-01",
+      "name": "Motor / RSS",
+      "length": {
+        "value": 20,
+        "unit": "m"
+      },
+      "outerDiameter": {
+        "value": 0.171,
+        "unit": "m"
+      },
+      "innerDiameter": {
+        "value": 0.057,
+        "unit": "m"
+      },
+      "materialDensity": {
+        "value": 7850,
+        "unit": "kg/m3"
+      },
+      "youngModulus": {
+        "value": 206842718795.04,
+        "unit": "Pa"
+      }
+    },
+    {
+      "id": "bit-sub-01",
+      "name": "Bit / Sub",
+      "length": {
+        "value": 10,
+        "unit": "m"
+      },
+      "outerDiameter": {
+        "value": 0.171,
+        "unit": "m"
+      },
+      "innerDiameter": {
+        "value": 0.051,
+        "unit": "m"
+      },
+      "materialDensity": {
+        "value": 7850,
+        "unit": "kg/m3"
+      },
+      "youngModulus": {
+        "value": 206842718795.04,
+        "unit": "Pa"
+      }
+    }
+  ],
+  "bhaComponents": [
+    {
+      "id": "bha-bit",
+      "name": "Bit",
+      "length": {
+        "value": 0.3,
+        "unit": "m"
+      },
+      "outerDiameter": {
+        "value": 0.216,
+        "unit": "m"
+      },
+      "innerDiameter": {
+        "value": 0.05,
+        "unit": "m"
+      },
+      "supportFactor": {
+        "value": 1,
+        "unit": "1"
+      }
+    },
+    {
+      "id": "bha-near-bit-stabilizer",
+      "name": "Near-bit stabilizer",
+      "length": {
+        "value": 1.5,
+        "unit": "m"
+      },
+      "outerDiameter": {
+        "value": 0.203,
+        "unit": "m"
+      },
+      "innerDiameter": {
+        "value": 0.07,
+        "unit": "m"
+      },
+      "supportFactor": {
+        "value": 0.85,
+        "unit": "1"
+      }
+    },
+    {
+      "id": "bha-motor-rss",
+      "name": "Motor / RSS",
+      "length": {
+        "value": 8,
+        "unit": "m"
+      },
+      "outerDiameter": {
+        "value": 0.171,
+        "unit": "m"
+      },
+      "innerDiameter": {
+        "value": 0.057,
+        "unit": "m"
+      },
+      "supportFactor": {
+        "value": 0.7,
+        "unit": "1"
+      }
+    },
+    {
+      "id": "bha-mwd-lwd",
+      "name": "MWD / LWD",
+      "length": {
+        "value": 12,
+        "unit": "m"
+      },
+      "outerDiameter": {
+        "value": 0.171,
+        "unit": "m"
+      },
+      "innerDiameter": {
+        "value": 0.057,
+        "unit": "m"
+      },
+      "supportFactor": {
+        "value": 0.65,
+        "unit": "1"
+      }
+    },
+    {
+      "id": "bha-drill-collar",
+      "name": "Drill collar",
+      "length": {
+        "value": 90,
+        "unit": "m"
+      },
+      "outerDiameter": {
+        "value": 0.171,
+        "unit": "m"
+      },
+      "innerDiameter": {
+        "value": 0.071,
+        "unit": "m"
+      },
+      "supportFactor": {
+        "value": 0.55,
+        "unit": "1"
+      }
+    },
+    {
+      "id": "bha-hwdp-transition",
+      "name": "HWDP transition",
+      "length": {
+        "value": 60,
+        "unit": "m"
+      },
+      "outerDiameter": {
+        "value": 0.14,
+        "unit": "m"
+      },
+      "innerDiameter": {
+        "value": 0.076,
+        "unit": "m"
+      },
+      "supportFactor": {
+        "value": 0.4,
+        "unit": "1"
+      }
+    }
+  ],
+  "fluids": [
+    {
+      "id": "fluid-01",
+      "name": "WellForge water-based mud",
+      "density": {
+        "value": 1200,
+        "unit": "kg/m3"
+      },
+      "apparentViscosity": {
+        "value": 0.035,
+        "unit": "Pa*s"
+      }
+    }
+  ],
+  "operatingPoint": {
+    "wob": {
+      "value": 120000,
+      "unit": "N"
+    },
+    "surfaceTorque": {
+      "value": 26000,
+      "unit": "N*m"
+    },
+    "flowRate": {
+      "value": 0.044,
+      "unit": "m3/s"
+    },
+    "frictionFactor": {
+      "value": 0.24,
+      "unit": "1"
+    },
+    "rotarySpeed": {
+      "value": 120,
+      "unit": "rpm"
+    }
+  },
+  "rigLimits": {
+    "surfacePressure": {
+      "value": 35000000,
+      "unit": "Pa"
+    },
+    "ecdScreenDensity": {
+      "value": 1400,
+      "unit": "kg/m3"
+    },
+    "hookload": {
+      "value": 1050000,
+      "unit": "N"
+    }
+  },
+  "pumpNozzle": {
+    "pumps": [
+      {
+        "id": "pump-01",
+        "name": "Land rig pump set",
+        "efficiency": {
+          "value": 0.92,
+          "unit": "1"
+        },
+        "flowRate": {
+          "value": 0.044,
+          "unit": "m3/s"
+        }
+      }
+    ],
+    "nozzles": [
+      {
+        "id": "nozzle-008",
+        "diameter": {
+          "value": 0.008,
+          "unit": "m"
+        },
+        "count": {
+          "value": 3,
+          "unit": "1"
+        },
+        "dischargeCoefficient": {
+          "value": 0.95,
+          "unit": "1"
+        }
+      },
+      {
+        "id": "nozzle-009",
+        "diameter": {
+          "value": 0.009,
+          "unit": "m"
+        },
+        "count": {
+          "value": 3,
+          "unit": "1"
+        },
+        "dischargeCoefficient": {
+          "value": 0.95,
+          "unit": "1"
+        }
+      },
+      {
+        "id": "nozzle-010",
+        "diameter": {
+          "value": 0.01,
+          "unit": "m"
+        },
+        "count": {
+          "value": 3,
+          "unit": "1"
+        },
+        "dischargeCoefficient": {
+          "value": 0.95,
+          "unit": "1"
+        }
+      },
+      {
+        "id": "nozzle-011",
+        "diameter": {
+          "value": 0.011,
+          "unit": "m"
+        },
+        "count": {
+          "value": 3,
+          "unit": "1"
+        },
+        "dischargeCoefficient": {
+          "value": 0.95,
+          "unit": "1"
+        }
+      },
+      {
+        "id": "nozzle-012",
+        "diameter": {
+          "value": 0.012,
+          "unit": "m"
+        },
+        "count": {
+          "value": 3,
+          "unit": "1"
+        },
+        "dischargeCoefficient": {
+          "value": 0.95,
+          "unit": "1"
+        }
+      }
+    ]
+  },
+  "analyses": {
+    "api7g": {
+      "calculationState": "notCalculated",
+      "method": "WellForge workbook formula model",
+      "results": [],
+      "fluidId": "fluid-01",
+      "materialDensity": {
+        "value": 7850,
+        "unit": "kg/m3"
+      },
+      "sections": [
+        {
+          "id": "api7g-dp-01",
+          "tubularId": "dp-01",
+          "name": "Drill Pipe",
+          "length": {
+            "value": 2100,
+            "unit": "m"
+          },
+          "outerDiameter": {
+            "value": 0.127,
+            "unit": "m"
+          },
+          "innerDiameter": {
+            "value": 0.1086,
+            "unit": "m"
+          },
+          "fluidDensity": {
+            "value": 1200,
+            "unit": "kg/m3"
+          },
+          "axialLoad": {
+            "value": 850000,
+            "unit": "N"
+          },
+          "tensionLimit": {
+            "value": 1800000,
+            "unit": "N"
+          },
+          "operatingTorque": {
+            "value": 22000,
+            "unit": "N*m"
+          }
+        },
+        {
+          "id": "api7g-hwdp-01",
+          "tubularId": "hwdp-01",
+          "name": "HWDP",
+          "length": {
+            "value": 300,
+            "unit": "m"
+          },
+          "outerDiameter": {
+            "value": 0.14,
+            "unit": "m"
+          },
+          "innerDiameter": {
+            "value": 0.076,
+            "unit": "m"
+          },
+          "fluidDensity": {
+            "value": 1200,
+            "unit": "kg/m3"
+          },
+          "axialLoad": {
+            "value": 920000,
+            "unit": "N"
+          },
+          "tensionLimit": {
+            "value": 2300000,
+            "unit": "N"
+          },
+          "operatingTorque": {
+            "value": 30000,
+            "unit": "N*m"
+          }
+        },
+        {
+          "id": "api7g-dc-01",
+          "tubularId": "dc-01",
+          "name": "Drill Collar",
+          "length": {
+            "value": 210,
+            "unit": "m"
+          },
+          "outerDiameter": {
+            "value": 0.171,
+            "unit": "m"
+          },
+          "innerDiameter": {
+            "value": 0.071,
+            "unit": "m"
+          },
+          "fluidDensity": {
+            "value": 1200,
+            "unit": "kg/m3"
+          },
+          "axialLoad": {
+            "value": 980000,
+            "unit": "N"
+          },
+          "tensionLimit": {
+            "value": 3000000,
+            "unit": "N"
+          },
+          "operatingTorque": {
+            "value": 45000,
+            "unit": "N*m"
+          }
+        },
+        {
+          "id": "api7g-mwd-lwd-01",
+          "tubularId": "mwd-lwd-01",
+          "name": "MWD / LWD",
+          "length": {
+            "value": 30,
+            "unit": "m"
+          },
+          "outerDiameter": {
+            "value": 0.171,
+            "unit": "m"
+          },
+          "innerDiameter": {
+            "value": 0.057,
+            "unit": "m"
+          },
+          "fluidDensity": {
+            "value": 1200,
+            "unit": "kg/m3"
+          },
+          "axialLoad": {
+            "value": 1000000,
+            "unit": "N"
+          },
+          "tensionLimit": {
+            "value": 2200000,
+            "unit": "N"
+          },
+          "operatingTorque": {
+            "value": 35000,
+            "unit": "N*m"
+          }
+        },
+        {
+          "id": "api7g-motor-rss-01",
+          "tubularId": "motor-rss-01",
+          "name": "Motor / RSS",
+          "length": {
+            "value": 20,
+            "unit": "m"
+          },
+          "outerDiameter": {
+            "value": 0.171,
+            "unit": "m"
+          },
+          "innerDiameter": {
+            "value": 0.057,
+            "unit": "m"
+          },
+          "fluidDensity": {
+            "value": 1200,
+            "unit": "kg/m3"
+          },
+          "axialLoad": {
+            "value": 1020000,
+            "unit": "N"
+          },
+          "tensionLimit": {
+            "value": 2200000,
+            "unit": "N"
+          },
+          "operatingTorque": {
+            "value": 35000,
+            "unit": "N*m"
+          }
+        },
+        {
+          "id": "api7g-bit-sub-01",
+          "tubularId": "bit-sub-01",
+          "name": "Bit / Sub",
+          "length": {
+            "value": 10,
+            "unit": "m"
+          },
+          "outerDiameter": {
+            "value": 0.171,
+            "unit": "m"
+          },
+          "innerDiameter": {
+            "value": 0.051,
+            "unit": "m"
+          },
+          "fluidDensity": {
+            "value": 1200,
+            "unit": "kg/m3"
+          },
+          "axialLoad": {
+            "value": 1050000,
+            "unit": "N"
+          },
+          "tensionLimit": {
+            "value": 1600000,
+            "unit": "N"
+          },
+          "operatingTorque": {
+            "value": 30000,
+            "unit": "N*m"
+          }
+        }
+      ],
+      "controls": {
+        "surfaceTorque": {
+          "value": 26000,
+          "unit": "N*m"
+        },
+        "hookload": {
+          "value": 1050000,
+          "unit": "N"
+        },
+        "designUtilisationLimit": {
+          "value": 0.9,
+          "unit": "1"
+        }
+      }
+    },
+    "bha": {
+      "calculationState": "notCalculated",
+      "method": "WellForge workbook formula model",
+      "results": [],
+      "componentIds": [
+        "bha-bit",
+        "bha-near-bit-stabilizer",
+        "bha-motor-rss",
+        "bha-mwd-lwd",
+        "bha-drill-collar",
+        "bha-hwdp-transition"
+      ],
+      "rotarySpeed": {
+        "value": 120,
+        "unit": "rpm"
+      },
+      "flowRate": {
+        "value": 0.044,
+        "unit": "m3/s"
+      },
+      "youngModulus": {
+        "value": 206842718795.04,
+        "unit": "Pa"
+      },
+      "materialDensity": {
+        "value": 7850,
+        "unit": "kg/m3"
+      },
+      "lowWob": {
+        "value": 80000,
+        "unit": "N"
+      },
+      "operatingCases": [
+        {
+          "id": "bha-low-wob",
+          "wob": {
+            "value": 80000,
+            "unit": "N"
+          }
+        },
+        {
+          "id": "bha-primary-wob",
+          "wob": {
+            "value": 120000,
+            "unit": "N"
+          }
+        }
+      ]
+    },
+    "directional": {
+      "calculationState": "notCalculated",
+      "method": "WellForge workbook formula model",
+      "results": [],
+      "inputs": {
+        "planLengthUnit": "ft",
+        "planAngleUnit": "deg",
+        "surveyLengthUnit": "ft",
+        "surveyAngleUnit": "deg",
+        "motorYield": {
+          "value": 8,
+          "unit": "deg/100ft"
+        },
+        "rotaryBuildTendency": {
+          "value": 0.3,
+          "unit": "deg/100ft"
+        },
+        "slideCalibrationWindow": {
+          "value": 3,
+          "unit": "1"
+        }
+      },
+      "trajectoryInputIds": {
+        "plan": [
+          "plan-000",
+          "plan-001",
+          "plan-002",
+          "plan-003",
+          "plan-004",
+          "plan-005",
+          "plan-006",
+          "plan-007",
+          "plan-008",
+          "plan-009",
+          "plan-010",
+          "plan-011",
+          "plan-012",
+          "plan-013",
+          "plan-014",
+          "plan-015",
+          "plan-016",
+          "plan-017",
+          "plan-018",
+          "plan-019",
+          "plan-020",
+          "plan-021",
+          "plan-022",
+          "plan-023",
+          "plan-024",
+          "plan-025",
+          "plan-026",
+          "plan-027",
+          "plan-028",
+          "plan-029",
+          "plan-030",
+          "plan-031",
+          "plan-032",
+          "plan-033",
+          "plan-034",
+          "plan-035",
+          "plan-036",
+          "plan-037",
+          "plan-038",
+          "plan-039",
+          "plan-040",
+          "plan-041",
+          "plan-042",
+          "plan-043",
+          "plan-044",
+          "plan-045",
+          "plan-046",
+          "plan-047",
+          "plan-048",
+          "plan-049",
+          "plan-050",
+          "plan-051",
+          "plan-052",
+          "plan-053",
+          "plan-054",
+          "plan-055",
+          "plan-056",
+          "plan-057",
+          "plan-058",
+          "plan-059"
+        ],
+        "survey": [
+          "survey-000",
+          "survey-001",
+          "survey-002",
+          "survey-003",
+          "survey-004",
+          "survey-005",
+          "survey-006",
+          "survey-007",
+          "survey-008",
+          "survey-009",
+          "survey-010",
+          "survey-011",
+          "survey-012",
+          "survey-013",
+          "survey-014",
+          "survey-015",
+          "survey-016",
+          "survey-017",
+          "survey-018",
+          "survey-019",
+          "survey-020",
+          "survey-021",
+          "survey-022",
+          "survey-023",
+          "survey-024",
+          "survey-025",
+          "survey-026",
+          "survey-027",
+          "survey-028",
+          "survey-029",
+          "survey-030",
+          "survey-031",
+          "survey-032",
+          "survey-033",
+          "survey-034",
+          "survey-035",
+          "survey-036",
+          "survey-037",
+          "survey-038",
+          "survey-039",
+          "survey-040",
+          "survey-041",
+          "survey-042",
+          "survey-043",
+          "survey-044",
+          "survey-045",
+          "survey-046",
+          "survey-047",
+          "survey-048",
+          "survey-049",
+          "survey-050",
+          "survey-051",
+          "survey-052",
+          "survey-053",
+          "survey-054",
+          "survey-055",
+          "survey-056",
+          "survey-057",
+          "survey-058",
+          "survey-059"
+        ],
+        "targets": [
+          "T1 - Landing / Heel Target",
+          "T2 - Mid-Lateral Turn Target",
+          "T3 - Planned TD Target"
+        ],
+        "slideIntervals": [
+          "slide-01",
+          "slide-02",
+          "slide-03",
+          "slide-04",
+          "slide-05",
+          "slide-06"
+        ],
+        "formationTops": [
+          "formation-niobrara-a",
+          "formation-niobrara-b",
+          "formation-niobrara-c",
+          "formation-codell-landing-zone"
+        ]
+      }
+    },
+    "hydraulics": {
+      "calculationState": "notCalculated",
+      "method": "WellForge workbook formula model",
+      "results": [],
+      "fluidId": "fluid-01",
+      "flowRate": {
+        "value": 0.044,
+        "unit": "m3/s"
+      },
+      "surfacePressureLimit": {
+        "value": 35000000,
+        "unit": "Pa"
+      },
+      "pumpId": "pump-01",
+      "nozzleIds": [
+        "nozzle-008",
+        "nozzle-009",
+        "nozzle-010",
+        "nozzle-011",
+        "nozzle-012"
+      ],
+      "pumpEfficiency": {
+        "value": 0.92,
+        "unit": "1"
+      },
+      "fluidDensity": {
+        "value": 1200,
+        "unit": "kg/m3"
+      },
+      "apparentViscosity": {
+        "value": 0.035,
+        "unit": "Pa*s"
+      },
+      "nozzleCount": {
+        "value": 3,
+        "unit": "1"
+      },
+      "baseNozzleDiameter": {
+        "value": 0.01,
+        "unit": "m"
+      },
+      "nozzleDischargeCoefficient": {
+        "value": 0.95,
+        "unit": "1"
+      },
+      "flowPath": [
+        {
+          "id": "flow-standpipe",
+          "name": "Standpipe",
+          "length": {
+            "value": 35,
+            "unit": "m"
+          },
+          "flowId": {
+            "value": 0.102,
+            "unit": "m"
+          },
+          "hydraulicDiameter": {
+            "value": 0.102,
+            "unit": "m"
+          },
+          "flowType": "Pipe"
+        },
+        {
+          "id": "flow-rotary-hose",
+          "name": "Rotary hose",
+          "length": {
+            "value": 18,
+            "unit": "m"
+          },
+          "flowId": {
+            "value": 0.076,
+            "unit": "m"
+          },
+          "hydraulicDiameter": {
+            "value": 0.076,
+            "unit": "m"
+          },
+          "flowType": "Pipe"
+        },
+        {
+          "id": "flow-top-drive",
+          "name": "Top drive / swivel",
+          "length": {
+            "value": 8,
+            "unit": "m"
+          },
+          "flowId": {
+            "value": 0.076,
+            "unit": "m"
+          },
+          "hydraulicDiameter": {
+            "value": 0.076,
+            "unit": "m"
+          },
+          "flowType": "Pipe"
+        },
+        {
+          "id": "flow-drill-pipe",
+          "name": "Drill pipe",
+          "length": {
+            "value": 2100,
+            "unit": "m"
+          },
+          "flowId": {
+            "value": 0.1086,
+            "unit": "m"
+          },
+          "hydraulicDiameter": {
+            "value": 0.1086,
+            "unit": "m"
+          },
+          "flowType": "Pipe"
+        },
+        {
+          "id": "flow-hwdp",
+          "name": "HWDP",
+          "length": {
+            "value": 300,
+            "unit": "m"
+          },
+          "flowId": {
+            "value": 0.076,
+            "unit": "m"
+          },
+          "hydraulicDiameter": {
+            "value": 0.076,
+            "unit": "m"
+          },
+          "flowType": "Pipe"
+        },
+        {
+          "id": "flow-drill-collar",
+          "name": "Drill collar",
+          "length": {
+            "value": 210,
+            "unit": "m"
+          },
+          "flowId": {
+            "value": 0.071,
+            "unit": "m"
+          },
+          "hydraulicDiameter": {
+            "value": 0.071,
+            "unit": "m"
+          },
+          "flowType": "Pipe"
+        },
+        {
+          "id": "flow-motor-mwd",
+          "name": "Motor / MWD",
+          "length": {
+            "value": 50,
+            "unit": "m"
+          },
+          "flowId": {
+            "value": 0.057,
+            "unit": "m"
+          },
+          "hydraulicDiameter": {
+            "value": 0.057,
+            "unit": "m"
+          },
+          "flowType": "Pipe"
+        },
+        {
+          "id": "flow-open-hole-annulus",
+          "name": "Open-hole annulus",
+          "length": {
+            "value": 2660,
+            "unit": "m"
+          },
+          "flowId": {
+            "value": 0.171,
+            "unit": "m"
+          },
+          "hydraulicDiameter": {
+            "value": 0.044,
+            "unit": "m"
+          },
+          "flowType": "Annulus"
+        }
+      ]
+    },
+    "torqueDrag": {
+      "calculationState": "notCalculated",
+      "method": "WellForge workbook formula model",
+      "results": [],
+      "inputs": {
+        "fluidId": "fluid-01",
+        "surveyIds": [
+          "survey-000",
+          "survey-001",
+          "survey-002",
+          "survey-003",
+          "survey-004",
+          "survey-005",
+          "survey-006",
+          "survey-007",
+          "survey-008",
+          "survey-009",
+          "survey-010",
+          "survey-011",
+          "survey-012",
+          "survey-013",
+          "survey-014",
+          "survey-015",
+          "survey-016",
+          "survey-017",
+          "survey-018",
+          "survey-019",
+          "survey-020",
+          "survey-021",
+          "survey-022",
+          "survey-023",
+          "survey-024",
+          "survey-025",
+          "survey-026",
+          "survey-027",
+          "survey-028",
+          "survey-029",
+          "survey-030",
+          "survey-031",
+          "survey-032",
+          "survey-033",
+          "survey-034",
+          "survey-035",
+          "survey-036",
+          "survey-037",
+          "survey-038",
+          "survey-039",
+          "survey-040",
+          "survey-041",
+          "survey-042",
+          "survey-043",
+          "survey-044",
+          "survey-045",
+          "survey-046",
+          "survey-047",
+          "survey-048",
+          "survey-049",
+          "survey-050",
+          "survey-051",
+          "survey-052",
+          "survey-053",
+          "survey-054",
+          "survey-055",
+          "survey-056",
+          "survey-057",
+          "survey-058",
+          "survey-059"
+        ],
+        "holeSectionIds": [
+          "hole-01"
+        ],
+        "tubularIds": [
+          "dp-01",
+          "hwdp-01",
+          "dc-01",
+          "mwd-lwd-01",
+          "motor-rss-01",
+          "bit-sub-01"
+        ],
+        "materialDensity": {
+          "value": 7850,
+          "unit": "kg/m3"
+        },
+        "youngModulus": {
+          "value": 206842718795.04,
+          "unit": "Pa"
+        },
+        "wob": {
+          "value": 120000,
+          "unit": "N"
+        },
+        "surfaceTorque": {
+          "value": 26000,
+          "unit": "N*m"
+        },
+        "frictionFactor": {
+          "value": 0.24,
+          "unit": "1"
+        },
+        "fluidDensity": {
+          "value": 1200,
+          "unit": "kg/m3"
+        },
+        "outerDiameter": {
+          "value": 0.127,
+          "unit": "m"
+        },
+        "innerDiameter": {
+          "value": 0.1086,
+          "unit": "m"
+        }
+      }
+    }
+  },
+  "provenance": {
+    "notes": [
+      "Deterministic mock exchange payload derived from the WellForge shared mock case.",
+      "Analysis results are intentionally absent until workbook formulas are evaluated."
+    ],
+    "sources": [
+      "src/shared_mock_case.mjs",
+      "src/directional_reference_data.mjs"
+    ]
+  },
+  "warnings": [
+    "Formula-derived analysis results are not calculated in this fixture."
+  ]
+}
