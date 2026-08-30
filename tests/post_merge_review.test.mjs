@@ -93,15 +93,19 @@ test('Linux CI pins toolchains and enforces source, Rust, and dependency-policy 
 });
 
 test('release CI uses only publicly provisioned Node dependencies', async () => {
-  const [workflow, packageManifest] = await Promise.all([
+  const [workflow, packageManifest, packageLock] = await Promise.all([
     read('.github/workflows/source-verification.yml'),
     read('package.json'),
+    read('package-lock.json'),
   ]);
   assert.match(workflow, /npm ci/);
   assert.match(workflow, /verify-node\.mjs --release/);
   assert.doesNotMatch(packageManifest, /@oai\/artifact-tool/);
   const packageJson = JSON.parse(packageManifest);
   assert.equal(packageJson.dependencies.jszip, '3.10.1');
+  const lockJson = JSON.parse(packageLock);
+  assert.equal(lockJson.packages['node_modules/jszip'].version, '3.10.1');
+  assert.doesNotMatch(packageLock, /codex-primary-runtime/);
 });
 
 test('Windows release workflow targets a qualified Excel runner and always retains evidence', async () => {
