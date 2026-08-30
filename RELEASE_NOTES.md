@@ -1,5 +1,14 @@
 # WellForge Rust/VBA Engineering Workbook Suite — 2026-08-29 v7
 
+## Full release hardening — 2026-08-30
+
+- Added a deterministic repository verifier that hash-checks and materializes all five immutable source workbooks before running each Node test file in an isolated, timeout-bounded process, followed by VBA structural lint.
+- Added a reproducible public-dependency release gate (`npm ci && npm run verify:release`) and pinned Linux CI for Node 24, Rust 1.98.0, rustfmt, warnings-denied Clippy, locked all-feature workspace tests, and cargo-deny 0.20.2.
+- Split the private authoring-tool workbook contract from the public unit-contract surface so a fresh checkout no longer requires the internal `@oai/artifact-tool` package to execute the release gate.
+- Added a manually dispatched Windows release workflow for a qualified desktop-Excel runner. It always retains JSON evidence, JSONL logs, executable hashes, and the five generated `.xlsm` files.
+- The complete local authoring gate passed all 163 declared Node tests and deterministic structural lint for nine VBA modules. A clean public-dependency release run also passed.
+- Rust compilation/policy CI and native Windows executable/hash, VBA compilation, Excel/COM, unit-switching, chart-refresh/rendering, rollback-runtime, and package-acceptance evidence remain platform gates; release readiness is not claimed until those workflows pass.
+
 ## Rust Trajectory Release 1 — source complete; Windows/Excel acceptance pending
 
 - Added a pure Rust trajectory analysis lane for minimum-curvature plan/survey construction, exact partial-course interpolation, plan-versus-survey residuals, target envelopes, slide response, formation evaluation and optional tendency projection.

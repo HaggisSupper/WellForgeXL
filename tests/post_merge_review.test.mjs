@@ -68,3 +68,67 @@ test('refresh companion describes value-only VBA and Rust calculation authority 
   assert.doesNotMatch(source, /engineering results[^\n]*remain Excel formulas/i);
   assert.match(source, /VBA\/Rust calculation authority/i);
 });
+
+test('source verifier materializes immutable workbooks before running consumers', async () => {
+  const source = await read('tools/verify-node.mjs');
+  assert.match(source, /source-workbooks\.sha256/);
+  assert.match(source, /createHash\(['"]sha256['"]\)/);
+  assert.match(source, /gunzipSync/);
+  assert.match(source, /materializeSourceWorkbooks[\s\S]*runNodeTests/);
+});
+
+test('source verifier runs the complete Node suite and VBA lint with bounded child processes', async () => {
+  const source = await read('tools/verify-node.mjs');
+  assert.match(source, /--test/);
+  assert.match(source, /--test-concurrency=1/);
+  assert.match(source, /for \(const testFile of tests\)/);
+  assert.match(source, /tests\/.*\.test\.mjs/);
+  assert.match(source, /path\.join\(['"]tools['"],\s*['"]lint_vba\.mjs['"]\)/);
+  assert.match(source, /timeout:/);
+  assert.match(source, /process\.exitCode\s*=\s*1/);
+});
+
+test('Linux CI pins toolchains and enforces source, Rust, and dependency-policy gates', async () => {
+  const workflow = await read('.github/workflows/source-verification.yml');
+  assert.match(workflow, /permissions:\s*\n\s*contents:\s*read/);
+  assert.match(workflow, /node-version:\s*['"]24['"]/);
+  assert.match(workflow, /toolchain:\s*1\.98\.0/);
+  assert.match(workflow, /cargo fmt --all -- --check/);
+  assert.match(workflow, /cargo clippy --workspace --all-targets --all-features --locked -- -D warnings/);
+  assert.match(workflow, /cargo test --workspace --all-features --locked/);
+  assert.match(workflow, /cargo-deny[^\n]*0\.20\.2/);
+  assert.match(workflow, /cargo deny check licenses bans sources/);
+});
+
+test('release CI uses only publicly provisioned Node dependencies', async () => {
+  const [workflow, packageManifest] = await Promise.all([
+    read('.github/workflows/source-verification.yml'),
+    read('package.json'),
+  ]);
+  assert.match(workflow, /npm ci/);
+  assert.match(workflow, /verify-node\.mjs --release/);
+  assert.doesNotMatch(packageManifest, /@oai\/artifact-tool/);
+  const packageJson = JSON.parse(packageManifest);
+  assert.equal(packageJson.dependencies.jszip, '3.10.1');
+});
+
+test('Windows release workflow targets a qualified Excel runner and always retains evidence', async () => {
+  const workflow = await read('.github/workflows/windows-release-verification.yml');
+  assert.match(workflow, /workflow_dispatch/);
+  assert.match(workflow, /runs-on:\s*\[self-hosted,\s*Windows,\s*wellforgexl-excel\]/);
+  assert.match(workflow, /timeout-minutes:/);
+  assert.match(workflow, /Build-WellForgeVbaSuite\.ps1/);
+  assert.match(workflow, /Write-WellForgeReleaseEvidence\.ps1/);
+  assert.match(workflow, /if:\s*always\(\)/);
+  assert.match(workflow, /actions\/upload-artifact@v4/);
+});
+
+test('Windows evidence writer records every native release surface without claiming success from missing files', async () => {
+  const source = await read('tools/Write-WellForgeReleaseEvidence.ps1');
+  for (const field of ['rust_toolchain', 'bha_executable', 'trajectory_executable', 'workbooks', 'logs', 'overall_status']) {
+    assert.match(source, new RegExp(field));
+  }
+  assert.match(source, /Get-FileHash[\s\S]*SHA256/);
+  assert.match(source, /Test-Path/);
+  assert.match(source, /ConvertTo-Json/);
+});

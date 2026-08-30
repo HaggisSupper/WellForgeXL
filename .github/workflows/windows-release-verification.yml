@@ -1,0 +1,32 @@
+name: Windows Excel release verification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-excel:
+    runs-on: [self-hosted, Windows, wellforgexl-excel]
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build native engines and macro-enabled workbook suite
+        shell: powershell
+        run: ./tools/Build-WellForgeVbaSuite.ps1 -NoPause
+      - name: Write release evidence
+        if: always()
+        shell: powershell
+        run: ./tools/Write-WellForgeReleaseEvidence.ps1
+      - name: Retain workbooks, executables, hashes, logs, and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wellforgexl-windows-release-${{ github.sha }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            outputs/vba-engine/**
+            outputs/release-evidence.json
+            logs/*.jsonl

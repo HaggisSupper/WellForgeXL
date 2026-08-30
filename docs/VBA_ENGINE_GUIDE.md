@@ -62,6 +62,8 @@ The bounded directional table rows are fixed identity slots backed by UUIDs on h
 
 Linux source tests verify the adapter, workbook model and release-script wiring. They do not claim acceptance of a native Windows executable, Excel/COM automation, compiled VBA, macro execution, rendering or final workbook packages; those remain Windows release gates.
 
+The manual `Windows Excel release verification` workflow targets only a self-hosted runner carrying the labels `Windows` and `wellforgexl-excel`. That runner must have desktop Excel, trusted VBA project access, and Rust 1.98.0 available. The workflow always uploads JSONL logs and `outputs/release-evidence.json`; missing executables, hash mismatches, missing workbooks, or missing logs produce `overall_status: failed` rather than an inferred pass.
+
 ## Scope
 
 These workbooks remain transparent engineering planning and screening tools. Rust BHA Release 1 is a linear beam/static/modal model and explicitly rejects rigid or modal-flexible representations; contact force, nonlinear DAT calibration and six-degree rigid-body dynamics are future validation-gated releases. The trajectory result does not include ISCWSA covariance, anti-collision/separation-factor analysis or pipe-fatigue calculation. Execution technology does not remove the need for authoritative provenance, approved input data, method validation and qualified engineering review.
