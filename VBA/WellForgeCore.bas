@@ -141,7 +141,7 @@ Public Sub WellForge_ResetOutputs()
     If answer = vbYes Then WellForge_CalculateAll
 End Sub
 
-Public Sub WF_HandleSheetChange(ByVal SheetName As String, ByVal ChangedCells As Long)
+Public Sub WF_HandleSheetChange(ByVal SheetName As String, ByVal ChangedCells As Double)
     If WF_Busy Then Exit Sub
     If ChangedCells > 1000 Then Exit Sub
     Select Case SheetName

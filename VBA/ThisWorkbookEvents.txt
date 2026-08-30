@@ -6,7 +6,6 @@ End Sub
 
 Private Sub Workbook_SheetChange(ByVal Sh As Object, ByVal Target As Range)
     On Error GoTo SafeExit
-    WF_HandleSheetChange CStr(Sh.Name), CLng(Target.CountLarge)
+    WF_HandleSheetChange CStr(Sh.Name), CDbl(Target.CountLarge)
 SafeExit:
 End Sub
-

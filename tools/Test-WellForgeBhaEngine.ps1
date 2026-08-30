@@ -7,11 +7,18 @@ param(
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 if ([string]::IsNullOrWhiteSpace($EnginePath)) { $EnginePath = Join-Path $repositoryRoot 'outputs\vba-engine\wellforge-bha.exe' }
+$hashManifest = $EnginePath + '.sha256'
 $requestPath = Join-Path $repositoryRoot 'engine\fixtures\requests\release-one-minimal.json'
 $resultPath = Join-Path $env:TEMP ('wellforge-bha-release-test-{0}.json' -f [guid]::NewGuid().ToString('N'))
 $succeeded = $false
 try {
-    if (-not (Test-Path -LiteralPath $EnginePath -PathType Leaf)) { throw "Engine not found: $EnginePath" }
+    foreach ($required in @($EnginePath, $hashManifest, $requestPath)) {
+        if (-not (Test-Path -LiteralPath $required -PathType Leaf)) { throw "Required file was not found: $required" }
+    }
+    $expectedHash = ([System.IO.File]::ReadAllText($hashManifest)).Trim().ToLowerInvariant()
+    if ($expectedHash -notmatch '^[0-9a-f]{64}$') { throw 'BHA executable hash manifest is invalid.' }
+    $actualHash = (Get-FileHash -LiteralPath $EnginePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($actualHash -ne $expectedHash) { throw 'BHA executable hash mismatch.' }
     $requestHash = (& $EnginePath validate --input $requestPath).Trim()
     if ($LASTEXITCODE -ne 0 -or $requestHash.Length -ne 64) { throw 'Request validation/hash test failed.' }
     & $EnginePath run --input $requestPath --output $resultPath

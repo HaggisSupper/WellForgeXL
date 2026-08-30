@@ -21,6 +21,7 @@ interface ExchangeScriptResult { success: boolean; action: ExchangeAction; diagn
 interface UnitDefinition { dimension: string; dimensions?: string[]; multiplier: number; offset: number; }
 interface PendingWrite { range: ExcelScript.Range; value: string | number | boolean; destination: string; state?: StateRow; }
 interface TransactionEntry { range: ExcelScript.Range; values: ExcelScript.RangeValue[][]; }
+interface WorksheetRowIndex { idRange: ExcelScript.Range; rowById: { [id: string]: number }; blankRows: number[]; }
 
 const SCHEMA_VERSION = "1.0.0";
 const MAP_HEADERS = ["JSON Pointer", "Direction", "Sheet", "Address", "Shape", "Value column", "Stable ID column", "Row capacity", "Unit source", "Dimension", "Data type", "Required", "Writable"];
@@ -134,6 +135,7 @@ function validateMappings(workbook: ExcelScript.Workbook, mappings: MappingRow[]
 
 function buildImportWrites(workbook: ExcelScript.Workbook, mappings: MappingRow[], payload: JsonObject, diagnostics: Diagnostic[]): PendingWrite[] {
   const pending: PendingWrite[] = [];
+  const tableRows: { [key: string]: WorksheetRowIndex } = {};
   const importedAt = new Date().toISOString();
   for (const mapping of mappings) {
     if (!mapping.writable || (mapping.direction !== "Input" && mapping.direction !== "Both")) continue;
@@ -150,12 +152,21 @@ function buildImportWrites(workbook: ExcelScript.Workbook, mappings: MappingRow[
     if (!Array.isArray(records)) { if (mapping.required) diagnostics.push({ severity: "error", message: "Required stable-ID table is missing.", pointer: mapping.pointer }); continue; }
     const ids = stableIds(records, mapping.pointer, diagnostics);
     const range = workbook.getWorksheet(mapping.sheet).getRange(mapping.address);
-    const rowById = worksheetRowsById(workbook, mapping, diagnostics);
+    const tableKey = `${mapping.sheet}!${stableIdRangeAddress(mapping)}`;
+    if (tableRows[tableKey] === undefined) tableRows[tableKey] = worksheetRowIndex(workbook, mapping, diagnostics);
+    const { idRange, rowById, blankRows } = tableRows[tableKey];
     for (const record of records) {
       if (!isObject(record)) continue;
       const id = String(record.id ?? "");
-      const row = rowById[id];
-      if (row === undefined) { diagnostics.push({ severity: "error", message: `No worksheet row exists for stable identifier ${id}.`, pointer: mapping.pointer }); continue; }
+      let row = rowById[id];
+      if (row === undefined) {
+        const allocatedRow = blankRows.shift();
+        if (allocatedRow === undefined) { diagnostics.push({ severity: "error", message: `No blank worksheet row is available for stable identifier ${id}.`, pointer: mapping.pointer }); continue; }
+        row = allocatedRow;
+        rowById[id] = row;
+        const idCell = idRange.getCell(row, 0);
+        pending.push({ range: idCell, value: literalText(id), destination: `${mapping.sheet}!${stableIdRangeAddress(mapping)}:${id}` });
+      }
       const field = parts[1]; const value = record[field];
       if (value === undefined) { if (mapping.required) diagnostics.push({ severity: "error", message: `Required value is missing for stable identifier ${id}.`, pointer: mapping.pointer }); continue; }
       const cell = range.getCell(row, 0);
@@ -227,10 +238,24 @@ function stableIds(records: JsonValue[], pointer: string, diagnostics: Diagnosti
 }
 
 function worksheetRowsById(workbook: ExcelScript.Workbook, mapping: MappingRow, diagnostics: Diagnostic[]): { [id: string]: number } {
-  const idRange = workbook.getWorksheet(mapping.sheet).getRange(mapping.address.replace(/^[A-Z]+/, mapping.idColumn).replace(/:[A-Z]+/, ":" + mapping.idColumn));
-  const result: { [id: string]: number } = {};
-  idRange.getValues().forEach((row, index) => { const id = String(row[0] ?? ""); if (id !== "") { if (result[id] !== undefined) diagnostics.push({ severity: "error", message: "Worksheet table contains duplicate stable identifier.", pointer: mapping.pointer }); result[id] = index; } });
-  return result;
+  return worksheetRowIndex(workbook, mapping, diagnostics).rowById;
+}
+
+function stableIdRangeAddress(mapping: MappingRow): string { return mapping.address.replace(/^[A-Z]+/, mapping.idColumn).replace(/:[A-Z]+/, ":" + mapping.idColumn); }
+
+function worksheetRowIndex(workbook: ExcelScript.Workbook, mapping: MappingRow, diagnostics: Diagnostic[]): WorksheetRowIndex {
+  const idRange = workbook.getWorksheet(mapping.sheet).getRange(stableIdRangeAddress(mapping));
+  const rowById: { [id: string]: number } = {};
+  const blankRows: number[] = [];
+  idRange.getValues().forEach((row, index) => {
+    const id = String(row[0] ?? "");
+    if (id === "") blankRows.push(index);
+    else {
+      if (rowById[id] !== undefined) diagnostics.push({ severity: "error", message: "Worksheet table contains duplicate stable identifier.", pointer: mapping.pointer });
+      rowById[id] = index;
+    }
+  });
+  return { idRange, rowById, blankRows };
 }
 
 function readState(workbook: ExcelScript.Workbook): { [pointer: string]: StateRow } {

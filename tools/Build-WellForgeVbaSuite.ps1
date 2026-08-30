@@ -13,7 +13,8 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $xlOpenXMLWorkbookMacroEnabled = 52
 $xlCellTypeFormulas = -4123
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-if ([string]::IsNullOrWhiteSpace($SourceDirectory)) { $SourceDirectory = Join-Path $repositoryRoot 'outputs' }
+$usingVersionedSourceDirectory = [string]::IsNullOrWhiteSpace($SourceDirectory)
+if ($usingVersionedSourceDirectory) { $SourceDirectory = Join-Path $repositoryRoot 'workbooks\source' }
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot 'outputs\vba-engine' }
 $logDirectory = Join-Path $repositoryRoot 'logs'
 New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
@@ -131,6 +132,22 @@ function Assert-XlsxPackageIntegrity {
     }
 }
 
+function Expand-GzipFile {
+    param([Parameter(Mandatory = $true)][string]$Source, [Parameter(Mandatory = $true)][string]$Destination)
+    $inputStream = [System.IO.File]::OpenRead($Source)
+    $outputStream = $null
+    $gzipStream = $null
+    try {
+        $outputStream = [System.IO.File]::Create($Destination)
+        $gzipStream = [System.IO.Compression.GZipStream]::new($inputStream, [System.IO.Compression.CompressionMode]::Decompress)
+        $gzipStream.CopyTo($outputStream)
+    }
+    finally {
+        if ($null -ne $gzipStream) { $gzipStream.Dispose() } else { $inputStream.Dispose() }
+        if ($null -ne $outputStream) { $outputStream.Dispose() }
+    }
+}
+
 try {
     Write-BuildEvent INFO 'Starting WellForge VBA workbook build.' @{ source = $SourceDirectory; output = $OutputDirectory; log = $logPath }
     foreach ($moduleFile in $moduleFiles) {
@@ -138,9 +155,32 @@ try {
         if (-not (Test-Path -LiteralPath $modulePath -PathType Leaf)) { throw "Required VBA module was not found: $modulePath" }
     }
     if (-not (Test-Path -LiteralPath $eventCodePath -PathType Leaf)) { throw "ThisWorkbook event source was not found: $eventCodePath" }
+    $sourceHashes = @{}
+    if ($usingVersionedSourceDirectory) {
+        $sourceHashManifest = Join-Path $SourceDirectory 'source-workbooks.sha256'
+        if (-not (Test-Path -LiteralPath $sourceHashManifest -PathType Leaf)) { throw "Source workbook hash manifest was not found: $sourceHashManifest" }
+        foreach ($manifestLine in Get-Content -LiteralPath $sourceHashManifest) {
+            if ($manifestLine -notmatch '^([0-9a-fA-F]{64})\s+\*?(.+)$') { throw "Invalid source workbook hash manifest line: $manifestLine" }
+            $sourceHashes[$Matches[2]] = $Matches[1].ToLowerInvariant()
+        }
+    }
     foreach ($name in $workbookNames) {
         $sourcePath = Join-Path $SourceDirectory $name
+        if ($usingVersionedSourceDirectory -and -not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
+            $compressedSourcePath = $sourcePath + '.gz'
+            if (Test-Path -LiteralPath $compressedSourcePath -PathType Leaf) {
+                $materializedSourceDirectory = Join-Path $OutputDirectory '.source-workbooks'
+                New-Item -ItemType Directory -Path $materializedSourceDirectory -Force | Out-Null
+                $sourcePath = Join-Path $materializedSourceDirectory $name
+                Expand-GzipFile -Source $compressedSourcePath -Destination $sourcePath
+            }
+        }
         if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) { throw "Source workbook was not found: $sourcePath" }
+        if ($usingVersionedSourceDirectory) {
+            if (-not $sourceHashes.ContainsKey($name)) { throw "Source workbook hash is not registered: $name" }
+            $actualSourceHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $sourcePath).Hash.ToLowerInvariant()
+            if ($actualSourceHash -ne $sourceHashes[$name]) { throw "Source workbook hash mismatch: $name" }
+        }
         Assert-XlsxPackageIntegrity -Path $sourcePath
     }
 

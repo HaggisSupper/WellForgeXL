@@ -114,3 +114,18 @@ fn request_rejects_unknown_json_fields() {
         .insert("mystery".to_owned(), serde_json::json!(1));
     assert!(serde_json::from_value::<BhaAnalysisRequest>(value).is_err());
 }
+
+#[test]
+fn request_rejects_noncanonical_trajectory_inclinations() {
+    for inclination_rad in [-0.1, std::f64::consts::PI + 0.1, f64::NAN] {
+        let mut request = valid_request();
+        request.trajectory[1].inclination_rad = inclination_rad;
+        let errors = validate_request(&request).unwrap_err();
+        assert!(
+            errors
+                .iter()
+                .any(|error| error.code == "WF-BHA-CONTRACT-022"),
+            "inclination {inclination_rad:?} was not rejected"
+        );
+    }
+}
