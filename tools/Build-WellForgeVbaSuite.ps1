@@ -273,6 +273,7 @@ try {
             $sourceHashes[$Matches[2]] = $Matches[1].ToLowerInvariant()
         }
     }
+    $sourcePaths = @{}
     foreach ($name in $WorkbookNames) {
         $sourcePath = Join-Path $SourceDirectory $name
         if ($usingVersionedSourceDirectory -and -not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
@@ -291,6 +292,7 @@ try {
             if ($actualSourceHash -ne $sourceHashes[$name]) { throw "Source workbook hash mismatch: $name" }
         }
         Assert-XlsxPackageIntegrity -Path $sourcePath
+        $sourcePaths[$name] = $sourcePath
     }
 
     New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
@@ -329,16 +331,7 @@ try {
 
     $eventCode = Get-Content -LiteralPath $eventCodePath -Raw
     foreach ($name in $WorkbookNames) {
-        $sourcePath = Join-Path $SourceDirectory $name
-        if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
-            $compressedSourcePath = $sourcePath + '.gz'
-            if (Test-Path -LiteralPath $compressedSourcePath -PathType Leaf) {
-                $materializedSourceDirectory = Join-Path $OutputDirectory '.source-workbooks'
-                New-Item -ItemType Directory -Path $materializedSourceDirectory -Force | Out-Null
-                $sourcePath = Join-Path $materializedSourceDirectory $name
-                Expand-GzipFile -Source $compressedSourcePath -Destination $sourcePath
-            }
-        }
+        $sourcePath = $sourcePaths[$name]
         $targetName = [System.IO.Path]::ChangeExtension($name, '.xlsm')
         $targetPath = Join-Path $OutputDirectory $targetName
         $stagingPath = Join-Path $OutputDirectory ('.{0}.{1}.building.xlsm' -f [System.IO.Path]::GetFileNameWithoutExtension($name), [guid]::NewGuid().ToString('N'))
