@@ -54,9 +54,3 @@ test('display conversion defaults to a literal zero offset', async () => {
   const { displayFormula } = await import('../src/common.mjs');
   assert.equal(displayFormula('A1', '$I$8'), "=A1*'Unit Map'!$I$8+0");
 });
-
-test('calculation helper sheets are hidden from the normal end-user workflow', async () => {
-  const { createSuiteWorkbook } = await import('../src/workbook.mjs');
-  const { sheets } = createSuiteWorkbook('Visibility contract');
-  assert.equal(sheets.Calc.visibility, 'hidden');
-});

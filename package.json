@@ -1,0 +1,12 @@
+{
+  "name": "wellforgexl-verification",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "verify:release": "node tools/verify-node.mjs --release"
+  },
+  "dependencies": {
+    "jszip": "3.10.1"
+  }
+}
