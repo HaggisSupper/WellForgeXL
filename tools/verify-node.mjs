@@ -23,6 +23,7 @@ const releaseTests = [
   'suite_acceptance.test.mjs',
   'trajectory_rust_engine_contract.test.mjs',
   'unit_contract.test.mjs',
+  'unit_workbook_contract.test.mjs',
   'vba_engine_contract.test.mjs',
   'vba_exchange_contract.test.mjs',
   'vba_installer_contract.test.mjs',
@@ -39,7 +40,11 @@ export function materializeSourceWorkbooks() {
     .map((line) => {
       const match = /^([0-9a-f]{64})\s+\*?(.+)$/iu.exec(line);
       if (!match) throw new Error(`Invalid source workbook manifest line: ${line}`);
-      return { expectedHash: match[1].toLowerCase(), name: match[2] };
+      const name = match[2];
+      if (path.basename(name) !== name || path.extname(name).toLowerCase() !== '.xlsx') {
+        throw new Error(`Invalid source workbook name: ${name}`);
+      }
+      return { expectedHash: match[1].toLowerCase(), name };
     });
 
   mkdirSync(outputDirectory, { recursive: true });
