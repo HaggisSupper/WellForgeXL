@@ -16,6 +16,7 @@ Public Sub WF_RunBhaRustEngine()
     Dim failureNumber As Long, failureDescription As String
     On Error GoTo Failed
 
+    WF_BHA_LAST_ROLLBACK_VERIFIED = False
     executablePath = ThisWorkbook.Path & Application.PathSeparator & "wellforge-bha.exe"
     If Len(Dir$(executablePath, vbNormal)) = 0 Then Err.Raise vbObjectError + 8700, "WF_RunBhaRustEngine", "ENGINE UNAVAILABLE: " & executablePath
     expectedEngineHash = Trim$(ReadUtf8File(executablePath & ".sha256"))
@@ -69,9 +70,11 @@ End Sub
 
 Public Sub WellForge_BhaRollbackSelfTest()
     Dim failureNumber As Long, failureDescription As String, injectedFailure As Long
+    Dim snapshots As Collection
     On Error GoTo Failed
 
     WF_RunBhaRustEngine
+    Set snapshots = WF_BhaCaptureSnapshots()
     WF_BHA_LAST_ROLLBACK_VERIFIED = False
     WF_BHA_INJECT_COMMIT_FAILURE = True
     On Error Resume Next
@@ -82,6 +85,7 @@ Public Sub WellForge_BhaRollbackSelfTest()
     WF_BHA_INJECT_COMMIT_FAILURE = False
     If injectedFailure = 0 Then Err.Raise vbObjectError + 8731, "WellForge_BhaRollbackSelfTest", "INJECTED COMMIT FAILURE DID NOT OCCUR"
     If Not WF_BHA_LAST_ROLLBACK_VERIFIED Then Err.Raise vbObjectError + 8732, "WellForge_BhaRollbackSelfTest", "ROLLBACK EQUALITY VERIFICATION FAILED"
+    If Not WF_BhaSnapshotsMatch(snapshots) Then Err.Raise vbObjectError + 8734, "WellForge_BhaRollbackSelfTest", "END-TO-END ROLLBACK EQUALITY VERIFICATION FAILED"
     WF_RunBhaRustEngine
     Exit Sub
 
@@ -157,14 +161,7 @@ Private Sub WF_WriteBhaBridge(ByVal bridgeText As String, ByVal normalizedReques
     Set wsResults = ThisWorkbook.Worksheets("Rust Engine Results")
     lines = Split(Replace$(bridgeText, vbCr, vbNullString), vbLf)
     WF_ValidateBhaBridge lines, normalizedRequestHash, resultHash, rustEngineVersion
-    Set snapshots = New Collection
-    WF_BhaSnapshot snapshots, "Rust Calc", "A6:K505"
-    WF_BhaSnapshot snapshots, "Rust Calc", "L6:O25"
-    WF_BhaSnapshot snapshots, "Rust Calc", "L251:O750"
-    WF_BhaSnapshot snapshots, "Rust Calc", "A41:C440"
-    WF_BhaSnapshot snapshots, "Rust Calc", "E41:H640"
-    WF_BhaSnapshot snapshots, "Rust Engine Results", "A13:D32"
-    WF_BhaSnapshot snapshots, "Rust Engine Results", "B6:D9"
+    Set snapshots = WF_BhaCaptureSnapshots()
     WF_BHA_LAST_ROLLBACK_VERIFIED = False
     On Error GoTo Rollback
     ws.Range("A6:K505,L6:O25,L251:O750,A41:C440,E41:H640").ClearContents
@@ -228,6 +225,20 @@ Rollback:
     End If
     Err.Raise failureNumber, "WF_WriteBhaBridge", failureDescription
 End Sub
+
+Private Function WF_BhaCaptureSnapshots() As Collection
+    Dim snapshots As Collection
+    Set snapshots = New Collection
+    WF_BhaSnapshot snapshots, "Rust Calc", "A6:K505"
+    WF_BhaSnapshot snapshots, "Rust Calc", "L6:O25"
+    WF_BhaSnapshot snapshots, "Rust Calc", "L251:O750"
+    WF_BhaSnapshot snapshots, "Rust Calc", "A41:C440"
+    WF_BhaSnapshot snapshots, "Rust Calc", "E41:H640"
+    WF_BhaSnapshot snapshots, "Rust Engine Results", "A13:D32"
+    WF_BhaSnapshot snapshots, "Rust Engine Results", "B6:D9"
+    WF_BhaSnapshot snapshots, "Rust Engine", "B8:B12"
+    Set WF_BhaCaptureSnapshots = snapshots
+End Function
 
 Private Sub WF_BhaSnapshot(ByVal snapshots As Collection, ByVal sheetName As String, ByVal address As String)
     Dim snapshot As Object

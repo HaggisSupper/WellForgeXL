@@ -36,6 +36,9 @@ test('BHA bridge commits are transactional and expose a runtime rollback fault t
   assert.match(engine, /WF_BHA_INJECT_COMMIT_FAILURE/);
   assert.match(engine, /Public Sub WellForge_BhaRollbackSelfTest/);
   assert.match(engine, /WF_BHA_LAST_ROLLBACK_VERIFIED/);
+  assert.match(engine, /Private Function WF_BhaCaptureSnapshots[\s\S]*WF_BhaSnapshot snapshots, "Rust Engine", "B8:B12"/);
+  assert.doesNotMatch(engine.match(/Private Function WF_BhaCaptureSnapshots[\s\S]*?End Function/)[0], /"B13"/);
+  assert.match(engine, /WellForge_BhaRollbackSelfTest[\s\S]*Set snapshots = WF_BhaCaptureSnapshots\(\)[\s\S]*WF_RunBhaRustEngine[\s\S]*If Not WF_BhaSnapshotsMatch\(snapshots\)/);
 });
 
 test('Windows suite builder compiles and hashes the Rust engine before Excel', () => {

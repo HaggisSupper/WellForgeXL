@@ -121,9 +121,7 @@ Failed:
     failureDescription = Err.Description
     lastAcceptedValuesPreserved = (InStr(1, failureDescription, "ROLLBACK INCOMPLETE", vbTextCompare) = 0)
     On Error Resume Next
-    If Not WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED Then
-        WF_PublishTrajectoryFailure failureState, diagnosticPath, lastAcceptedValuesPreserved
-    End If
+    WF_PublishTrajectoryFailure failureState, diagnosticPath, lastAcceptedValuesPreserved
     If runtimeCaptured Then
         Application.Interactive = previousInteractive
         Application.EnableEvents = previousEvents
@@ -1275,7 +1273,8 @@ Private Function WF_TrajectoryCaptureSnapshots() As Collection
     WF_TrajectorySnapshot snapshots, "Results", "A26:M525"
     WF_TrajectorySnapshot snapshots, "Results", "B6:B15"
     WF_TrajectorySnapshot snapshots, "Results", "B19:B21"
-    WF_TrajectorySnapshot snapshots, "Results", "P5:P14"
+    WF_TrajectorySnapshot snapshots, "Results", "P7:P8"
+    WF_TrajectorySnapshot snapshots, "Results", "P10:P14"
     WF_TrajectorySnapshot snapshots, "Checks", "B6:D25"
     WF_TrajectorySnapshot snapshots, "Summary", "B5:C9"
     WF_TrajectorySnapshot snapshots, "Summary", "B10"
