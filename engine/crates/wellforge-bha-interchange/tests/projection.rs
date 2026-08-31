@@ -69,3 +69,9 @@ fn projection_rejects_section_with_od_not_greater_than_id() {
         Err(InterchangeError::InvalidGeometry(_))
     ));
 }
+
+#[test]
+fn detail_validation_rejects_invalid_boolean_and_duplicate_blocks() {
+    let xml = "<BHA><Caption>A</Caption><Components><Component><Caption>R</Caption><Count>1</Count><PartType>RSS</PartType><RotarySteerableDetail><PushTheBit>maybe</PushTheBit></RotarySteerableDetail><RotarySteerableDetail/></Component></Components></BHA>";
+    assert!(project_bha(&parse_xml(xml).unwrap()).is_err());
+}

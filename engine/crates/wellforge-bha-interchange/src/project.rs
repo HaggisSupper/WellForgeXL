@@ -253,7 +253,7 @@ fn validate_rss(d: &RotarySteerableDetail) -> Result<(), InterchangeError> {
     .into_iter()
     .flatten()
     {
-        if !v.is_finite() || v < 0.0 {
+        if !v.is_finite() || v <= 0.0 {
             return Err(InterchangeError::InvalidGeometry(
                 "RSS dimensions must be finite and non-negative".into(),
             ));
@@ -270,7 +270,7 @@ fn validate_rss(d: &RotarySteerableDetail) -> Result<(), InterchangeError> {
 }
 fn validate_stabilizer(d: &StabilizerDetail) -> Result<(), InterchangeError> {
     for v in [d.od_m, d.id_m, d.gauge_diameter_m].into_iter().flatten() {
-        if !v.is_finite() || v < 0.0 {
+        if !v.is_finite() || v <= 0.0 {
             return Err(InterchangeError::InvalidGeometry(
                 "stabilizer dimensions must be finite and non-negative".into(),
             ));
