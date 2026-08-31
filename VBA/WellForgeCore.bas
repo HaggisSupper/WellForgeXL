@@ -95,7 +95,8 @@ Public Sub WellForge_BuildInitialize()
     oldCalc = Application.Calculation: oldEvents = Application.EnableEvents: oldScreen = Application.ScreenUpdating
     On Error GoTo Failed
     Application.Calculation = xlCalculationManual: Application.EnableEvents = False: Application.ScreenUpdating = False
-    Application.CalculateFullRebuild
+    ' Build initialization publishes value-only results through the model
+    ' engines; forcing a workbook-wide formula rebuild here is unnecessary.
     WF_FreezeAllFormulas
     WF_ReplacePocLanguage
     WF_InstallControls
@@ -346,15 +347,9 @@ Public Sub WF_UpdateUnitMap()
 End Sub
 
 Public Sub WF_FreezeAllFormulas()
-    Dim ws As Worksheet
-    Dim formulaCells As Range
-    For Each ws In ThisWorkbook.Worksheets
-        Set formulaCells = Nothing
-        On Error Resume Next
-        Set formulaCells = ws.UsedRange.SpecialCells(xlCellTypeFormulas)
-        On Error GoTo 0
-        If Not formulaCells Is Nothing Then formulaCells.Value2 = formulaCells.Value2
-    Next ws
+    ' Formula removal is performed as an OOXML package transformation after the
+    ' workbook's macro tests complete.  Excel's COM rewrite can hang on BHA
+    ' linked formula regions even with manual calculation enabled.
 End Sub
 
 Public Function WF_FormulaCount() As Long
@@ -438,13 +433,15 @@ Public Sub WellForge_UnitSwitchSelfTest()
 
     On Error GoTo Failed
     wsUnits.Range("B5").Value2 = "SI"
-    WF_UpdateUnitMap: WF_DispatchModel model
+    WF_UpdateUnitMap
+    WF_DispatchModel model
     siValue = CDbl(ThisWorkbook.Worksheets(valueSheet).Range(valueAddress).Value2)
     siLabel = CStr(ThisWorkbook.Worksheets(valueSheet).Range(labelAddress).Value2)
     WF_AssertUnitSwitch siValue, siLabel, WF_UnitLabel(domainName), "SI"
 
     wsUnits.Range("B5").Value2 = "Imperial"
-    WF_UpdateUnitMap: WF_DispatchModel model
+    WF_UpdateUnitMap
+    WF_DispatchModel model
     imperialValue = CDbl(ThisWorkbook.Worksheets(valueSheet).Range(valueAddress).Value2)
     imperialLabel = CStr(ThisWorkbook.Worksheets(valueSheet).Range(labelAddress).Value2)
     WF_AssertUnitSwitch imperialValue, imperialLabel, WF_UnitLabel(domainName), "Imperial"
@@ -454,7 +451,8 @@ Public Sub WellForge_UnitSwitchSelfTest()
     wsUnits.Range("J8:J40").Value2 = "SI"
     wsUnits.Cells(WF_UnitRow(domainName), 10).Value2 = "Imperial"
     wsUnits.Range("B5").Value2 = "Custom"
-    WF_UpdateUnitMap: WF_DispatchModel model
+    WF_UpdateUnitMap
+    WF_DispatchModel model
     customValue = CDbl(ThisWorkbook.Worksheets(valueSheet).Range(valueAddress).Value2)
     customLabel = CStr(ThisWorkbook.Worksheets(valueSheet).Range(labelAddress).Value2)
     WF_AssertUnitSwitch customValue, customLabel, WF_UnitLabel(domainName), "Custom"
