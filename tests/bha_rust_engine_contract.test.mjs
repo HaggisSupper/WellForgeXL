@@ -33,3 +33,15 @@ test('Windows suite builder compiles and hashes the Rust engine before Excel', (
   assert.ok(rustBuild >= 0 && rustBuild < excelStart);
   assert.match(builder, /WellForgeBhaEngine\.bas/);
 });
+
+test('BHA release builder uses the workspace-required Rust toolchain', () => {
+  const build = fs.readFileSync(new URL('../tools/Build-WellForgeBhaEngine.ps1', import.meta.url), 'utf8');
+  assert.match(build, /cargo \+1\.98\.0 test --workspace --locked/);
+  assert.match(build, /cargo \+1\.98\.0 build --release --locked -p wellforge-bha-cli/);
+});
+
+test('BHA release builder resolves an output directory before changing location', () => {
+  const build = fs.readFileSync(new URL('../tools/Build-WellForgeBhaEngine.ps1', import.meta.url), 'utf8');
+  assert.match(build, /\[System\.IO\.Path\]::GetFullPath\(\$OutputDirectory\)/);
+  assert.match(build, /Set-Location \$engineRoot/);
+});
