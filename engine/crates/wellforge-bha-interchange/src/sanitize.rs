@@ -53,10 +53,16 @@ pub fn sanitize_tree(
     Ok((tree, report))
 }
 
-fn sanitize_node(node: &mut StructuralNode, policy: &SanitizationPolicy, report: &mut SanitizationReport) {
+fn sanitize_node(
+    node: &mut StructuralNode,
+    policy: &SanitizationPolicy,
+    report: &mut SanitizationReport,
+) {
     node.attributes.retain(|(name, value)| {
         let remove = policy.matches(name) || policy.matches(value);
-        if remove { report.removed_attributes += 1; }
+        if remove {
+            report.removed_attributes += 1;
+        }
         !remove
     });
     if node.text.as_ref().is_some_and(|text| policy.matches(text)) {
@@ -76,7 +82,8 @@ fn sanitize_node(node: &mut StructuralNode, policy: &SanitizationPolicy, report:
 }
 
 fn tokenize(value: &str) -> impl Iterator<Item = String> + '_ {
-    value.split(|character: char| !character.is_alphanumeric())
+    value
+        .split(|character: char| !character.is_alphanumeric())
         .filter(|token| !token.is_empty())
         .map(str::to_lowercase)
 }
