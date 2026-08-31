@@ -1,7 +1,22 @@
 #![allow(missing_docs)]
 use wellforge_bha_interchange::{
-    ComponentDetail, ComponentKind, InterchangeError, parse_xml, project_bha,
+    ComponentDetail, ComponentKind, InterchangeError, SanitizationPolicy, convert_xml, parse_xml,
+    project_bha,
 };
+
+#[test]
+fn converter_emits_sanitized_structural_and_canonical_json() {
+    let output = convert_xml(
+        include_str!("fixtures/neutral_bha.xml"),
+        &SanitizationPolicy::default(),
+    )
+    .unwrap();
+    let structural = serde_json::to_value(&output.structural).unwrap();
+    let canonical = serde_json::to_value(&output.canonical).unwrap();
+    assert_eq!(structural["name"], "BHA");
+    assert_eq!(canonical["components"].as_array().unwrap().len(), 2);
+    assert_eq!(output.report.removed_elements, 0);
+}
 
 #[test]
 fn projection_maps_supported_tool_details() {
