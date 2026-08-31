@@ -154,6 +154,8 @@ test('Windows acceptance watchdog owns newly created Excel processes and kills t
   const source = await read('tools/Invoke-WellForgeWindowsReleaseBounded.ps1');
   assert.match(source, /baselineExcelProcessIds/);
   assert.match(source, /Get-Process -Name EXCEL/);
+  assert.match(source, /foreach \(\$excelProcess in @\(Get-Process -Name EXCEL -ErrorAction SilentlyContinue\)\) \{\s*\$baselineExcelProcessIds \+= \$excelProcess\.Id/s);
+  assert.doesNotMatch(source, /\(Get-Process -Name EXCEL -ErrorAction SilentlyContinue\)\.Id/);
   assert.match(source, /taskkill\.exe \/PID \$excelProcess\.Id \/T \/F/);
   assert.match(source, /Stop-NewExcelProcesses/);
 });
