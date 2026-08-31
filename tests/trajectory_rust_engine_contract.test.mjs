@@ -114,6 +114,14 @@ test('adapter source stages and validates the complete strict bridge before resu
   assert.match(directional, /Public Sub WF_RefreshDirectionalPresentation/);
 });
 
+test('trajectory rollback is equality-verified and exercised through an injected commit failure', () => {
+  assert.match(engine, /WF_TRAJECTORY_INJECT_COMMIT_FAILURE/);
+  assert.match(engine, /WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED/);
+  assert.match(engine, /WF_TrajectorySnapshotsMatch/);
+  assert.match(engine, /Public Sub WellForge_TrajectoryRollbackSelfTest/);
+  assert.match(engine, /Rollback:[\s\S]*WF_TrajectoryRestoreSnapshots[\s\S]*WF_TrajectorySnapshotsMatch/);
+});
+
 test('adapter keeps presentation-only rotations out of canonical result blocks', () => {
   const commit = procedure(engine, 'WF_CommitTrajectoryBridge');
   const station = procedure(engine, 'WF_TrajectoryFillStationCalc');

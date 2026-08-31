@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$OutputDirectory,
+    [string]$LogDirectory,
     [switch]$NoPause
 )
 
@@ -8,9 +9,9 @@ $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $engineRoot = Join-Path $repositoryRoot 'engine'
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot 'outputs\vba-engine' }
-$logDirectory = Join-Path $repositoryRoot 'logs'
-New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
-$logPath = Join-Path $logDirectory ('bha-engine-build-{0}.jsonl' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
+if ([string]::IsNullOrWhiteSpace($LogDirectory)) { $LogDirectory = Join-Path $repositoryRoot 'logs' }
+New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null
+$logPath = Join-Path $LogDirectory ('bha-engine-build-{0}.jsonl' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
 $succeeded = $false
 
 function Write-EngineEvent {
@@ -21,24 +22,31 @@ function Write-EngineEvent {
 }
 
 try {
-    Write-EngineEvent INFO 'Verifying Rust toolchain identity.'
-    & rustc --version --verbose | ForEach-Object { Write-EngineEvent INFO $_ }
-    & cargo --version --verbose | ForEach-Object { Write-EngineEvent INFO $_ }
+    Write-EngineEvent INFO 'Verifying pinned Rust 1.98.0 toolchain identity.'
+    $rustIdentity = @(& rustup run 1.98.0 rustc --version --verbose)
+    if ($LASTEXITCODE -ne 0) { throw 'rustc identity check failed' }
+    $rustIdentity | ForEach-Object { Write-EngineEvent INFO $_ }
+    if ($rustIdentity.Count -eq 0 -or $rustIdentity[0] -notmatch '^rustc 1\.98\.0(?:\s|$)') {
+        throw ('Expected rustc 1.98.0, received: {0}' -f ($rustIdentity -join '; '))
+    }
+    & cargo +1.98.0 --version --verbose | ForEach-Object { Write-EngineEvent INFO $_ }
+    if ($LASTEXITCODE -ne 0) { throw 'cargo identity check failed' }
     Set-Location $engineRoot
-    & cargo fmt --check
+    & cargo +1.98.0 fmt --all -- --check
     if ($LASTEXITCODE -ne 0) { throw 'cargo fmt failed' }
-    & cargo clippy --workspace --all-targets --all-features -- -D warnings
+    & cargo +1.98.0 clippy --workspace --all-targets --all-features --locked -- -D warnings
     if ($LASTEXITCODE -ne 0) { throw 'cargo clippy failed' }
-    & cargo test --workspace --all-features --locked
+    & cargo +1.98.0 test --workspace --all-features --locked
     if ($LASTEXITCODE -ne 0) { throw 'cargo test failed' }
-    if ($null -eq (Get-Command cargo-deny -ErrorAction SilentlyContinue)) {
+    $cargoDenyVersion = if ($null -ne (Get-Command cargo-deny -ErrorAction SilentlyContinue)) { (& cargo-deny --version) -join ' ' } else { '' }
+    if ($cargoDenyVersion -notmatch '^cargo-deny 0\.20\.2(?:\s|$)') {
         Write-EngineEvent INFO 'Installing the pinned cargo-deny release for the dependency-policy gate.'
-        & cargo install cargo-deny --version 0.20.2 --locked
+        & cargo +1.98.0 install cargo-deny --version 0.20.2 --locked --force
         if ($LASTEXITCODE -ne 0) { throw 'cargo-deny installation failed' }
     }
-    & cargo deny check licenses bans sources
+    & cargo deny check advisories licenses bans sources
     if ($LASTEXITCODE -ne 0) { throw 'cargo-deny policy failed' }
-    & cargo build --release --locked -p wellforge-bha-cli
+    & cargo +1.98.0 build --release --locked -p wellforge-bha-cli
     if ($LASTEXITCODE -ne 0) { throw 'release build failed' }
     New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
     $builtExecutable = Join-Path $engineRoot 'target\release\wellforge-bha.exe'

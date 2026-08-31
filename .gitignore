@@ -8,3 +8,4 @@ package_previous_*/
 .worktrees/
 .superpowers/sdd/
 node_modules
+engine/target/

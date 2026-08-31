@@ -17,6 +17,9 @@ Private Const FIRST_MAP_ROW As Long = 6
 Private Const FIRST_STATE_ROW As Long = 6
 Private Const ERR_BASE As Long = vbObjectError + 7400
 
+Private WF_EXCHANGE_INJECT_WRITE_FAILURE As Boolean
+Private WF_EXCHANGE_LAST_ROLLBACK_VERIFIED As Boolean
+
 ' symbol|accepted dimensions|multiplier|offset.  Decimal text is parsed with
 ' Val, not CDbl, so the private constant table is locale-independent.
 Private Const UNIT_TABLE_1 As String = _
@@ -136,6 +139,31 @@ Cleanup:
     Application.ScreenUpdating = oldScreenUpdating
     On Error GoTo 0
     If failureNumber <> 0 Then MsgBox failureText, vbExclamation, "WellForge JSON export"
+End Sub
+
+Public Sub WellForge_ExchangeRollbackSelfTest()
+    Dim failureNumber As Long, failureText As String, injectedFailure As Long
+    Dim payloadText As String
+    On Error GoTo Failed
+
+    payloadText = ReadExchangeBuffer()
+    WF_EXCHANGE_LAST_ROLLBACK_VERIFIED = False
+    WF_EXCHANGE_INJECT_WRITE_FAILURE = True
+    On Error Resume Next
+    ImportPayloadText payloadText
+    injectedFailure = Err.Number
+    Err.Clear
+    On Error GoTo Failed
+    WF_EXCHANGE_INJECT_WRITE_FAILURE = False
+    If injectedFailure = 0 Then RaiseExchangeError "Injected exchange write failure did not occur"
+    If Not WF_EXCHANGE_LAST_ROLLBACK_VERIFIED Then RaiseExchangeError "Exchange rollback equality verification failed"
+    Exit Sub
+
+Failed:
+    failureNumber = Err.Number
+    failureText = Err.Description
+    WF_EXCHANGE_INJECT_WRITE_FAILURE = False
+    Err.Raise failureNumber, "WellForge_ExchangeRollbackSelfTest", failureText
 End Sub
 
 Public Sub WellForge_ValidateExchange()
@@ -1363,8 +1391,27 @@ Private Sub ApplyChangeSet(ByVal changes As Collection)
         Set target = change("target")
         If CBool(target.HasFormula) Then RaiseExchangeError "Formula appeared before import write: " & CStr(change("destination"))
         target.Value2 = change("newValue")
+        If WF_EXCHANGE_INJECT_WRITE_FAILURE Then
+            target.Value2 = WF_ExchangeFaultValue(change("oldValue"))
+            If WF_ExchangeVariantsMatch(target.Value2, change("oldValue")) Then _
+                RaiseExchangeError "Injected exchange write did not change the mapped cell"
+            WF_EXCHANGE_INJECT_WRITE_FAILURE = False
+            RaiseExchangeError "Injected exchange write failure"
+        End If
     Next change
 End Sub
+
+Private Function WF_ExchangeFaultValue(ByVal oldValue As Variant) As Variant
+    If IsError(oldValue) Or IsEmpty(oldValue) Then
+        WF_ExchangeFaultValue = "WELLFORGE_ROLLBACK_PROBE"
+    ElseIf VarType(oldValue) = vbBoolean Then
+        WF_ExchangeFaultValue = Not CBool(oldValue)
+    ElseIf IsNumeric(oldValue) Then
+        WF_ExchangeFaultValue = CDbl(oldValue) + Application.Max(1#, Abs(CDbl(oldValue)) * 0.01)
+    Else
+        WF_ExchangeFaultValue = CStr(oldValue) & "__WELLFORGE_ROLLBACK_PROBE"
+    End If
+End Function
 
 Private Sub RestoreChangeSet(ByVal changes As Collection)
     Dim i As Long
@@ -1484,6 +1531,7 @@ Private Sub ImportPayloadText(ByVal payloadText As String)
     Dim diagnostics As String
     Dim failureNumber As Long
     Dim failureText As String
+    Dim rollbackSucceeded As Boolean
 
     If Not IsJsonContainerStart(payloadText) Then RaiseExchangeError "Payload root must be a JSON object"
     Set payload = JsonParse(payloadText)
@@ -1493,6 +1541,7 @@ Private Sub ImportPayloadText(ByVal payloadText As String)
     Set mappings = ReadExchangeMap()
     Set oldState = ReadExchangeState()
     oldBuffer = ReadExchangeBuffer()
+    WF_EXCHANGE_LAST_ROLLBACK_VERIFIED = False
     On Error GoTo Rollback
     Set changes = BuildChangeSet(root, mappings)
     ApplyChangeSet changes
@@ -1504,13 +1553,67 @@ Private Sub ImportPayloadText(ByVal payloadText As String)
 Rollback:
     failureNumber = Err.Number
     failureText = Err.Description
+    rollbackSucceeded = True
     On Error Resume Next
     If Not changes Is Nothing Then RestoreChangeSet changes
+    If Err.Number <> 0 Then rollbackSucceeded = False
+    Err.Clear
     WriteStateDictionary oldState
+    If Err.Number <> 0 Then rollbackSucceeded = False
+    Err.Clear
     SafeSetValue ThisWorkbook.Worksheets(BUFFER_SHEET).Range(BUFFER_PAYLOAD_CELL), oldBuffer
+    If Err.Number <> 0 Then rollbackSucceeded = False
     On Error GoTo 0
+    If rollbackSucceeded And Not changes Is Nothing Then rollbackSucceeded = WF_ExchangeChangesRestored(changes)
+    If rollbackSucceeded Then rollbackSucceeded = WF_ExchangeStatesMatch(ReadExchangeState(), oldState)
+    If rollbackSucceeded Then rollbackSucceeded = (ReadExchangeBuffer() = oldBuffer)
+    WF_EXCHANGE_LAST_ROLLBACK_VERIFIED = rollbackSucceeded
+    If Not rollbackSucceeded Then failureText = failureText & " | ROLLBACK INCOMPLETE"
     Err.Raise failureNumber, MODULE_SOURCE, failureText
 End Sub
+
+Private Function WF_ExchangeChangesRestored(ByVal changes As Collection) As Boolean
+    Dim change As Variant, target As Range
+    WF_ExchangeChangesRestored = False
+    On Error GoTo Mismatch
+    For Each change In changes
+        Set target = change("target")
+        If Len(CStr(change("oldFormula"))) > 0 Then
+            If CStr(target.Formula) <> CStr(change("oldFormula")) Then Exit Function
+        ElseIf Not WF_ExchangeVariantsMatch(target.Value2, change("oldValue")) Then
+            Exit Function
+        End If
+    Next change
+    WF_ExchangeChangesRestored = True
+Mismatch:
+End Function
+
+Private Function WF_ExchangeStatesMatch(ByVal actualState As Object, ByVal expectedState As Object) As Boolean
+    Dim key As Variant, actualEntry As Object, expectedEntry As Object, field As Variant
+    WF_ExchangeStatesMatch = False
+    On Error GoTo Mismatch
+    If actualState.Count <> expectedState.Count Then Exit Function
+    For Each key In expectedState.Keys
+        If Not actualState.Exists(CStr(key)) Then Exit Function
+        Set actualEntry = actualState(CStr(key))
+        Set expectedEntry = expectedState(CStr(key))
+        For Each field In Array("pointer", "originalValue", "originalUnit", "canonicalValue", "destination", "importedAt")
+            If Not WF_ExchangeVariantsMatch(actualEntry(CStr(field)), expectedEntry(CStr(field))) Then Exit Function
+        Next field
+    Next key
+    WF_ExchangeStatesMatch = True
+Mismatch:
+End Function
+
+Private Function WF_ExchangeVariantsMatch(ByVal actualValue As Variant, ByVal expectedValue As Variant) As Boolean
+    If IsError(actualValue) Or IsError(expectedValue) Then
+        WF_ExchangeVariantsMatch = IsError(actualValue) And IsError(expectedValue) And CStr(actualValue) = CStr(expectedValue)
+    ElseIf IsEmpty(actualValue) Or IsEmpty(expectedValue) Then
+        WF_ExchangeVariantsMatch = IsEmpty(actualValue) And IsEmpty(expectedValue)
+    Else
+        WF_ExchangeVariantsMatch = (VarType(actualValue) = VarType(expectedValue) And CStr(actualValue) = CStr(expectedValue))
+    End If
+End Function
 
 Private Function ReadExchangeBuffer() As String
     ReadExchangeBuffer = CStr(ThisWorkbook.Worksheets(BUFFER_SHEET).Range(BUFFER_PAYLOAD_CELL).Value2)
