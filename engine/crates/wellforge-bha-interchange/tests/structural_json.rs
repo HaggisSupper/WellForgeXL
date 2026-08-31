@@ -66,17 +66,23 @@ fn crate_exposes_a_typed_error() {
 
 #[test]
 fn sanitizer_rejects_policy_matched_root_safely() {
-    let policy = wellforge_bha_interchange::SanitizationPolicy::new(BTreeSet::from([
-        digest_for_test("bha"),
-    ]));
+    let policy =
+        wellforge_bha_interchange::SanitizationPolicy::new(BTreeSet::from([digest_for_test(
+            "bha",
+        )]));
     let error = wellforge_bha_interchange::sanitize_tree(
-        wellforge_bha_interchange::parse_xml("<BHA><Caption>Neutral</Caption></BHA>")
-            .unwrap(),
+        wellforge_bha_interchange::parse_xml("<BHA><Caption>Neutral</Caption></BHA>").unwrap(),
         &policy,
     )
     .unwrap_err();
-    assert_eq!(error, wellforge_bha_interchange::InterchangeError::SanitizedRoot);
-    assert_eq!(error.to_string(), "root element matches sanitization policy");
+    assert_eq!(
+        error,
+        wellforge_bha_interchange::InterchangeError::SanitizedRoot
+    );
+    assert_eq!(
+        error.to_string(),
+        "root element matches sanitization policy"
+    );
 }
 
 #[test]
