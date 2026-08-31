@@ -29,10 +29,10 @@ WellForge code owns section properties, beam-element assembly, geometric stiffne
 - Modes are positive and sorted.
 - Static force residual is normalized and recorded in result evidence.
 - Request/result hashes, compiler identity, target, dependency-lock hash and source references are returned with every result.
-- Rust formatting, Clippy `-D warnings`, workspace tests, and `cargo-deny` licenses/bans/sources pass.
+- Rust formatting, Clippy `-D warnings`, workspace tests, and `cargo-deny` advisories/licenses/bans/sources pass.
 
 ## Applicability limits
 
 Release 1 is not the full Universal Mechanisms-style rigid-body/contact dynamics target. It does not yet solve six-degree rigid joints, nonlinear normal contact, frictional impact, whirl, bit/formation interaction, coupled torsion/axial response, transient integration or DAT-calibrated forcing. The immutable contract already distinguishes `rigid`, `beam` and `modal_flexible` representations so those capabilities can be added under a new compatible contract revision without re-keying WITSML sources.
 
-Desktop Excel compilation, macro execution and screenshot acceptance remain Windows-only gates in `Build-WellForgeVbaSuite.ps1`.
+Desktop Excel compilation, macro execution, injected rollback equality, native chart export, and exact-package acceptance remain Windows-only gates in the manual `Windows Excel release verification` workflow.

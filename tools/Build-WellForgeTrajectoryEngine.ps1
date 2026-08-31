@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$OutputDirectory,
+    [string]$LogDirectory,
     [switch]$NoPause
 )
 
@@ -10,9 +11,9 @@ Import-Module Microsoft.PowerShell.Utility -ErrorAction Stop
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $engineRoot = Join-Path $repositoryRoot 'engine'
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot 'outputs\vba-engine' }
-$logDirectory = Join-Path $repositoryRoot 'logs'
-New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
-$logPath = Join-Path $logDirectory ('trajectory-engine-build-{0}.jsonl' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
+if ([string]::IsNullOrWhiteSpace($LogDirectory)) { $LogDirectory = Join-Path $repositoryRoot 'logs' }
+New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null
+$logPath = Join-Path $LogDirectory ('trajectory-engine-build-{0}.jsonl' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
 $succeeded = $false
 
 function Get-FileHash {

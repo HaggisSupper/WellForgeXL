@@ -182,6 +182,19 @@ test('imports are formula-protected transactions with rollback before recalculat
   assert.match(load, /Rollback:[\s\S]*RestoreChangeSet/i);
 });
 
+test('exchange rollback is verified at runtime through the real import transaction', async () => {
+  const source = await moduleSource();
+  assert.match(source, /Private WF_EXCHANGE_INJECT_WRITE_FAILURE As Boolean/i);
+  assert.match(source, /Private WF_EXCHANGE_LAST_ROLLBACK_VERIFIED As Boolean/i);
+  assert.match(procedure(source, 'ApplyChangeSet'), /WF_EXCHANGE_INJECT_WRITE_FAILURE/i);
+  assert.match(procedure(source, 'ApplyChangeSet'), /WF_ExchangeFaultValue/i);
+  assert.match(procedure(source, 'WF_ExchangeFaultValue'), /WELLFORGE_ROLLBACK_PROBE/i);
+  assert.match(procedure(source, 'ImportPayloadText'), /WF_ExchangeChangesRestored/i);
+  const selfTest = procedure(source, 'WellForge_ExchangeRollbackSelfTest');
+  assert.match(selfTest, /ImportPayloadText/i);
+  assert.match(selfTest, /WF_EXCHANGE_LAST_ROLLBACK_VERIFIED/i);
+});
+
 test('table capacity and formula-like text cannot corrupt workbook-owned rows', async () => {
   const source = await moduleSource();
   const build = procedure(source, 'BuildChangeSet');

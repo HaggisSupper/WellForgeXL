@@ -5,6 +5,9 @@ Private Const WF_BHA_TIMEOUT_SECONDS As Double = 120#
 Private Const WF_BHA_ANALYSIS_UUID As String = "8a547aba-31d2-5aa7-9d52-3284361f0ff8"
 Private Const WF_BHA_EXECUTION_MODE As String = "RUST REQUIRED — NO VBA FALLBACK"
 
+Private WF_BHA_INJECT_COMMIT_FAILURE As Boolean
+Private WF_BHA_LAST_ROLLBACK_VERIFIED As Boolean
+
 Public Sub WF_RunBhaRustEngine()
     Dim executablePath As String, workPath As String, requestPath As String, resultPath As String, bridgePath As String
     Dim request As Object, normalizedHash As String, expectedEngineHash As String
@@ -55,9 +58,38 @@ Failed:
     failureNumber = Err.Number
     failureDescription = Err.Description
     On Error Resume Next
-    ThisWorkbook.Worksheets("Rust Engine").Range("B13").Value2 = "FAILED — LAST ACCEPTED VALUES PRESERVED"
+    If InStr(1, failureDescription, "ROLLBACK INCOMPLETE", vbTextCompare) = 0 Then
+        ThisWorkbook.Worksheets("Rust Engine").Range("B13").Value2 = "FAILED — LAST ACCEPTED VALUES PRESERVED"
+    Else
+        ThisWorkbook.Worksheets("Rust Engine").Range("B13").Value2 = "FAILED — ROLLBACK INCOMPLETE"
+    End If
     On Error GoTo 0
     Err.Raise failureNumber, "WF_RunBhaRustEngine", failureDescription
+End Sub
+
+Public Sub WellForge_BhaRollbackSelfTest()
+    Dim failureNumber As Long, failureDescription As String, injectedFailure As Long
+    On Error GoTo Failed
+
+    WF_RunBhaRustEngine
+    WF_BHA_LAST_ROLLBACK_VERIFIED = False
+    WF_BHA_INJECT_COMMIT_FAILURE = True
+    On Error Resume Next
+    WF_RunBhaRustEngine
+    injectedFailure = Err.Number
+    Err.Clear
+    On Error GoTo Failed
+    WF_BHA_INJECT_COMMIT_FAILURE = False
+    If injectedFailure = 0 Then Err.Raise vbObjectError + 8731, "WellForge_BhaRollbackSelfTest", "INJECTED COMMIT FAILURE DID NOT OCCUR"
+    If Not WF_BHA_LAST_ROLLBACK_VERIFIED Then Err.Raise vbObjectError + 8732, "WellForge_BhaRollbackSelfTest", "ROLLBACK EQUALITY VERIFICATION FAILED"
+    WF_RunBhaRustEngine
+    Exit Sub
+
+Failed:
+    failureNumber = Err.Number
+    failureDescription = Err.Description
+    WF_BHA_INJECT_COMMIT_FAILURE = False
+    Err.Raise failureNumber, "WellForge_BhaRollbackSelfTest", failureDescription
 End Sub
 
 Private Function WF_BuildBhaRequest() As Object
@@ -116,6 +148,7 @@ End Function
 
 Private Sub WF_WriteBhaBridge(ByVal bridgeText As String, ByVal normalizedRequestHash As String, ByRef resultHash As String, ByRef rustEngineVersion As String)
     Dim ws As Worksheet, wsResults As Worksheet, lines As Variant, fields As Variant, line As Variant
+    Dim snapshots As Collection, failureNumber As Long, failureDescription As String
     Dim staticCount As Long, modeCount As Long, frfCount As Long, campbellCount As Long
     Dim shapeCount(1 To 3) As Long, modeNumber As Long, rowIndex As Long
     Dim minClearance As Double, peakStress As Double, minMargin As Double, value As Double
@@ -124,7 +157,18 @@ Private Sub WF_WriteBhaBridge(ByVal bridgeText As String, ByVal normalizedReques
     Set wsResults = ThisWorkbook.Worksheets("Rust Engine Results")
     lines = Split(Replace$(bridgeText, vbCr, vbNullString), vbLf)
     WF_ValidateBhaBridge lines, normalizedRequestHash, resultHash, rustEngineVersion
+    Set snapshots = New Collection
+    WF_BhaSnapshot snapshots, "Rust Calc", "A6:K505"
+    WF_BhaSnapshot snapshots, "Rust Calc", "L6:O25"
+    WF_BhaSnapshot snapshots, "Rust Calc", "L251:O750"
+    WF_BhaSnapshot snapshots, "Rust Calc", "A41:C440"
+    WF_BhaSnapshot snapshots, "Rust Calc", "E41:H640"
+    WF_BhaSnapshot snapshots, "Rust Engine Results", "A13:D32"
+    WF_BhaSnapshot snapshots, "Rust Engine Results", "B6:D9"
+    WF_BHA_LAST_ROLLBACK_VERIFIED = False
+    On Error GoTo Rollback
     ws.Range("A6:K505,L6:O25,L251:O750,A41:C440,E41:H640").ClearContents
+    If WF_BHA_INJECT_COMMIT_FAILURE Then Err.Raise vbObjectError + 8733, "WF_WriteBhaBridge", "INJECTED COMMIT FAILURE"
     minClearance = 1E+99: minMargin = 1E+99
     wsResults.Range("A13:D32").ClearContents
     For Each line In lines
@@ -172,7 +216,82 @@ Private Sub WF_WriteBhaBridge(ByVal bridgeText As String, ByVal normalizedReques
     If Not headerSeen Or Len(resultHash) <> 64 Or staticCount < 2 Or modeCount < 1 Then Err.Raise vbObjectError + 8715, "WF_WriteBhaBridge", "INCOMPLETE BRIDGE RESULTS"
     wsResults.Range("B6").Value2 = minClearance: wsResults.Range("D6").Value2 = IIf(minClearance < 0#, "REVIEW", "CLEAR")
     wsResults.Range("B7").Value2 = peakStress: wsResults.Range("B8").Value2 = firstFrequency: wsResults.Range("B9").Value2 = minMargin
+    Exit Sub
+
+Rollback:
+    failureNumber = Err.Number
+    failureDescription = Err.Description
+    WF_BHA_LAST_ROLLBACK_VERIFIED = WF_BhaRestoreSnapshots(snapshots)
+    If WF_BHA_LAST_ROLLBACK_VERIFIED Then WF_BHA_LAST_ROLLBACK_VERIFIED = WF_BhaSnapshotsMatch(snapshots)
+    If Not WF_BHA_LAST_ROLLBACK_VERIFIED Then
+        failureDescription = failureDescription & " | ROLLBACK INCOMPLETE — LAST ACCEPTED VALUES MAY BE PARTIALLY REPLACED"
+    End If
+    Err.Raise failureNumber, "WF_WriteBhaBridge", failureDescription
 End Sub
+
+Private Sub WF_BhaSnapshot(ByVal snapshots As Collection, ByVal sheetName As String, ByVal address As String)
+    Dim snapshot As Object
+    Set snapshot = CreateObject("Scripting.Dictionary")
+    snapshot.Add "sheet", sheetName
+    snapshot.Add "address", address
+    snapshot.Add "values", ThisWorkbook.Worksheets(sheetName).Range(address).Value2
+    snapshots.Add snapshot
+End Sub
+
+Private Function WF_BhaRestoreSnapshots(ByVal snapshots As Collection) As Boolean
+    Dim index As Long, snapshot As Object, restoreSucceeded As Boolean
+    restoreSucceeded = True
+    For index = snapshots.Count To 1 Step -1
+        On Error Resume Next
+        Err.Clear
+        Set snapshot = snapshots.Item(index)
+        ThisWorkbook.Worksheets(CStr(snapshot.Item("sheet"))).Range(CStr(snapshot.Item("address"))).Value2 = snapshot.Item("values")
+        If Err.Number <> 0 Then restoreSucceeded = False
+        On Error GoTo 0
+    Next index
+    WF_BhaRestoreSnapshots = restoreSucceeded
+End Function
+
+Private Function WF_BhaSnapshotsMatch(ByVal snapshots As Collection) As Boolean
+    Dim index As Long, snapshot As Object, actualValues As Variant, expectedValues As Variant
+    WF_BhaSnapshotsMatch = False
+    On Error GoTo Mismatch
+    For index = 1 To snapshots.Count
+        Set snapshot = snapshots.Item(index)
+        actualValues = ThisWorkbook.Worksheets(CStr(snapshot.Item("sheet"))).Range(CStr(snapshot.Item("address"))).Value2
+        expectedValues = snapshot.Item("values")
+        If Not WF_BhaValuesMatch(actualValues, expectedValues) Then Exit Function
+    Next index
+    WF_BhaSnapshotsMatch = True
+Mismatch:
+End Function
+
+Private Function WF_BhaValuesMatch(ByVal actualValues As Variant, ByVal expectedValues As Variant) As Boolean
+    Dim rowIndex As Long, columnIndex As Long
+    On Error GoTo Mismatch
+    If IsArray(expectedValues) Then
+        If Not IsArray(actualValues) Then Exit Function
+        For rowIndex = LBound(expectedValues, 1) To UBound(expectedValues, 1)
+            For columnIndex = LBound(expectedValues, 2) To UBound(expectedValues, 2)
+                If Not WF_BhaValueMatches(actualValues(rowIndex, columnIndex), expectedValues(rowIndex, columnIndex)) Then Exit Function
+            Next columnIndex
+        Next rowIndex
+    ElseIf Not WF_BhaValueMatches(actualValues, expectedValues) Then
+        Exit Function
+    End If
+    WF_BhaValuesMatch = True
+Mismatch:
+End Function
+
+Private Function WF_BhaValueMatches(ByVal actualValue As Variant, ByVal expectedValue As Variant) As Boolean
+    If IsError(actualValue) Or IsError(expectedValue) Then
+        WF_BhaValueMatches = IsError(actualValue) And IsError(expectedValue) And CStr(actualValue) = CStr(expectedValue)
+    ElseIf IsEmpty(actualValue) Or IsEmpty(expectedValue) Then
+        WF_BhaValueMatches = IsEmpty(actualValue) And IsEmpty(expectedValue)
+    Else
+        WF_BhaValueMatches = (VarType(actualValue) = VarType(expectedValue) And CStr(actualValue) = CStr(expectedValue))
+    End If
+End Function
 
 Private Sub WF_ValidateBhaBridge(ByVal lines As Variant, ByVal normalizedRequestHash As String, _
                                  ByRef resultHash As String, ByRef rustEngineVersion As String)

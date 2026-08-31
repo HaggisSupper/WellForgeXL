@@ -27,6 +27,17 @@ test('BHA process boundary is bounded and validates request/result evidence', ()
   assert.doesNotMatch(engine, /cmd\.exe/i);
 });
 
+test('BHA bridge commits are transactional and expose a runtime rollback fault test', () => {
+  assert.match(engine, /WF_BhaSnapshot/);
+  assert.match(engine, /WF_BhaRestoreSnapshots/);
+  assert.match(engine, /WF_BhaSnapshotsMatch/);
+  assert.match(engine, /On Error GoTo Rollback/);
+  assert.match(engine, /Rollback:[\s\S]*WF_BhaRestoreSnapshots/);
+  assert.match(engine, /WF_BHA_INJECT_COMMIT_FAILURE/);
+  assert.match(engine, /Public Sub WellForge_BhaRollbackSelfTest/);
+  assert.match(engine, /WF_BHA_LAST_ROLLBACK_VERIFIED/);
+});
+
 test('Windows suite builder compiles and hashes the Rust engine before Excel', () => {
   const rustBuild = builder.indexOf('Build-WellForgeBhaEngine.ps1');
   const excelStart = builder.indexOf('New-Object -ComObject Excel.Application');
