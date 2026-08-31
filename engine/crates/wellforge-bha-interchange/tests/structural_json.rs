@@ -65,6 +65,21 @@ fn crate_exposes_a_typed_error() {
 }
 
 #[test]
+fn sanitizer_rejects_policy_matched_root_safely() {
+    let policy = wellforge_bha_interchange::SanitizationPolicy::new(BTreeSet::from([
+        digest_for_test("generic"),
+    ]));
+    let error = wellforge_bha_interchange::sanitize_tree(
+        wellforge_bha_interchange::parse_xml("<Generic><Caption>Neutral</Caption></Generic>")
+            .unwrap(),
+        &policy,
+    )
+    .unwrap_err();
+    assert_eq!(error, wellforge_bha_interchange::InterchangeError::SanitizedRoot);
+    assert_eq!(error.to_string(), "root element matches sanitization policy");
+}
+
+#[test]
 fn parser_preserves_repeated_component_order() {
     let tree =
         wellforge_bha_interchange::parse_xml(include_str!("fixtures/neutral_bha.xml")).unwrap();
