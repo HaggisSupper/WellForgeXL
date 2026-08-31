@@ -125,7 +125,12 @@ pub fn parse_xml(input: &str) -> Result<StructuralNode, InterchangeError> {
                     return Err(invalid("text outside document root"));
                 }
             }
-            Event::Decl(_) | Event::Comment(_) => {}
+            Event::Decl(_) => {
+                if root.is_some() {
+                    return Err(InterchangeError::ProhibitedXmlConstruct);
+                }
+            }
+            Event::Comment(_) => {}
             Event::Eof => break,
         }
     }
@@ -136,28 +141,45 @@ pub fn parse_xml(input: &str) -> Result<StructuralNode, InterchangeError> {
 }
 
 fn preflight(input: &str) -> Result<(), InterchangeError> {
-    let lower = input.to_ascii_lowercase();
-    let compact: String = lower
-        .chars()
-        .filter(|character| !character.is_ascii_whitespace())
-        .collect();
-    if compact.contains("<!doctype") || compact.contains("<!entity") {
-        return Err(InterchangeError::ProhibitedXmlConstruct);
-    }
-    let mut offset = 0;
-    while let Some(index) = lower[offset..].find("<?") {
-        let absolute = offset + index;
-        let tail = &lower[absolute + 2..];
-        let declaration = tail.trim_start();
-        if !declaration.starts_with("xml")
-            || declaration
-                .as_bytes()
-                .get(3)
-                .is_some_and(|byte| !byte.is_ascii_whitespace() && *byte != b'?')
-        {
+    let bytes = input.as_bytes();
+    let mut index = 0;
+    let mut markup_seen = false;
+    while index < bytes.len() {
+        if bytes[index] != b'<' {
+            index += 1;
+            continue;
+        }
+        if bytes[index..].starts_with(b"<!--") {
+            index = input[index + 4..]
+                .find("-->")
+                .map_or(bytes.len(), |end| index + 4 + end + 3);
+            continue;
+        }
+        if bytes[index..].starts_with(b"<![CDATA[") {
+            index = input[index + 9..]
+                .find("]]>")
+                .map_or(bytes.len(), |end| index + 9 + end + 3);
+            continue;
+        }
+        let tail = &input[index + 1..];
+        let trimmed = tail.trim_start_matches(char::is_whitespace);
+        let lower = trimmed.to_ascii_lowercase();
+        if lower.starts_with("!doctype") || lower.starts_with("!entity") {
             return Err(InterchangeError::ProhibitedXmlConstruct);
         }
-        offset = absolute + 2;
+        if let Some(stripped) = trimmed.strip_prefix('?') {
+            let declaration = stripped.trim_start();
+            let is_xml_declaration = declaration.to_ascii_lowercase().starts_with("xml")
+                && declaration
+                    .as_bytes()
+                    .get(3)
+                    .is_some_and(|byte| byte.is_ascii_whitespace() || *byte == b'?');
+            if !is_xml_declaration || markup_seen {
+                return Err(InterchangeError::ProhibitedXmlConstruct);
+            }
+        }
+        markup_seen = true;
+        index += 1;
     }
     Ok(())
 }

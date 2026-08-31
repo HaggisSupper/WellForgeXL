@@ -59,3 +59,19 @@ fn parser_preserves_cdata_text() {
         wellforge_bha_interchange::parse_xml("<BHA><Note><![CDATA[a < b]]></Note></BHA>").unwrap();
     assert_eq!(tree.children[0].text.as_deref(), Some("a < b"));
 }
+
+#[test]
+fn parser_preserves_literal_declaration_markers_in_content() {
+    for xml in [
+        "<BHA><![CDATA[<!DOCTYPE]]></BHA>",
+        "<BHA><!-- <!ENTITY --> </BHA>",
+        "<BHA><![CDATA[<?custom]]></BHA>",
+    ] {
+        assert!(wellforge_bha_interchange::parse_xml(xml).is_ok());
+    }
+}
+
+#[test]
+fn parser_rejects_misplaced_xml_declaration() {
+    assert!(wellforge_bha_interchange::parse_xml("<BHA/><?xml version='1.0'?>").is_err());
+}
