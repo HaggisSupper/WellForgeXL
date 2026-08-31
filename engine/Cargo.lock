@@ -2368,6 +2368,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "wellforge-bha-interchange"
+version = "0.1.0"
+dependencies = [
+ "thiserror 2.0.20",
+]
+
+[[package]]
 name = "wellforge-bha-modal"
 version = "0.1.0"
 dependencies = [
