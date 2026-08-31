@@ -74,4 +74,10 @@ fn parser_preserves_literal_declaration_markers_in_content() {
 #[test]
 fn parser_rejects_misplaced_xml_declaration() {
     assert!(wellforge_bha_interchange::parse_xml("<BHA/><?xml version='1.0'?>").is_err());
+    assert!(
+        wellforge_bha_interchange::parse_xml("<!--comment--><?xml version='1.0'?><BHA/>").is_err()
+    );
+    assert!(
+        wellforge_bha_interchange::parse_xml("<![CDATA[x]]><?xml version='1.0'?><BHA/>").is_err()
+    );
 }

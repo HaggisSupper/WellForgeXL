@@ -150,12 +150,14 @@ fn preflight(input: &str) -> Result<(), InterchangeError> {
             continue;
         }
         if bytes[index..].starts_with(b"<!--") {
+            markup_seen = true;
             index = input[index + 4..]
                 .find("-->")
                 .map_or(bytes.len(), |end| index + 4 + end + 3);
             continue;
         }
         if bytes[index..].starts_with(b"<![CDATA[") {
+            markup_seen = true;
             index = input[index + 9..]
                 .find("]]>")
                 .map_or(bytes.len(), |end| index + 9 + end + 3);
