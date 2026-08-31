@@ -48,9 +48,14 @@ fn structural_json_retains_child_order() {
     let tree =
         wellforge_bha_interchange::parse_xml(include_str!("fixtures/neutral_bha.xml")).unwrap();
     let json = wellforge_bha_interchange::structural_json::to_value(&tree);
-    assert_eq!(json["children"][0]["name"], "Components");
-    assert_eq!(json["children"][0]["children"][0]["name"], "Component");
-    assert_eq!(json["children"][0]["children"][1]["name"], "Component");
+    let components = json["children"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|node| node["name"] == "Components")
+        .unwrap();
+    assert_eq!(components["children"][0]["name"], "Component");
+    assert_eq!(components["children"][1]["name"], "Component");
 }
 
 #[test]

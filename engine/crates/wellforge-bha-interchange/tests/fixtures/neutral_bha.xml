@@ -1,6 +1,6 @@
-<BHA id="assembly-01">
+<BHA id="assembly-01"><Caption>Neutral assembly</Caption>
   <Components>
-    <Component kind="bit"><Caption>Neutral bit</Caption></Component>
-    <Component kind="tubular"><Caption>Neutral tubular</Caption><Sections><Section name="upper"/><Section name="lower"/></Sections></Component>
+    <Component kind="bit"><Caption>Neutral bit</Caption><Count>1</Count><PartType>Common</PartType></Component>
+    <Component kind="tubular"><Caption>Neutral tubular</Caption><Count>1</Count><PartType>Stabilizer</PartType><Sections><Section name="upper"><SectionType>Tool joint top</SectionType><OD>0.2</OD><ID>0.1</ID><Length>1.0</Length></Section><Section name="lower"><SectionType>Tube</SectionType><OD>0.15</OD><ID>0.1</ID><Length>2.0</Length></Section></Sections></Component>
   </Components>
 </BHA>
