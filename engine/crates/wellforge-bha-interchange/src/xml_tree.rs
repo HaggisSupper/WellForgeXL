@@ -1,11 +1,12 @@
 //! Safe, order-preserving projection of neutral XML into a structural tree.
 
 use quick_xml::{Reader, events::Event};
+use serde::Serialize;
 
 use crate::InterchangeError;
 
 /// An XML element retaining names, attributes, text, and child order.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct StructuralNode {
     /// Element name as written in the source document.
     pub name: String,
