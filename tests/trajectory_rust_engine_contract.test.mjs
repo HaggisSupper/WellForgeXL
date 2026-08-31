@@ -129,7 +129,8 @@ test('trajectory rollback is equality-verified and exercised through an injected
   assert.match(selfTest, /Set snapshots = WF_TrajectoryCaptureSnapshots\(\)[\s\S]*WF_RunTrajectoryRustEngine[\s\S]*If Not WF_TrajectorySnapshotsMatch\(snapshots\)/);
   assert.match(selfTest, /Range\("P5"\)[\s\S]*WF_TRAJECTORY_EXECUTION_MODE/);
   assert.match(selfTest, /Range\("P6"\)[\s\S]*FAILED — LAST ACCEPTED VALUES PRESERVED/);
-  assert.match(selfTest, /Range\("P9"\)[\s\S]*Dir\$/);
+  assert.match(selfTest, /previousDiagnostic = CStr\(ThisWorkbook\.Worksheets\("Results"\)\.Range\("P9"\)\.Value2\)[\s\S]*WF_RunTrajectoryRustEngine/);
+  assert.match(selfTest, /telemetryDiagnostic[\s\S]*StrComp\(telemetryDiagnostic, previousDiagnostic, vbBinaryCompare\)[\s\S]*Dir\$/);
   assert.match(entry, /WF_PublishTrajectoryFailure failureState, diagnosticPath, lastAcceptedValuesPreserved/);
 });
 
