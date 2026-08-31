@@ -182,3 +182,41 @@ fn rss_optional_fields_project_exactly() {
         panic!();
     }
 }
+
+#[test]
+fn stabilizer_invalid_geometry_cases_are_rejected() {
+    for detail in [
+        "<OD>0</OD><ID>0.1</ID>",
+        "<OD>0.3</OD><ID>-1</ID>",
+        "<OD>0.3</OD><ID>0.1</ID><GaugeDiameter>0</GaugeDiameter>",
+        "<OD>1</OD><ID>1</ID>",
+        "<OD>0.3</OD><ID>0.1</ID><SubLength>0</SubLength>",
+    ] {
+        let xml = format!(
+            "<BHA><Caption>A</Caption><Components><Component><Caption>S</Caption><Count>1</Count><PartType>Stabilizer</PartType><StabilizerDetail>{detail}</StabilizerDetail></Component></Components></BHA>"
+        );
+        assert!(matches!(
+            project_bha(&parse_xml(&xml).unwrap()),
+            Err(InterchangeError::InvalidGeometry(_))
+        ));
+    }
+}
+
+#[test]
+fn rss_all_optional_fields_absent_is_accepted() {
+    let xml = "<BHA><Caption>A</Caption><Components><Component><Caption>R</Caption><Count>1</Count><PartType>RSS</PartType><RotarySteerableDetail/></Component></Components></BHA>";
+    let a = project_bha(&parse_xml(xml).unwrap()).unwrap();
+    if let ComponentDetail::RotarySteerable(d) = &a.components[0].detail {
+        assert!(
+            d.collar_od_m.is_none()
+                && d.collar_id_m.is_none()
+                && d.length_m.is_none()
+                && d.pad_count.is_none()
+                && d.pad_distance_from_bit_m.is_none()
+                && d.steering_mode.is_none()
+                && !d.push_the_bit
+        );
+    } else {
+        panic!();
+    }
+}
