@@ -1,4 +1,6 @@
 #![allow(missing_docs)]
+use sha2::{Digest, Sha256};
+use std::collections::BTreeSet;
 use wellforge_bha_interchange::{
     ComponentDetail, ComponentKind, InterchangeError, SanitizationPolicy, convert_xml, parse_xml,
     project_bha,
@@ -16,6 +18,23 @@ fn converter_emits_sanitized_structural_and_canonical_json() {
     assert_eq!(structural["name"], "BHA");
     assert_eq!(canonical["components"].as_array().unwrap().len(), 2);
     assert_eq!(output.report.removed_elements, 0);
+}
+
+#[test]
+fn converter_omits_sanitized_material_from_both_json_projections() {
+    let token = "neutralclassified";
+    let digest: [u8; 32] = Sha256::digest(token.as_bytes()).into();
+    let policy = SanitizationPolicy::new(BTreeSet::from([digest]));
+    let output = convert_xml(
+        "<BHA><Caption>Neutral</Caption><Components><Component><Caption>Tool</Caption><Count>1</Count><PartType>Common</PartType><Note>neutralclassified</Note></Component></Components></BHA>",
+        &policy,
+    )
+    .unwrap();
+    let structural = serde_json::to_string(&output.structural).unwrap();
+    let canonical = serde_json::to_string(&output.canonical).unwrap();
+    assert!(!structural.contains(token));
+    assert!(!canonical.contains(token));
+    assert_eq!(output.report.removed_values, 1);
 }
 
 #[test]

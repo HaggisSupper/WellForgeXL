@@ -48,6 +48,9 @@ pub fn sanitize_tree(
     mut tree: StructuralNode,
     policy: &SanitizationPolicy,
 ) -> Result<(StructuralNode, SanitizationReport), InterchangeError> {
+    if policy.matches(&tree.name) {
+        return Err(InterchangeError::SanitizedRoot);
+    }
     let mut report = SanitizationReport::default();
     sanitize_node(&mut tree, policy, &mut report);
     Ok((tree, report))

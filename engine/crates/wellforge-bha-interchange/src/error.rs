@@ -9,6 +9,9 @@ pub enum InterchangeError {
     /// The document contains a DTD or external entity declaration.
     #[error("DTD and external entities are not permitted")]
     ProhibitedXmlConstruct,
+    /// The root element matched a removal policy and cannot be safely removed.
+    #[error("root element matches sanitization policy")]
+    SanitizedRoot,
     /// The XML root element is not supported by the interchange contract.
     #[error("unsupported BHA XML root: {0}")]
     UnsupportedRoot(String),
