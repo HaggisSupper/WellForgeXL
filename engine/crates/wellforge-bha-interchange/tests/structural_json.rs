@@ -39,3 +39,23 @@ fn parser_rejects_a_doctype() {
         wellforge_bha_interchange::InterchangeError::ProhibitedXmlConstruct
     );
 }
+
+#[test]
+fn parser_rejects_whitespace_variant_constructs_and_outside_text() {
+    for xml in [
+        "< !DOCTYPE BHA><BHA/>",
+        "<! ENTITY x 'y'><BHA/>",
+        "<BHA/><?custom x?>",
+        "x<BHA/>",
+        "<BHA/>x",
+    ] {
+        assert!(wellforge_bha_interchange::parse_xml(xml).is_err());
+    }
+}
+
+#[test]
+fn parser_preserves_cdata_text() {
+    let tree =
+        wellforge_bha_interchange::parse_xml("<BHA><Note><![CDATA[a < b]]></Note></BHA>").unwrap();
+    assert_eq!(tree.children[0].text.as_deref(), Some("a < b"));
+}
