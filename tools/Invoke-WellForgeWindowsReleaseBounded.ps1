@@ -14,7 +14,10 @@ $gateResultsPath = Join-Path $RunRoot 'gate-results.json'
 New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
 $stdoutPath = Join-Path $logDirectory 'windows-acceptance.stdout.log'
 $stderrPath = Join-Path $logDirectory 'windows-acceptance.stderr.log'
-$baselineExcelProcessIds = @((Get-Process -Name EXCEL -ErrorAction SilentlyContinue).Id)
+$baselineExcelProcessIds = @()
+foreach ($excelProcess in @(Get-Process -Name EXCEL -ErrorAction SilentlyContinue)) {
+    $baselineExcelProcessIds += $excelProcess.Id
+}
 
 function Stop-NewExcelProcesses {
     foreach ($excelProcess in @(Get-Process -Name EXCEL -ErrorAction SilentlyContinue)) {
