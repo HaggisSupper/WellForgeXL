@@ -133,6 +133,7 @@ End Sub
 
 Public Sub WellForge_TrajectoryRollbackSelfTest()
     Dim failureNumber As Long, failureDescription As String, injectedFailure As Long
+    Dim telemetryDiagnostic As String
     Dim snapshots As Collection
     On Error GoTo Failed
 
@@ -149,6 +150,10 @@ Public Sub WellForge_TrajectoryRollbackSelfTest()
     If injectedFailure = 0 Then Err.Raise vbObjectError + 8900, "WellForge_TrajectoryRollbackSelfTest", "INJECTED COMMIT FAILURE DID NOT OCCUR"
     If Not WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED Then Err.Raise vbObjectError + 8901, "WellForge_TrajectoryRollbackSelfTest", "ROLLBACK EQUALITY VERIFICATION FAILED"
     If Not WF_TrajectorySnapshotsMatch(snapshots) Then Err.Raise vbObjectError + 8903, "WellForge_TrajectoryRollbackSelfTest", "END-TO-END ROLLBACK EQUALITY VERIFICATION FAILED"
+    If StrComp(CStr(ThisWorkbook.Worksheets("Results").Range("P5").Value2), WF_TRAJECTORY_EXECUTION_MODE, vbBinaryCompare) <> 0 Then Err.Raise vbObjectError + 8904, "WellForge_TrajectoryRollbackSelfTest", "FAILURE MODE TELEMETRY VERIFICATION FAILED"
+    If StrComp(CStr(ThisWorkbook.Worksheets("Results").Range("P6").Value2), "INVALID RESULT — FAILED — LAST ACCEPTED VALUES PRESERVED", vbBinaryCompare) <> 0 Then Err.Raise vbObjectError + 8905, "WellForge_TrajectoryRollbackSelfTest", "FAILURE STATUS TELEMETRY VERIFICATION FAILED"
+    telemetryDiagnostic = CStr(ThisWorkbook.Worksheets("Results").Range("P9").Value2)
+    If Len(telemetryDiagnostic) = 0 Or Len(Dir$(telemetryDiagnostic, vbNormal)) = 0 Then Err.Raise vbObjectError + 8906, "WellForge_TrajectoryRollbackSelfTest", "FAILURE DIAGNOSTIC TELEMETRY VERIFICATION FAILED"
     WF_RunTrajectoryRustEngine
     Exit Sub
 

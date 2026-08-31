@@ -127,6 +127,9 @@ test('trajectory rollback is equality-verified and exercised through an injected
   assert.match(capture, /WF_TrajectorySnapshot snapshots, "Results", "P10:P14"/);
   assert.doesNotMatch(capture, /"P5:P14"|"P5"|"P6"|"P9"/);
   assert.match(selfTest, /Set snapshots = WF_TrajectoryCaptureSnapshots\(\)[\s\S]*WF_RunTrajectoryRustEngine[\s\S]*If Not WF_TrajectorySnapshotsMatch\(snapshots\)/);
+  assert.match(selfTest, /Range\("P5"\)[\s\S]*WF_TRAJECTORY_EXECUTION_MODE/);
+  assert.match(selfTest, /Range\("P6"\)[\s\S]*FAILED — LAST ACCEPTED VALUES PRESERVED/);
+  assert.match(selfTest, /Range\("P9"\)[\s\S]*Dir\$/);
   assert.match(entry, /WF_PublishTrajectoryFailure failureState, diagnosticPath, lastAcceptedValuesPreserved/);
 });
 
