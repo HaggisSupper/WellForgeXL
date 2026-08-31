@@ -259,11 +259,12 @@ fn validate_rss(d: &RotarySteerableDetail) -> Result<(), InterchangeError> {
             ));
         }
     }
-    if let (Some(od), Some(id)) = (d.collar_od_m, d.collar_id_m) && od <= id {
-            return Err(InterchangeError::InvalidGeometry(
-                "RSS OD must exceed ID".into(),
-            ));
-        }
+    if let (Some(od), Some(id)) = (d.collar_od_m, d.collar_id_m)
+        && od <= id
+    {
+        return Err(InterchangeError::InvalidGeometry(
+            "RSS OD must exceed ID".into(),
+        ));
     }
     Ok(())
 }
@@ -275,11 +276,12 @@ fn validate_stabilizer(d: &StabilizerDetail) -> Result<(), InterchangeError> {
             ));
         }
     }
-    if let (Some(od), Some(id)) = (d.od_m, d.id_m) && od <= id {
-            return Err(InterchangeError::InvalidGeometry(
-                "stabilizer OD must exceed ID".into(),
-            ));
-        }
+    if let (Some(od), Some(id)) = (d.od_m, d.id_m)
+        && od <= id
+    {
+        return Err(InterchangeError::InvalidGeometry(
+            "stabilizer OD must exceed ID".into(),
+        ));
     }
     if d.sub_lengths_m.iter().any(|v| !v.is_finite() || *v <= 0.0) {
         return Err(InterchangeError::InvalidGeometry(
