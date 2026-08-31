@@ -15,6 +15,7 @@ members = [
   "crates/wellforge-bha-static",
   "crates/wellforge-bha-modal",
   "crates/wellforge-bha-cli",
+  "crates/wellforge-bha-interchange",
 ]
 
 [workspace.package]
