@@ -2371,6 +2371,7 @@ dependencies = [
 name = "wellforge-bha-interchange"
 version = "0.1.0"
 dependencies = [
+ "quick-xml",
  "thiserror 2.0.20",
 ]
 

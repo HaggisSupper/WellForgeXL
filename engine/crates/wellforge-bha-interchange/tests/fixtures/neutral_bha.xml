@@ -1,0 +1,6 @@
+<BHA id="assembly-01">
+  <Components>
+    <Component kind="bit"><Caption>Neutral bit</Caption></Component>
+    <Component kind="tubular"><Caption>Neutral tubular</Caption><Sections><Section name="upper"/><Section name="lower"/></Sections></Component>
+  </Components>
+</BHA>
