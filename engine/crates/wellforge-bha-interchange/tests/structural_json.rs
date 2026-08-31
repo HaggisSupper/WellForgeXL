@@ -67,10 +67,10 @@ fn crate_exposes_a_typed_error() {
 #[test]
 fn sanitizer_rejects_policy_matched_root_safely() {
     let policy = wellforge_bha_interchange::SanitizationPolicy::new(BTreeSet::from([
-        digest_for_test("generic"),
+        digest_for_test("bha"),
     ]));
     let error = wellforge_bha_interchange::sanitize_tree(
-        wellforge_bha_interchange::parse_xml("<Generic><Caption>Neutral</Caption></Generic>")
+        wellforge_bha_interchange::parse_xml("<BHA><Caption>Neutral</Caption></BHA>")
             .unwrap(),
         &policy,
     )
