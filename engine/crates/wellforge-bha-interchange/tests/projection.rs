@@ -75,3 +75,39 @@ fn detail_validation_rejects_invalid_boolean_and_duplicate_blocks() {
     let xml = "<BHA><Caption>A</Caption><Components><Component><Caption>R</Caption><Count>1</Count><PartType>RSS</PartType><RotarySteerableDetail><PushTheBit>maybe</PushTheBit></RotarySteerableDetail><RotarySteerableDetail/></Component></Components></BHA>";
     assert!(project_bha(&parse_xml(xml).unwrap()).is_err());
 }
+
+#[test]
+fn detail_duplicate_scalar_is_rejected() {
+    let xml = "<BHA><Caption>A</Caption><Components><Component><Caption>M</Caption><Count>1</Count><PartType>MudMotor</PartType><MotorDetail><LobeCount>2</LobeCount><LobeCount>3</LobeCount></MotorDetail></Component></Components></BHA>";
+    assert!(matches!(
+        project_bha(&parse_xml(xml).unwrap()),
+        Err(InterchangeError::InvalidField {
+            field: "LobeCount",
+            ..
+        })
+    ));
+}
+
+#[test]
+fn detail_absent_optionals_are_accepted() {
+    let xml = "<BHA><Caption>A</Caption><Components><Component><Caption>S</Caption><Count>1</Count><PartType>Stabilizer</PartType><StabilizerDetail/></Component></Components></BHA>";
+    assert!(project_bha(&parse_xml(xml).unwrap()).is_ok());
+}
+
+#[test]
+fn detail_invalid_geometry_is_rejected() {
+    for detail in [
+        "<CollarOD>0</CollarOD>",
+        "<CollarOD>-1</CollarOD>",
+        "<CollarOD>1</CollarOD><CollarID>1</CollarID>",
+        "<Length>0</Length>",
+    ] {
+        let xml = format!(
+            "<BHA><Caption>A</Caption><Components><Component><Caption>R</Caption><Count>1</Count><PartType>RSS</PartType><RotarySteerableDetail>{detail}</RotarySteerableDetail></Component></Components></BHA>"
+        );
+        assert!(matches!(
+            project_bha(&parse_xml(&xml).unwrap()),
+            Err(InterchangeError::InvalidGeometry(_))
+        ));
+    }
+}
