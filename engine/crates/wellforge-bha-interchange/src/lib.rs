@@ -9,7 +9,10 @@ mod validate;
 mod xml_tree;
 
 pub use error::InterchangeError;
-pub use model::{BhaAssembly, BhaComponentRecord, ComponentDetail, ComponentKind, TubularSection};
+pub use model::{
+    BhaAssembly, BhaComponentRecord, ComponentDetail, ComponentKind, MotorDetail,
+    RotarySteerableDetail, StabilizerDetail, TubularSection,
+};
 pub use project::project_bha;
 pub use sanitize::{SanitizationPolicy, SanitizationReport, sanitize_tree};
 pub use xml_tree::{StructuralNode, parse_xml};

@@ -1,5 +1,29 @@
 #![allow(missing_docs)]
-use wellforge_bha_interchange::{ComponentKind, InterchangeError, parse_xml, project_bha};
+use wellforge_bha_interchange::{
+    ComponentDetail, ComponentKind, InterchangeError, parse_xml, project_bha,
+};
+
+#[test]
+fn projection_maps_supported_tool_details() {
+    let xml = "<BHA><Caption>A</Caption><Components><Component><Caption>M</Caption><Count>1</Count><PartType>MudMotor</PartType><MotorDetail><BendAngleDeg>1.25</BendAngleDeg></MotorDetail></Component><Component><Caption>R</Caption><Count>1</Count><PartType>RSS</PartType><RotarySteerableDetail><PushTheBit>true</PushTheBit></RotarySteerableDetail></Component></Components></BHA>";
+    let assembly = project_bha(&parse_xml(xml).unwrap()).unwrap();
+    let motor = assembly
+        .components
+        .iter()
+        .find(|item| item.kind == ComponentKind::MudMotor)
+        .unwrap();
+    assert!(
+        matches!(motor.detail, ComponentDetail::Motor(ref detail) if detail.bend_angle_deg == Some(1.25))
+    );
+    let rss = assembly
+        .components
+        .iter()
+        .find(|item| item.kind == ComponentKind::Rss)
+        .unwrap();
+    assert!(
+        matches!(rss.detail, ComponentDetail::RotarySteerable(ref detail) if detail.push_the_bit)
+    );
+}
 
 #[test]
 fn projection_retains_component_and_section_order() {

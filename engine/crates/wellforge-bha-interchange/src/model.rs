@@ -15,6 +15,35 @@ pub enum ComponentKind {
 pub enum ComponentDetail {
     Generic,
     Tubular { sections: Vec<TubularSection> },
+    Motor(MotorDetail),
+    RotarySteerable(RotarySteerableDetail),
+    Stabilizer(StabilizerDetail),
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Default)]
+pub struct MotorDetail {
+    pub geometry: Option<String>,
+    pub bend_angle_deg: Option<f64>,
+    pub lobe_count: Option<u32>,
+    pub lobe_ratio: Option<String>,
+    pub subassembly_sections: Vec<TubularSection>,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Default)]
+pub struct RotarySteerableDetail {
+    pub collar_od_m: Option<f64>,
+    pub collar_id_m: Option<f64>,
+    pub length_m: Option<f64>,
+    pub pad_count: Option<u32>,
+    pub pad_distance_from_bit_m: Option<f64>,
+    pub steering_mode: Option<String>,
+    pub push_the_bit: bool,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Default)]
+pub struct StabilizerDetail {
+    pub od_m: Option<f64>,
+    pub id_m: Option<f64>,
+    pub gauge_diameter_m: Option<f64>,
+    pub blade_count: Option<u32>,
+    pub sub_lengths_m: Vec<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
