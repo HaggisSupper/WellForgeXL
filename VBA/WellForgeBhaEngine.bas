@@ -86,6 +86,7 @@ Public Sub WellForge_BhaRollbackSelfTest()
     If injectedFailure = 0 Then Err.Raise vbObjectError + 8731, "WellForge_BhaRollbackSelfTest", "INJECTED COMMIT FAILURE DID NOT OCCUR"
     If Not WF_BHA_LAST_ROLLBACK_VERIFIED Then Err.Raise vbObjectError + 8732, "WellForge_BhaRollbackSelfTest", "ROLLBACK EQUALITY VERIFICATION FAILED"
     If Not WF_BhaSnapshotsMatch(snapshots) Then Err.Raise vbObjectError + 8734, "WellForge_BhaRollbackSelfTest", "END-TO-END ROLLBACK EQUALITY VERIFICATION FAILED"
+    If StrComp(CStr(ThisWorkbook.Worksheets("Rust Engine").Range("B13").Value2), "FAILED — LAST ACCEPTED VALUES PRESERVED", vbBinaryCompare) <> 0 Then Err.Raise vbObjectError + 8735, "WellForge_BhaRollbackSelfTest", "FAILURE TELEMETRY VERIFICATION FAILED"
     WF_RunBhaRustEngine
     Exit Sub
 
