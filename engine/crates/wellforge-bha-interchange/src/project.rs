@@ -76,6 +76,7 @@ pub fn project_bha(tree: &StructuralNode) -> Result<BhaAssembly, InterchangeErro
             });
         }
         let detail = if let Some(d) = child(node, "MotorDetail") {
+            reject_duplicate_scalars(d, &["Geometry", "BendAngleDeg", "LobeCount", "LobeRatio"])?;
             if kind != ComponentKind::MudMotor {
                 return Err(InterchangeError::InvalidField {
                     field: "MotorDetail",
@@ -94,6 +95,18 @@ pub fn project_bha(tree: &StructuralNode) -> Result<BhaAssembly, InterchangeErro
                 subassembly_sections: sections,
             })
         } else if let Some(d) = child(node, "RotarySteerableDetail") {
+            reject_duplicate_scalars(
+                d,
+                &[
+                    "CollarOD",
+                    "CollarID",
+                    "Length",
+                    "PadCount",
+                    "PadDistanceFromBit",
+                    "SteeringMode",
+                    "PushTheBit",
+                ],
+            )?;
             if kind != ComponentKind::Rss {
                 return Err(InterchangeError::InvalidField {
                     field: "RotarySteerableDetail",
@@ -110,6 +123,7 @@ pub fn project_bha(tree: &StructuralNode) -> Result<BhaAssembly, InterchangeErro
                 push_the_bit: optional_bool(d, "PushTheBit")?.unwrap_or(false),
             })
         } else if let Some(d) = child(node, "StabilizerDetail") {
+            reject_duplicate_scalars(d, &["OD", "ID", "GaugeDiameter", "BladeCount"])?;
             if kind != ComponentKind::Stabilizer {
                 return Err(InterchangeError::InvalidField {
                     field: "StabilizerDetail",
@@ -130,6 +144,12 @@ pub fn project_bha(tree: &StructuralNode) -> Result<BhaAssembly, InterchangeErro
                 sections: sections.clone(),
             }
         };
+        if let ComponentDetail::RotarySteerable(ref d) = detail {
+            validate_rss(d)?;
+        }
+        if let ComponentDetail::Stabilizer(ref d) = detail {
+            validate_stabilizer(d)?;
+        }
         components.push(BhaComponentRecord {
             id,
             name: cname,
@@ -153,6 +173,20 @@ fn optional_text(node: &StructuralNode, name: &'static str) -> Option<String> {
         .and_then(|n| n.text.clone())
         .map(|v| v.trim().to_owned())
         .filter(|v| !v.is_empty())
+}
+fn reject_duplicate_scalars(
+    node: &StructuralNode,
+    fields: &[&'static str],
+) -> Result<(), InterchangeError> {
+    for field in fields {
+        if node.children.iter().filter(|n| n.name == *field).count() > 1 {
+            return Err(InterchangeError::InvalidField {
+                field,
+                value: "duplicate field".into(),
+            });
+        }
+    }
+    Ok(())
 }
 fn optional_bool(
     node: &StructuralNode,
@@ -194,6 +228,12 @@ fn optional_u32(
     node: &StructuralNode,
     field: &'static str,
 ) -> Result<Option<u32>, InterchangeError> {
+    if node.children.iter().filter(|n| n.name == field).count() > 1 {
+        return Err(InterchangeError::InvalidField {
+            field,
+            value: "duplicate field".into(),
+        });
+    }
     optional_text(node, field)
         .map(|v| {
             v.parse::<u32>()
@@ -202,6 +242,51 @@ fn optional_u32(
                 .ok_or(InterchangeError::InvalidField { field, value: v })
         })
         .transpose()
+}
+fn validate_rss(d: &RotarySteerableDetail) -> Result<(), InterchangeError> {
+    for v in [
+        d.collar_od_m,
+        d.collar_id_m,
+        d.length_m,
+        d.pad_distance_from_bit_m,
+    ]
+    .into_iter()
+    .flatten()
+    {
+        if !v.is_finite() || v < 0.0 {
+            return Err(InterchangeError::InvalidGeometry(
+                "RSS dimensions must be finite and non-negative".into(),
+            ));
+        }
+    }
+    if let (Some(od), Some(id)) = (d.collar_od_m, d.collar_id_m) && od <= id {
+            return Err(InterchangeError::InvalidGeometry(
+                "RSS OD must exceed ID".into(),
+            ));
+        }
+    }
+    Ok(())
+}
+fn validate_stabilizer(d: &StabilizerDetail) -> Result<(), InterchangeError> {
+    for v in [d.od_m, d.id_m, d.gauge_diameter_m].into_iter().flatten() {
+        if !v.is_finite() || v < 0.0 {
+            return Err(InterchangeError::InvalidGeometry(
+                "stabilizer dimensions must be finite and non-negative".into(),
+            ));
+        }
+    }
+    if let (Some(od), Some(id)) = (d.od_m, d.id_m) && od <= id {
+            return Err(InterchangeError::InvalidGeometry(
+                "stabilizer OD must exceed ID".into(),
+            ));
+        }
+    }
+    if d.sub_lengths_m.iter().any(|v| !v.is_finite() || *v <= 0.0) {
+        return Err(InterchangeError::InvalidGeometry(
+            "stabilizer lengths must be positive".into(),
+        ));
+    }
+    Ok(())
 }
 fn optional_numbers(
     node: &StructuralNode,
