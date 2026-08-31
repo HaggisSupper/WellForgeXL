@@ -111,3 +111,74 @@ fn detail_invalid_geometry_is_rejected() {
         ));
     }
 }
+
+#[test]
+fn detail_distinct_kind_conflict_is_rejected() {
+    let xml = "<BHA><Caption>A</Caption><Components><Component><Caption>M</Caption><Count>1</Count><PartType>MudMotor</PartType><MotorDetail/><StabilizerDetail/></Component></Components></BHA>";
+    assert!(matches!(
+        project_bha(&parse_xml(xml).unwrap()),
+        Err(InterchangeError::InvalidField {
+            field: "ComponentDetail",
+            ..
+        })
+    ));
+}
+
+#[test]
+fn stabilizer_fields_project_exactly() {
+    let xml = "<BHA><Caption>A</Caption><Components><Component><Caption>S</Caption><Count>1</Count><PartType>Stabilizer</PartType><StabilizerDetail><OD>0.3</OD><ID>0.1</ID><GaugeDiameter>0.31</GaugeDiameter><BladeCount>4</BladeCount><SubLength>1.2</SubLength><SubLength>0.8</SubLength></StabilizerDetail></Component></Components></BHA>";
+    let a = project_bha(&parse_xml(xml).unwrap()).unwrap();
+    if let ComponentDetail::Stabilizer(d) = &a.components[0].detail {
+        assert_eq!(
+            (
+                d.od_m,
+                d.id_m,
+                d.gauge_diameter_m,
+                d.blade_count,
+                &d.sub_lengths_m
+            ),
+            (Some(0.3), Some(0.1), Some(0.31), Some(4), &vec![1.2, 0.8])
+        );
+    } else {
+        panic!();
+    }
+}
+
+#[test]
+fn motor_nested_invalid_geometry_is_rejected() {
+    let xml = "<BHA><Caption>A</Caption><Components><Component><Caption>M</Caption><Count>1</Count><PartType>MudMotor</PartType><MotorDetail><Sections><Section><SectionType>X</SectionType><OD>0.1</OD><ID>0.2</ID><Length>1</Length></Section></Sections></MotorDetail></Component></Components></BHA>";
+    assert!(matches!(
+        project_bha(&parse_xml(xml).unwrap()),
+        Err(InterchangeError::InvalidGeometry(_))
+    ));
+}
+
+#[test]
+fn rss_optional_fields_project_exactly() {
+    let xml = "<BHA><Caption>A</Caption><Components><Component><Caption>R</Caption><Count>1</Count><PartType>RSS</PartType><RotarySteerableDetail><CollarOD>0.2</CollarOD><CollarID>0.1</CollarID><Length>3</Length><PadCount>3</PadCount><PadDistanceFromBit>1.5</PadDistanceFromBit><SteeringMode>push</SteeringMode><PushTheBit>false</PushTheBit></RotarySteerableDetail></Component></Components></BHA>";
+    let a = project_bha(&parse_xml(xml).unwrap()).unwrap();
+    if let ComponentDetail::RotarySteerable(d) = &a.components[0].detail {
+        assert_eq!(
+            (
+                d.collar_od_m,
+                d.collar_id_m,
+                d.length_m,
+                d.pad_count,
+                d.pad_distance_from_bit_m,
+                d.steering_mode.as_deref(),
+                d.push_the_bit
+            ),
+            (
+                Some(0.2),
+                Some(0.1),
+                Some(3.0),
+                Some(3),
+                Some(1.5),
+                Some("push"),
+                false
+            )
+        );
+    } else {
+        panic!();
+    }
+}
