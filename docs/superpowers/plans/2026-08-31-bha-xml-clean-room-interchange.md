@@ -103,7 +103,7 @@ fn crate_exposes_a_typed_error() {
 
 - [ ] **Step 2: Run the test to verify it fails before the crate exists**
 
-Run: `cargo test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test structural_json crate_exposes_a_typed_error`
+Run: `cargo +1.98.0 test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test structural_json crate_exposes_a_typed_error`
 
 Expected: Cargo reports that package `wellforge-bha-interchange` does not exist.
 
@@ -133,13 +133,13 @@ Re-export `InterchangeError` from `lib.rs`.
 
 - [ ] **Step 4: Run the focused test**
 
-Run: `cargo test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test structural_json crate_exposes_a_typed_error`
+Run: `cargo +1.98.0 test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test structural_json crate_exposes_a_typed_error`
 
 Expected: PASS.
 
 - [ ] **Step 5: Run formatting and commit the isolated crate shell**
 
-Run: `cargo fmt --check --manifest-path engine/Cargo.toml`
+Run: `cargo +1.98.0 fmt --check --manifest-path engine/Cargo.toml`
 
 Expected: PASS.
 
@@ -184,7 +184,7 @@ fn parser_rejects_a_doctype() {
 
 - [ ] **Step 2: Run the focused tests to verify they fail**
 
-Run: `cargo test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test structural_json parser_`
+Run: `cargo +1.98.0 test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test structural_json parser_`
 
 Expected: FAIL because `parse_xml` and `StructuralNode` are not exported.
 
@@ -196,7 +196,7 @@ Create `neutral_bha.xml` with an invented two-component assembly, no legacy meta
 
 - [ ] **Step 4: Run focused parser tests and formatting**
 
-Run: `cargo test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test structural_json parser_ && cargo fmt --check --manifest-path engine/Cargo.toml`
+Run: `cargo +1.98.0 test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test structural_json parser_ && cargo +1.98.0 fmt --check --manifest-path engine/Cargo.toml`
 
 Expected: PASS.
 
@@ -224,9 +224,9 @@ git commit -m "feat: parse neutral BHA XML safely"
 ```rust
 #[test]
 fn sanitizer_removes_matching_element_attribute_and_value() {
-    let policy = SanitizationPolicy::from_plaintext_for_test(["restricted-token"]);
+    let policy = SanitizationPolicy::new(BTreeSet::from([digest_for_test("restrictedtoken")]));
     let tree = parse_xml(
-        "<BHA source=\"restricted-token\"><Caption>Neutral</Caption><Restricted-Token>restricted-token</Restricted-Token></BHA>",
+        "<BHA source=\"restrictedtoken\"><Caption>Neutral</Caption><restrictedtoken>restrictedtoken</restrictedtoken></BHA>",
     ).unwrap();
     let (sanitized, report) = sanitize_tree(tree, &policy).unwrap();
     assert!(sanitized.attributes.is_empty());
@@ -247,19 +247,19 @@ fn structural_json_retains_child_order() {
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `cargo test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test structural_json sanitizer_ structural_json_`
+Run: `cargo +1.98.0 test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test structural_json sanitizer_ structural_json_`
 
 Expected: FAIL because policy, sanitization, and JSON APIs do not exist.
 
 - [ ] **Step 3: Implement recursive sanitization and JSON conversion**
 
-Define `SanitizationPolicy::new(BTreeSet<[u8; 32]>)` and `Default` as an empty policy for production. Keep `from_plaintext_for_test` behind `#[cfg(test)]` so plaintext restricted tokens cannot enter production artifacts. Tokenize names and scalar values at non-alphanumeric boundaries, lowercase each token, hash it with SHA-256, and compare it to the supplied digest set.
+Define `SanitizationPolicy::new(BTreeSet<[u8; 32]>)` and `Default` as an empty policy for production. In the integration test module, define `digest_for_test` locally with `Sha256`; production crate code never accepts or stores plaintext restricted tokens. Tokenize names and scalar values at non-alphanumeric boundaries, lowercase each token, hash it with SHA-256, and compare it to the supplied digest set.
 
 Remove a matching element and its descendants. Remove matching attributes. Remove a matching scalar text value while retaining the neutral node. Count each removal category without preserving the removed text. Serialize `StructuralNode` directly with `serde` so `children` remains a vector.
 
 - [ ] **Step 4: Run focused tests, clippy, and formatting**
 
-Run: `cargo test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test structural_json && cargo clippy --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --all-targets -- -D warnings && cargo fmt --check --manifest-path engine/Cargo.toml`
+Run: `cargo +1.98.0 test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test structural_json && cargo +1.98.0 clippy --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --all-targets -- -D warnings && cargo +1.98.0 fmt --check --manifest-path engine/Cargo.toml`
 
 Expected: PASS.
 
@@ -304,7 +304,7 @@ fn projection_rejects_section_with_od_not_greater_than_id() {
 
 - [ ] **Step 2: Run the focused tests to verify they fail**
 
-Run: `cargo test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test projection`
+Run: `cargo +1.98.0 test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test projection`
 
 Expected: FAIL because `project_bha` and canonical model types do not exist.
 
@@ -316,7 +316,7 @@ Require assembly caption, component caption, positive count, section type, OD, I
 
 - [ ] **Step 4: Run projection tests and quality checks**
 
-Run: `cargo test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test projection && cargo clippy --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --all-targets -- -D warnings && cargo fmt --check --manifest-path engine/Cargo.toml`
+Run: `cargo +1.98.0 test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test projection && cargo +1.98.0 clippy --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --all-targets -- -D warnings && cargo +1.98.0 fmt --check --manifest-path engine/Cargo.toml`
 
 Expected: PASS.
 
@@ -355,7 +355,7 @@ fn projection_maps_supported_tool_details() {
 
 - [ ] **Step 2: Run the focused test to verify it fails**
 
-Run: `cargo test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test projection projection_maps_supported_tool_details`
+Run: `cargo +1.98.0 test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test projection projection_maps_supported_tool_details`
 
 Expected: FAIL because detail variants and XML mappings do not exist.
 
@@ -367,7 +367,7 @@ Treat an absent optional detail block as `None`. Reject a detail block whose com
 
 - [ ] **Step 4: Run detail tests and the entire crate suite**
 
-Run: `cargo test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange && cargo clippy --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --all-targets -- -D warnings && cargo fmt --check --manifest-path engine/Cargo.toml`
+Run: `cargo +1.98.0 test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange && cargo +1.98.0 clippy --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --all-targets -- -D warnings && cargo +1.98.0 fmt --check --manifest-path engine/Cargo.toml`
 
 Expected: PASS.
 
@@ -406,7 +406,7 @@ fn converter_emits_sanitized_structural_and_canonical_json() {
 
 - [ ] **Step 2: Run the end-to-end test to verify it fails**
 
-Run: `cargo test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test projection converter_emits_sanitized_structural_and_canonical_json`
+Run: `cargo +1.98.0 test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --test projection converter_emits_sanitized_structural_and_canonical_json`
 
 Expected: FAIL because `convert_xml` and `InterchangeOutput` are not exported.
 
@@ -416,7 +416,7 @@ Compose parser, sanitizer, projection, and validation in `convert_xml`. Export t
 
 - [ ] **Step 4: Run full crate and workspace verification**
 
-Run: `cargo test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange && cargo clippy --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --all-targets -- -D warnings && cargo test --manifest-path engine/Cargo.toml && cargo fmt --check --manifest-path engine/Cargo.toml`
+Run: `cargo +1.98.0 test --manifest-path engine/Cargo.toml -p wellforge-bha-interchange && cargo +1.98.0 clippy --manifest-path engine/Cargo.toml -p wellforge-bha-interchange --all-targets -- -D warnings && cargo +1.98.0 test --manifest-path engine/Cargo.toml && cargo +1.98.0 fmt --check --manifest-path engine/Cargo.toml`
 
 Expected: PASS.
 
