@@ -29,6 +29,25 @@ const EXIT_INTEGRITY_FAILURE: i32 = 30;
 const EXIT_IO_FAILURE: i32 = 40;
 const COMPILER_VERSION: &str = env!("WELLFORGE_RUSTC_VERSION_VERBOSE");
 
+fn canonical_lockfile_hash(lockfile: &str) -> String {
+    hex::encode(sha2::Sha256::digest(
+        lockfile.replace("\r\n", "\n").as_bytes(),
+    ))
+}
+
+#[cfg(test)]
+mod lockfile_hash_tests {
+    use super::canonical_lockfile_hash;
+
+    #[test]
+    fn normalizes_windows_line_endings_before_hashing() {
+        assert_eq!(
+            canonical_lockfile_hash("version = 4\n[[package]]\nname = \"example\"\n"),
+            canonical_lockfile_hash("version = 4\r\n[[package]]\r\nname = \"example\"\r\n")
+        );
+    }
+}
+
 #[derive(Parser)]
 #[command(
     name = "wellforge-trajectory",
@@ -418,7 +437,7 @@ fn analyze_request(
             engine_version: env!("CARGO_PKG_VERSION").to_owned(),
             compiler_version: COMPILER_VERSION.to_owned(),
             target_triple: target_triple(),
-            lockfile_hash: hex::encode(sha2::Sha256::digest(include_bytes!("../../../Cargo.lock"))),
+            lockfile_hash: canonical_lockfile_hash(include_str!("../../../Cargo.lock")),
             request_hash,
             result_hash: String::new(),
         },

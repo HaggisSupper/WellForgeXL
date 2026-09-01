@@ -7,6 +7,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+Import-Module Microsoft.PowerShell.Utility -ErrorAction Stop
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $engineRoot = Join-Path $repositoryRoot 'engine'
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot 'outputs\vba-engine' }
@@ -14,6 +15,25 @@ if ([string]::IsNullOrWhiteSpace($LogDirectory)) { $LogDirectory = Join-Path $re
 New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null
 $logPath = Join-Path $LogDirectory ('trajectory-engine-build-{0}.jsonl' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
 $succeeded = $false
+
+function Get-FileHash {
+    param(
+        [Parameter(Mandatory = $true)][string]$LiteralPath,
+        [ValidateSet('SHA256')][string]$Algorithm = 'SHA256'
+    )
+    $stream = $null
+    $hasher = $null
+    try {
+        $stream = [System.IO.File]::OpenRead($LiteralPath)
+        $hasher = [System.Security.Cryptography.SHA256]::Create()
+        $hash = [System.BitConverter]::ToString($hasher.ComputeHash($stream)).Replace('-', '')
+        return [pscustomobject]@{ Hash = $hash }
+    }
+    finally {
+        if ($null -ne $hasher) { $hasher.Dispose() }
+        if ($null -ne $stream) { $stream.Dispose() }
+    }
+}
 
 function Write-EngineEvent {
     param([string]$Level, [string]$Message)

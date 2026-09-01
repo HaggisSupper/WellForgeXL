@@ -9,3 +9,4 @@ package_previous_*/
 .superpowers/sdd/
 node_modules
 engine/target/
+logs/

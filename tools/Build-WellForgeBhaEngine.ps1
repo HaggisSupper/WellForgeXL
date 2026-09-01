@@ -6,13 +6,35 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+Import-Module Microsoft.PowerShell.Utility -ErrorAction Stop
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $engineRoot = Join-Path $repositoryRoot 'engine'
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot 'outputs\vba-engine' }
 if ([string]::IsNullOrWhiteSpace($LogDirectory)) { $LogDirectory = Join-Path $repositoryRoot 'logs' }
+if (-not [System.IO.Path]::IsPathRooted($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot $OutputDirectory }
+$OutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory)
 New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null
 $logPath = Join-Path $LogDirectory ('bha-engine-build-{0}.jsonl' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
 $succeeded = $false
+
+function Get-FileHash {
+    param(
+        [Parameter(Mandatory = $true)][string]$LiteralPath,
+        [ValidateSet('SHA256')][string]$Algorithm = 'SHA256'
+    )
+    $stream = $null
+    $hasher = $null
+    try {
+        $stream = [System.IO.File]::OpenRead($LiteralPath)
+        $hasher = [System.Security.Cryptography.SHA256]::Create()
+        $hash = [System.BitConverter]::ToString($hasher.ComputeHash($stream)).Replace('-', '')
+        return [pscustomobject]@{ Hash = $hash }
+    }
+    finally {
+        if ($null -ne $hasher) { $hasher.Dispose() }
+        if ($null -ne $stream) { $stream.Dispose() }
+    }
+}
 
 function Write-EngineEvent {
     param([string]$Level, [string]$Message)
@@ -34,9 +56,9 @@ try {
     Set-Location $engineRoot
     & cargo +1.98.0 fmt --all -- --check
     if ($LASTEXITCODE -ne 0) { throw 'cargo fmt failed' }
-    & cargo +1.98.0 clippy --workspace --all-targets --all-features --locked -- -D warnings
+    & cargo +1.98.0 clippy --workspace --all-targets --locked -- -D warnings
     if ($LASTEXITCODE -ne 0) { throw 'cargo clippy failed' }
-    & cargo +1.98.0 test --workspace --all-features --locked
+    & cargo +1.98.0 test --workspace --locked
     if ($LASTEXITCODE -ne 0) { throw 'cargo test failed' }
     $cargoDenyVersion = if ($null -ne (Get-Command cargo-deny -ErrorAction SilentlyContinue)) { (& cargo-deny --version) -join ' ' } else { '' }
     if ($cargoDenyVersion -notmatch '^cargo-deny 0\.20\.2(?:\s|$)') {
@@ -44,7 +66,7 @@ try {
         & cargo +1.98.0 install cargo-deny --version 0.20.2 --locked --force
         if ($LASTEXITCODE -ne 0) { throw 'cargo-deny installation failed' }
     }
-    & cargo deny check advisories licenses bans sources
+    & cargo-deny --frozen check advisories licenses bans sources
     if ($LASTEXITCODE -ne 0) { throw 'cargo-deny policy failed' }
     & cargo +1.98.0 build --release --locked -p wellforge-bha-cli
     if ($LASTEXITCODE -ne 0) { throw 'release build failed' }

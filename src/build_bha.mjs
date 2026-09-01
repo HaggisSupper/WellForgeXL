@@ -222,7 +222,9 @@ export function buildBhaWorkbook() {
   PolarPlot.getRange('A5:E5').values=[['Toolface deg','WOB 1 X','WOB 1 Y','WOB 2 X','WOB 2 Y']];
   PolarPlot.getRange('A6:E18').formulas=Array.from({length:13},(_,i)=>{const j=i===12?0:i; const r=6+j; return [`='Tendency Matrix'!A${r}`,`='Tendency Matrix'!D${r}*SIN('Tendency Matrix'!B${r})`,`='Tendency Matrix'!D${r}*COS('Tendency Matrix'!B${r})`,`='Tendency Matrix'!F${r}*SIN('Tendency Matrix'!B${r})`,`='Tendency Matrix'!F${r}*COS('Tendency Matrix'!B${r})`];});
   PolarPlot.getRange('H5:L5').values=[['Angle','Ring 25%','Ring 50%','Ring 75%','Ring 100%']]; PolarPlot.getRange('H6:L17').formulas=Array.from({length:12},(_,i)=>[`=${i*30}`,`=MAX($B$6:$E$18)*0.25`,`=MAX($B$6:$E$18)*0.50`,`=MAX($B$6:$E$18)*0.75`,`=MAX($B$6:$E$18)`]);
-  const polarBase=PolarPlot.charts.add('radar',PolarPlot.getRange('H5:L17')); polarBase.title='Polar grid'; polarBase.hasLegend=false; polarBase.setPosition('G20','N38');
+  const polarBase=PolarPlot.charts.add('radar',PolarPlot.getRange('H5:L17')); polarBase.title='Polar grid'; polarBase.hasLegend=false; polarBase.setPosition('G20','N37');
+  // Keep the XY overlay in a distinct drawing anchor.  Identical anchors can
+  // be serialized as an invalid radar/scatter combination by the exporter.
   addPolarScatterChart(PolarPlot,[{name:'WOB 1',xRange:"='Polar Plot'!$B$6:$B$18",yRange:"='Polar Plot'!$C$6:$C$18",lineColor:'#0F766E',transparency:35},{name:'WOB 2',xRange:"='Polar Plot'!$D$6:$D$18",yRange:"='Polar Plot'!$E$6:$E$18",lineColor:'#D97706',transparency:35}],'WOB/toolface polar response','G20','N38',{xTitle:'East component',yTitle:'North component'});
 
   sectionHeader(RustEngine,'A3:H3','Rust BHA engine contract, source identity and execution state');
