@@ -8,7 +8,7 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const uiRoot = path.join(root, 'HTML UI');
 
 test('HTML UI is a portable multi-file website with the required engine views', async () => {
-  const required = ['index.html', 'styles.css', 'app.js', 'README.md', 'Launch-WellForgeUI.bat', path.join('data', 'chart-method.json')];
+  const required = ['index.html', 'tokens.css', 'styles.css', 'app.js', 'README.md', 'Launch-WellForgeUI.bat', path.join('data', 'chart-method.json')];
   for (const file of required) await fs.access(path.join(uiRoot, file));
   const html = await fs.readFile(path.join(uiRoot, 'index.html'), 'utf8');
   for (const view of ['overview', 'trajectory', 'bha', 'hydraulics', 'torque', 'data']) {
@@ -19,6 +19,7 @@ test('HTML UI is a portable multi-file website with the required engine views', 
   assert.match(html, /type="module" src="app\.js"/);
   assert.match(html, /id="app-launcher"/);
   assert.match(html, /id="launcher-search"/);
+  assert.match(html, /tokens\.css/);
   await fs.access(path.join(uiRoot, 'vendor', 'tabulator.min.js'));
   await fs.access(path.join(uiRoot, 'vendor', 'tabulator_midnight.min.css'));
   assert.match(html, /vendor\/tabulator\.min\.js/);
@@ -29,10 +30,12 @@ test('HTML UI is a portable multi-file website with the required engine views', 
   assert.match(app, /mountGrid\("nozzle-table"/);
   assert.match(app, /openLauncher/);
   assert.match(app, /event\.key\.toLowerCase\(\) === "k"/);
+  assert.match(app, /launcherReturnFocus/);
+  assert.match(app, /event\.key === "Tab"/);
 });
 
 test('HTML UI contains no prohibited vendor references', async () => {
-  const files = ['index.html', 'styles.css', 'app.js', 'README.md', 'Launch-WellForgeUI.bat', path.join('data', 'chart-method.json')];
+  const files = ['index.html', 'tokens.css', 'styles.css', 'app.js', 'README.md', 'Launch-WellForgeUI.bat', path.join('data', 'chart-method.json')];
   const source = (await Promise.all(files.map((file) => fs.readFile(path.join(uiRoot, file), 'utf8')))).join('\n');
   assert.doesNotMatch(source, /weatherford|\bwft\b|\bk1\b|\bk2\b/i);
 });

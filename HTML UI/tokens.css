@@ -1,0 +1,34 @@
+:root {
+  /* Semantic tokens derived from the shared application style guide. */
+  --color-surface-canvas: #0f0f1a;
+  --color-surface-default: #1a1a2e;
+  --color-surface-subtle: #232344;
+  --color-surface-inset: #141426;
+  --color-text-primary: #e0e0e0;
+  --color-text-secondary: #aaaac0;
+  --color-text-muted: #8d8da5;
+  --color-border-subtle: #2a2a4e;
+  --color-border-strong: #3a3a5e;
+  --color-action-primary: #c3f36b;
+  --color-action-secondary: #4e79a7;
+  --color-feedback-success: #59a14f;
+  --color-feedback-warning: #edc948;
+  --color-feedback-danger: #e15759;
+  --color-feedback-info: #76b7b2;
+  --color-focus-ring: #76b7b2;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --layer-raised: 10;
+  --layer-floating: 20;
+  --layer-overlay: 30;
+  --motion-fast: 140ms;
+  --motion-standard: 220ms;
+  --motion-easing: cubic-bezier(.2, .8, .2, 1);
+}

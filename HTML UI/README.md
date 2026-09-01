@@ -4,6 +4,8 @@ This is the local, multi-file browser UI for inspecting the shared WellForge eng
 
 All data grids are powered by the vendored Tabulator 6.3.1 distribution in `vendor/` with movable columns, pagination, resizing, and a readable fallback for file-only previews.
 
+`tokens.css` centralizes the semantic colors, spacing, radii, focus treatment, and motion settings adapted from the shared `APP_STYLE_GUIDE.md`. The Apps launcher supports `Ctrl+K`/`Cmd+K`, `Escape`, click-outside dismissal, keyboard focus trapping, and focus restoration.
+
 ## Run locally
 
 From the repository root:

@@ -10,6 +10,7 @@ const FALLBACK = {
 
 let caseData = FALLBACK;
 const grids = new Map();
+let launcherReturnFocus = null;
 
 const $ = (id) => document.getElementById(id);
 const val = (obj, key, fallback = 0) => Number(obj?.[key]?.value ?? fallback);
@@ -61,10 +62,13 @@ function closeLauncher() {
   const launcher = $("app-launcher");
   launcher.hidden = true;
   document.body.classList.remove("launcher-open");
+  launcherReturnFocus?.focus?.();
+  launcherReturnFocus = null;
 }
 
 function openLauncher() {
   const launcher = $("app-launcher");
+  launcherReturnFocus = document.activeElement;
   launcher.hidden = false;
   document.body.classList.add("launcher-open");
   const search = $("launcher-search");
@@ -177,6 +181,25 @@ $("launcher-close").addEventListener("click", closeLauncher);
 $("app-launcher").addEventListener("click", (event) => { if (event.target.id === "app-launcher") closeLauncher(); });
 document.querySelectorAll("[data-launch-view]").forEach((card) => card.addEventListener("click", () => { setView(card.dataset.launchView); closeLauncher(); }));
 $("launcher-search").addEventListener("input", (event) => { const query = event.target.value.trim().toLowerCase(); document.querySelectorAll(".launcher-card").forEach((card) => { card.hidden = Boolean(query) && !card.dataset.launchLabel.toLowerCase().includes(query); }); });
-document.addEventListener("keydown", (event) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") { event.preventDefault(); openLauncher(); } else if (event.key === "Escape" && !$("app-launcher").hidden) closeLauncher(); });
+document.addEventListener("keydown", (event) => {
+  const launcher = $("app-launcher");
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+    event.preventDefault();
+    openLauncher();
+  } else if (event.key === "Escape" && !launcher.hidden) {
+    closeLauncher();
+  } else if (event.key === "Tab" && !launcher.hidden) {
+    const focusables = [...launcher.querySelectorAll("button, input")].filter((element) => !element.hidden && !element.disabled);
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (first && last && event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (first && last && !event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+});
 $("reload-data").addEventListener("click", loadData);
 loadData();
