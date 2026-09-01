@@ -22,6 +22,10 @@ On Windows, double-click [`Launch-WellForgeUI.bat`](Launch-WellForgeUI.bat). It 
 
 `data/chart-method.json` records the extracted reusable method: paired x/y scatter series, measured depth on a reversed y-axis, constant threshold series, and bullet indicators with explicit actual/target/limit text. The implementation is dependency-free SVG so it can be used during local engine testing without a package install.
 
+`data/tenderbit-spec-design.json` is the broader sanitized design inventory extracted
+from the workbook: table contracts, proposed views, navigation and validation
+interactions, and the promoted-plan report outline.
+
 ## Source workbook note
 
 The verified Drive workbook is retained as a read-only provenance artifact at

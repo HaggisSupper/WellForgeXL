@@ -1,0 +1,169 @@
+{
+  "name": "tenderbit-spec-design-inventory",
+  "version": "1.0.0",
+  "purpose": "Sanitized design extraction from the Tenderbit Spec workbook for the desktop HTML UI and Rust engine contracts.",
+  "source": {
+    "workbook": "Work tree artifacts/Tenderbid Spec/Tenderbit Spec_Indexed_V21.xlsm",
+    "source_ranges_are_provenance_only": true,
+    "vba_imported": false
+  },
+  "table_definitions": [
+    {
+      "id": "well_project",
+      "sheet": "Wellplanning Data Sheet",
+      "range": "A8:H42",
+      "fields": ["field_name", "block_number", "well_name", "well_objective", "structure_name", "slot_name", "latitude", "longitude", "utm_north", "utm_east", "local_north", "local_east", "north_reference", "grid_convergence", "target_name", "target_tvd_ss", "target_tvd_rkb", "target_coordinate", "inc_range", "azi_range", "target_shape", "target_dimension", "curved_conductor", "sidetrack", "parent_wellbore", "sidetrack_depth", "hole_size_at_sidetrack", "survey_programme"]
+    },
+    {
+      "id": "formations",
+      "sheet": "Rept section Placeholder",
+      "range": "B74:E88",
+      "fields": ["tvd_ft", "formation_name", "formation_type"]
+    },
+    {
+      "id": "well_plan_station",
+      "sheet": "Rept section Placeholder",
+      "range": "B90:J103",
+      "fields": ["md_ft", "inclination_deg", "azimuth_deg", "tvd_ft", "vertical_section_ft", "north_south_ft", "east_west_ft", "dogleg_deg_per_100ft"]
+    },
+    {
+      "id": "well_interval",
+      "sheet": "Rept section Placeholder",
+      "range": "B105:I113",
+      "fields": ["section_type", "start_md_ft", "end_md_ft", "length_ft", "outer_diameter_in", "inner_diameter_or_hole_size_in", "material", "associated_parent"]
+    },
+    {
+      "id": "survey_station",
+      "sheet": "Survey Listing",
+      "range": "A3:V4",
+      "fields": ["md", "inc", "azimuth", "tvd", "northing", "easting", "vertical_section", "inc_rad", "azimuth_rad", "dogleg_beta", "ratio_factor", "delta_tvd", "delta_northing", "delta_easting", "vsec_new", "delta_vsec"]
+    },
+    {
+      "id": "bha_shape",
+      "sheet": "BHA Shape",
+      "range": "A6:J25",
+      "fields": ["x", "outer_radius", "inner_radius", "pos_x", "as_md", "top_upper_band", "bottom_upper_band", "top_lower_band", "bottom_lower_band"],
+      "derived_rules": ["upper_band = pos_x + outer_or_inner_radius", "lower_band = pos_x - outer_or_inner_radius", "plot_depth = as_md"]
+    },
+    {
+      "id": "drilling_performance",
+      "sheet": "Parameter sheet",
+      "range": "A9:AY11",
+      "fields": ["date", "bha_no", "from_ft", "to_ft", "connection_length_ft", "start_time", "end_time", "total_hours", "rop_ft_per_hr", "mode_rs", "wob_min", "wob_max", "effective_toolface_deg", "rpm_average", "bottom_torque", "drilling_torque_min", "drilling_torque_max", "reactive_torque", "flow_gpm", "pressure_off_psi", "pressure_on_psi", "pressure_diff_psi", "formation_depth", "formation_type", "formation_name", "input_depth", "input_inc", "input_azi", "result_dls", "result_build", "result_turn", "pickup_reading", "slackoff_reading", "rotation_reading", "calculated_up", "calculated_down", "bha_id", "activity", "total_connection_length", "slide_length", "rotary_length", "time_total", "time_slide", "time_rotary", "wob_max", "rpm", "torque"]
+    },
+    {
+      "id": "tubular_catalog",
+      "sheet": "Tubulars_NonSpecial",
+      "range": "A2:Q8101",
+      "fields": ["id", "description", "nominal_size_in", "pipe_id_in", "nominal_weight", "adjusted_weight", "grade", "upset", "thread", "yield_psi", "tool_joint_od_in", "tool_joint_id_in", "tension_body", "tension_joint", "torsion_body", "torsion_joint", "makeup_torque"]
+    },
+    {
+      "id": "collar_connection",
+      "sheet": "CollarConnectionProperties",
+      "range": "A1:AU1047",
+      "fields": ["connection_name", "outside_diameter_in", "inside_diameter_in", "nominal_weight_lb_per_ft", "recommended_makeup_torque", "torque_to_yield", "tensile_strength", "bend_strength_ratio", "displacement_gal_per_ft", "capacity_gal_per_ft", "pin_torque_to_yield", "box_torque_to_yield", "pin_tensile_strength", "box_tensile_strength", "yield_strength_psi", "pitch_diameter", "pin_length", "thread_root_diameter", "modified_od", "si_unit", "api_to_si_multiplier"]
+    },
+    {
+      "id": "kpi_bullet",
+      "sheet": "Drilling KPI_RT Chart",
+      "range": "B3:AU42",
+      "fields": ["metric", "low_range", "mid_range", "high_range", "actual_average_range", "actual_value_current", "target_setting", "alarm_set_point"],
+      "display": "horizontal bullet track with text values exposed beside the visual"
+    }
+  ],
+  "view_proposals": [
+    {
+      "id": "live_well",
+      "source": "Rept sections 2 rows 98-147",
+      "view": "scaled wellbore schematic",
+      "layers": ["riser", "casing_and_liner", "open_hole", "drill_string_and_bit", "annulus_and_pipe_flow", "formations", "pressure_density_velocity_callouts"],
+      "interactions": ["double-click a section to zoom", "double-click again to restore full view", "switch survey angle east/west/north/south", "toggle solid/textured/no-fill", "toggle pressure/density/velocity/viscosity gradients", "animate drill-string rotation for active operation", "screenshot", "record live-view actions"]
+    },
+    {
+      "id": "bha_shape",
+      "source": "BHA Shape Spec and chart5.xml",
+      "view": "scatter-with-lines BHA cross-section",
+      "axes": {"x": "lateral displacement", "y": "measured depth", "y_direction": "increasing downward"},
+      "series": ["TopUpperBand", "BottomUpperBand", "TopLowerBand", "BottomLowerBand"],
+      "legend": false
+    },
+    {
+      "id": "interval_profile",
+      "source": "Interval Chart Spec and chart1.xml/chart4.xml",
+      "view": "interval/casing/open-hole profile",
+      "series": ["open-hole bounds", "cased-hole bounds", "presentation bounds", "bit-position marker"],
+      "axes": {"x": "lateral offset", "y": "measured depth", "x_range": [-30, 30], "y_range": [0, 18000]}
+    },
+    {
+      "id": "hydraulics_profiles",
+      "source": "Hyd Charts",
+      "contexts": ["tripping in/out", "rotary drilling", "slide drilling", "circulating"],
+      "metrics": ["fluid density", "flow behavior index", "flow consistency index", "yield stress", "plastic viscosity", "low-shear yield point", "average velocity", "flow regime", "frictional pressure drop", "hydrostatic pressure drop", "total pressure drop", "equivalent circulating density", "surge EMW", "swab EMW", "weak-zone surge risk", "displaced fluid", "fluid level"]
+    },
+    {
+      "id": "kpi_bullet",
+      "source": "Drilling KPI Spec and chart6.xml",
+      "view": "horizontal KPI bullet chart",
+      "series": ["low range", "mid range", "high range", "actual average range", "actual value", "target", "alarm limit"],
+      "axis": {"minimum": 0, "maximum": 100, "major_unit": 50, "minor_unit": 10}
+    },
+    {
+      "id": "trajectory_views",
+      "source": "Well Timeline, Survey Listing, and Rept sections 2",
+      "view": "trajectory dashboard",
+      "panels": ["section view", "plan view", "dogleg", "azimuth", "inclination", "build rate", "turn rate", "target plot", "tendency rose", "timeline"]
+    },
+    {
+      "id": "torque_drag",
+      "source": "Rept sections 2 rows 2711-6105",
+      "view": "torque-and-drag analysis",
+      "panels": ["load summary", "neutral points", "critical intervals", "axial load", "distributed side force", "hook load", "surface torque", "torque", "BHA and drill-string selections"],
+      "operations": ["rotary drilling", "slide drilling", "rotation off bottom", "picking up", "slacking off"]
+    }
+  ],
+  "interaction_requirements": [
+    {
+      "id": "application_navigation",
+      "source": "Rept sections 2 rows 68-97",
+      "requirements": ["File menu for new/select/import/export", "Home menu for pore pressure, drill-string, and hydraulics analysis", "Setup menu for job, surface equipment, well data, fluids, units, options, and catalogs", "Diagnostics menu for panel/agent logs and system information", "Feedback menu for reports and tickets", "Tools menu for bit calculations and unit conversion"]
+    },
+    {
+      "id": "project_lifecycle",
+      "source": "Rept sections 2 rows 148-228",
+      "requirements": ["create project with required project/well/lease/field/rig/operator/contractor/job/location fields", "save or cancel with confirmation", "select an existing project from a tabular list", "highlight selection and require explicit confirmation", "retain previously active project when cancelled"]
+    },
+    {
+      "id": "interval_validation",
+      "source": "IntervalDataWithBitPos columns AC and IntervalData (2) columns AE-AF",
+      "requirements": ["riser eligibility follows rig type", "selecting a riser auto-selects a BOP", "selected geometry is included in solver payload", "allow open-hole, casing, liner, riser, BOP, and expandable interval types", "new open-hole diameter must be smaller than the preceding casing unless confirmed", "final open-hole TD cannot exceed the deepest associated survey point", "casing/liner end depth cannot exceed its associated open-hole end depth"]
+    },
+    {
+      "id": "analysis_context",
+      "source": "Rept sections 2 rows 284-353 and 2711-2758",
+      "requirements": ["choose operation and bit depth", "choose BHA, drill string, and fluid", "configure flow rate or running speed", "configure tortuosity and friction-factor calibration", "show a summary before detailed result tables and charts"]
+    }
+  ],
+  "report_outline": {
+    "source": "Rept section Placeholder and Rept sections 2",
+    "sections": [
+      "promoted plan report header",
+      "client and well summary",
+      "business product lines and engineers",
+      "client information",
+      "well location, field, site, slot, and datum details",
+      "formations",
+      "well plans with section/plan/dogleg views",
+      "intervals and surface pipe",
+      "BHA analysis settings and excitation inputs",
+      "frequency, heat-map, static, and vibration results",
+      "directional tendencies results",
+      "hydraulics settings, operations, fluids, simulation options, and summaries",
+      "hydraulics result profiles and sensitivity tables",
+      "torque-and-drag settings and friction calibration",
+      "torque-and-drag summary, loads, neutral points, and critical intervals",
+      "BHA/drill-string/fluid appendix",
+      "unit definitions and rig equipment appendix"
+    ],
+    "result_table_groups": ["snapshot pipe", "snapshot annulus", "bit run in", "bit hydraulics optimization", "flow-rate sensitivity", "torque-and-drag data tables"]
+  }
+}
