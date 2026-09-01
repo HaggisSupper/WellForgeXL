@@ -17,7 +17,9 @@ test('HTML UI is a portable multi-file website with the required engine views', 
   }
   assert.match(html, /role="tablist"/);
   assert.match(html, /type="module" src="app\.js"/);
-  assert.match(html, /tabulator-tables@6\.3\.1/);
+  await fs.access(path.join(uiRoot, 'vendor', 'tabulator.min.js'));
+  await fs.access(path.join(uiRoot, 'vendor', 'tabulator_midnight.min.css'));
+  assert.match(html, /vendor\/tabulator\.min\.js/);
   const app = await fs.readFile(path.join(uiRoot, 'app.js'), 'utf8');
   assert.match(app, /new window\.Tabulator/);
   assert.match(app, /mountGrid\("engine-table"/);
