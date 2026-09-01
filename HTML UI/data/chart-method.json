@@ -1,0 +1,26 @@
+{
+  "name": "wellbore-scatter-and-bullet-method",
+  "version": "1.0.0",
+  "purpose": "Reusable chart semantics for the local engine test UI",
+  "scatterPlot": {
+    "x": "metric value",
+    "y": "measured depth",
+    "yAxis": "reverse",
+    "series": "Each metric is a paired x/y series. The y values are shared measured-depth rows.",
+    "threshold": "Represent a constant limit as a second paired series spanning the same depth range.",
+    "markers": "Use small point markers for station data and a continuous line for dense profiles.",
+    "labels": "Label axes with engineering units and keep the depth direction increasing downward."
+  },
+  "bulletChart": {
+    "actual": "Current fixture or engine result",
+    "target": "Preferred operating point",
+    "limit": "Hard screen or design limit",
+    "bands": ["preferred", "watch", "limit"],
+    "accessibility": "Expose the actual, target, and limit values as text alongside the visual track."
+  },
+  "implementation": {
+    "renderer": "SVG and vanilla JavaScript",
+    "source": "../data/wellforge-mock-case.json",
+    "offline": true
+  }
+}
