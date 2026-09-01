@@ -24,4 +24,7 @@ On Windows, double-click [`Launch-WellForgeUI.bat`](Launch-WellForgeUI.bat). It 
 
 ## Source workbook note
 
-The requested “tenderbid spec” workbook was not present on the available mapped drives during regeneration (`G:` was not mapped). The chart method is therefore recorded as a small, sanitized contract rather than adding an unverified workbook binary.
+The verified Drive workbook is retained as a read-only provenance artifact at
+[`Work tree artifacts/Tenderbid Spec/Tenderbit Spec_Indexed_V21.xlsm`](../Work%20tree%20artifacts/Tenderbid%20Spec/Tenderbit%20Spec_Indexed_V21.xlsm).
+Its sheet/chart inventory and purge review are documented in the adjacent
+[`Tenderbit Spec_Indexed_V21.ingestion.md`](../Work%20tree%20artifacts/Tenderbid%20Spec/Tenderbit%20Spec_Indexed_V21.ingestion.md).
