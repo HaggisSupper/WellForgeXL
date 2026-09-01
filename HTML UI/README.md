@@ -14,6 +14,8 @@ python -m http.server 8080
 
 Open `http://localhost:8080/HTML%20UI/` in a browser. The server is needed because the UI fetches `data/wellforge-mock-case.json`; opening `index.html` directly from `file:` will use the small built-in fallback fixture instead.
 
+On Windows, double-click [`Launch-WellForgeUI.bat`](Launch-WellForgeUI.bat). It starts the Python HTTP server on port `8765` and opens the UI. Set `WELLFORGE_UI_PORT` before launching to use another port.
+
 ## Chart method
 
 `data/chart-method.json` records the extracted reusable method: paired x/y scatter series, measured depth on a reversed y-axis, constant threshold series, and bullet indicators with explicit actual/target/limit text. The implementation is dependency-free SVG so it can be used during local engine testing without a package install.
