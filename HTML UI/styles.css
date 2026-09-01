@@ -119,3 +119,29 @@ svg { width: 100%; height: 100%; overflow: visible; }
 .launcher-search-icon { display: block; position: relative; width: 14px; height: 14px; border: 2px solid #77778f; border-radius: 50%; flex: 0 0 14px; }
 .launcher-search-icon::after { content: ""; position: absolute; right: -5px; bottom: -3px; width: 6px; height: 2px; background: #77778f; transform: rotate(45deg); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } }
+
+/* Neutral engineering command-center surface treatment. Analytical series keep their own chart colors. */
+body { background: var(--color-surface-canvas); }
+.topbar { background: rgba(17, 19, 21, .96); }
+.brand-mark { background: var(--color-action-primary); color: var(--color-surface-inset); }
+.launcher-button, .launcher-close { border-color: var(--color-border-strong); background: var(--color-surface-subtle); color: var(--color-text-primary); }
+.launcher-button:hover, .launcher-button:focus-visible, .launcher-close:hover, .launcher-close:focus-visible { border-color: var(--color-focus-ring); background: var(--color-border-subtle); }
+.launcher-backdrop { background: rgba(7, 9, 11, .86); }
+.launcher-search { border-color: var(--color-border-strong); background: var(--color-surface-inset); color: var(--color-text-muted); }
+.launcher-search input { color: var(--color-text-primary); }
+.launcher-card { border-color: var(--color-border-subtle); background: var(--color-surface-default); color: var(--color-text-primary); }
+.launcher-card:hover, .launcher-card:focus-visible { border-color: var(--color-focus-ring); background: var(--color-surface-subtle); }
+.launcher-icon.lime, .launcher-icon.teal, .launcher-icon.blue, .launcher-icon.amber, .launcher-icon.orange, .launcher-icon.violet { background: var(--color-surface-subtle); }
+.launcher-icon.lime::before, .launcher-icon.teal::before, .launcher-icon.blue::before, .launcher-icon.amber::before, .launcher-icon.orange::before, .launcher-icon.orange::after, .launcher-icon.violet::before { border-color: var(--color-text-secondary); background-color: var(--color-text-secondary); }
+.project-rail, .panel { background: var(--color-surface-default); border-color: var(--color-border-subtle); }
+.project-rail h3, .rail-link, .rail-field strong { color: var(--color-text-primary); }
+.rail-search input, .input-item, .engine-row, .tabulator, .tabulator .tabulator-row { background: var(--color-surface-inset) !important; color: var(--color-text-primary) !important; border-color: var(--color-border-subtle) !important; }
+.rail-link:hover, .rail-link:focus-visible, .rail-link.is-active { background: var(--color-surface-subtle); }
+.rail-swatch, .rail-swatch.lime, .rail-swatch.teal, .rail-swatch.blue, .rail-swatch.amber, .rail-swatch.orange, .rail-swatch.violet { background: var(--color-text-secondary); }
+.tabulator .tabulator-header, .tabulator .tabulator-footer { background: var(--color-surface-subtle) !important; border-color: var(--color-border-strong) !important; }
+.tabulator .tabulator-header .tabulator-col { color: var(--color-text-secondary) !important; border-color: var(--color-border-subtle) !important; }
+.tabulator .tabulator-cell { border-color: var(--color-border-subtle) !important; }
+.tabulator .tabulator-row:hover { background: var(--color-border-subtle) !important; }
+.hero::after { border-color: rgba(174, 183, 192, .2); box-shadow: 0 0 0 28px rgba(174, 183, 192, .05), 0 0 0 56px rgba(174, 183, 192, .025); }
+.launcher-icon.teal::before { background: var(--color-text-secondary); box-shadow: 0 -5px 0 -0.5px var(--color-text-secondary), 0 5px 0 -0.5px var(--color-text-secondary); }
+.launcher-icon.blue::before { background: var(--color-text-secondary); box-shadow: -7px 8px 0 -0.5px var(--color-text-secondary), 7px 8px 0 -0.5px var(--color-text-secondary); }

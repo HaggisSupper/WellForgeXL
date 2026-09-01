@@ -24,6 +24,11 @@ test('HTML UI is a portable multi-file website with the required engine views', 
   await fs.access(path.join(uiRoot, 'vendor', 'tabulator_midnight.min.css'));
   assert.match(html, /vendor\/tabulator\.min\.js/);
   const app = await fs.readFile(path.join(uiRoot, 'app.js'), 'utf8');
+  const tokens = await fs.readFile(path.join(uiRoot, 'tokens.css'), 'utf8');
+  const styles = await fs.readFile(path.join(uiRoot, 'styles.css'), 'utf8');
+  assert.match(tokens, /--color-surface-canvas:\s*#111315/);
+  assert.match(tokens, /--space-1:\s*4px/);
+  assert.match(styles, /body\s*\{\s*background:\s*var\(--color-surface-canvas\)/);
   assert.match(app, /new window\.Tabulator/);
   assert.match(app, /mountGrid\("engine-table"/);
   assert.match(app, /mountGrid\("survey-table"/);

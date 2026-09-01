@@ -1,21 +1,21 @@
 :root {
   /* Semantic tokens derived from the shared application style guide. */
-  --color-surface-canvas: #0f0f1a;
-  --color-surface-default: #1a1a2e;
-  --color-surface-subtle: #232344;
-  --color-surface-inset: #141426;
-  --color-text-primary: #e0e0e0;
-  --color-text-secondary: #aaaac0;
-  --color-text-muted: #8d8da5;
-  --color-border-subtle: #2a2a4e;
-  --color-border-strong: #3a3a5e;
-  --color-action-primary: #c3f36b;
-  --color-action-secondary: #4e79a7;
-  --color-feedback-success: #59a14f;
-  --color-feedback-warning: #edc948;
-  --color-feedback-danger: #e15759;
-  --color-feedback-info: #76b7b2;
-  --color-focus-ring: #76b7b2;
+  --color-surface-canvas: #111315;
+  --color-surface-default: #181b1f;
+  --color-surface-subtle: #20242a;
+  --color-surface-inset: #0d0f12;
+  --color-text-primary: #f1f3f5;
+  --color-text-secondary: #c4c9cf;
+  --color-text-muted: #9299a3;
+  --color-border-subtle: #30363d;
+  --color-border-strong: #4a525c;
+  --color-action-primary: #d7dde3;
+  --color-action-secondary: #aeb7c0;
+  --color-feedback-success: #7db48a;
+  --color-feedback-warning: #d1ad62;
+  --color-feedback-danger: #d27b7b;
+  --color-feedback-info: #9aa7b5;
+  --color-focus-ring: #d7dde3;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
