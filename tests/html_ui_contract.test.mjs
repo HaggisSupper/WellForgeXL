@@ -17,6 +17,12 @@ test('HTML UI is a portable multi-file website with the required engine views', 
   }
   assert.match(html, /role="tablist"/);
   assert.match(html, /type="module" src="app\.js"/);
+  assert.match(html, /tabulator-tables@6\.3\.1/);
+  const app = await fs.readFile(path.join(uiRoot, 'app.js'), 'utf8');
+  assert.match(app, /new window\.Tabulator/);
+  assert.match(app, /mountGrid\("engine-table"/);
+  assert.match(app, /mountGrid\("survey-table"/);
+  assert.match(app, /mountGrid\("nozzle-table"/);
 });
 
 test('HTML UI contains no prohibited vendor references', async () => {

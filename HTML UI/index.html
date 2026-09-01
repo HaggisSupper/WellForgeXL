@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="WellForge engine validation and wellbore visualisation UI" />
     <title>WellForge | Engine cockpit</title>
+    <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator_midnight.min.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -24,6 +25,14 @@
       </header>
 
       <main class="workspace">
+        <aside class="project-rail" aria-label="Project navigator">
+          <p class="eyebrow">PROJECT VIEW</p>
+          <h3>Engine graph</h3>
+          <label class="rail-search"><span class="sr-only">Filter views</span><input id="view-filter" type="search" placeholder="Filter views…" /></label>
+          <div class="rail-section"><p class="rail-heading">VIEWS</p><button type="button" class="rail-link is-active" data-rail-view="overview"><span class="rail-swatch lime"></span>Overview</button><button type="button" class="rail-link" data-rail-view="trajectory"><span class="rail-swatch teal"></span>Trajectory</button><button type="button" class="rail-link" data-rail-view="bha"><span class="rail-swatch blue"></span>BHA schematic</button><button type="button" class="rail-link" data-rail-view="hydraulics"><span class="rail-swatch amber"></span>Hydraulics</button><button type="button" class="rail-link" data-rail-view="torque"><span class="rail-swatch orange"></span>Torque &amp; drag</button><button type="button" class="rail-link" data-rail-view="data"><span class="rail-swatch violet"></span>Exchange data</button></div>
+          <div class="rail-info"><p class="rail-heading">CASE INFO</p><div class="rail-field"><span>Well</span><strong id="rail-well">—</strong></div><div class="rail-field"><span>Contract</span><strong id="rail-contract">—</strong></div><div class="rail-field"><span>Source</span><strong>shared JSON</strong></div></div>
+          <div class="rail-legend"><p class="rail-heading">LEGEND</p><div><i class="rail-swatch lime"></i>input geometry</div><div><i class="rail-swatch teal"></i>engine output</div><div><i class="rail-swatch orange"></i>screen / limit</div></div>
+        </aside>
         <section class="hero panel">
           <div>
             <p class="eyebrow">LOCAL ENGINE TEST UI</p>
@@ -107,6 +116,7 @@
       </main>
       <footer class="footer"><span>WellForge local HTML UI</span><span id="last-refresh">—</span></footer>
     </div>
+    <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
     <script type="module" src="app.js"></script>
   </body>
 </html>

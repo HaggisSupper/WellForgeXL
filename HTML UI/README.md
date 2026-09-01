@@ -1,6 +1,8 @@
 # WellForge HTML UI
 
-This is the local, multi-file browser UI for inspecting the shared WellForge engine exchange case. It has tabbed views for overview, trajectory, BHA geometry, hydraulics, torque & drag, and raw exchange data.
+This is the local, multi-file browser UI for inspecting the shared WellForge engine exchange case. It follows the visual language of the quote-processing graph viewer found at `I:\^^Move\Projects\Quote DB pocessing\graphify-out\graph.html`: dark graph canvas, left project rail, compact legend/info blocks, and muted community colors. It has tabbed views for overview, trajectory, BHA geometry, hydraulics, torque & drag, and raw exchange data.
+
+All data grids are powered by pinned Tabulator 6.3.1 (loaded from its public distribution URL) with movable columns, pagination, resizing, and a readable fallback for file-only previews.
 
 ## Run locally
 

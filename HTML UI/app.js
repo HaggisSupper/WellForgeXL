@@ -9,11 +9,39 @@ const FALLBACK = {
 };
 
 let caseData = FALLBACK;
+const grids = new Map();
 
 const $ = (id) => document.getElementById(id);
 const val = (obj, key, fallback = 0) => Number(obj?.[key]?.value ?? fallback);
 const fmt = (number, digits = 0) => Number.isFinite(Number(number)) ? Number(number).toLocaleString(undefined, { maximumFractionDigits: digits }) : "—";
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[char]));
+
+function mountGrid(id, data, columns, options = {}) {
+  const element = $(id);
+  if (!element) return;
+  const previous = grids.get(id);
+  previous?.destroy?.();
+  element.replaceChildren();
+  if (typeof window.Tabulator === "function") {
+    grids.set(id, new window.Tabulator(element, {
+      data,
+      layout: "fitColumns",
+      height: options.height || "270px",
+      movableColumns: true,
+      resizableRows: true,
+      pagination: true,
+      paginationSize: options.paginationSize || 8,
+      paginationSizeSelector: [8, 16, 32],
+      placeholder: "No rows in fixture",
+      columns
+    }));
+    return;
+  }
+  // The CDN is optional for file previews; keep a readable fallback while preserving the same data contract.
+  const headers = columns.map((column) => `<th>${esc(column.title)}</th>`).join("");
+  const rows = data.map((row) => `<tr>${columns.map((column) => `<td>${esc(row[column.field])}</td>`).join("")}</tr>`).join("");
+  element.innerHTML = `<table class="data-table"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+}
 
 function setView(view) {
   document.querySelectorAll(".tab").forEach((tab) => {
@@ -79,7 +107,9 @@ function renderOverview() {
   const op = caseData.operatingPoint || {}, limits = caseData.rigLimits || {};
   $("overview-bullets").innerHTML = [bulletMarkup("Surface pressure", val(limits, "surfacePressure") / 1e6, 28, val(limits, "surfacePressure") / 1e6, "MPa"), bulletMarkup("Hookload", val(op, "wob") / 1000, val(limits, "hookload") / 1000, val(limits, "hookload") / 1000, "kN"), bulletMarkup("Flow rate", val(op, "flowRate") * 1000, 40, 50, "L/s")].join("");
   const engines = [["Directional", caseData.analyses?.directional], ["BHA", caseData.analyses?.bha], ["Hydraulics", caseData.analyses?.hydraulics], ["Torque & drag", caseData.analyses?.torqueDrag], ["API 7G", caseData.analyses?.api7g]];
-  $("engine-table").innerHTML = `<div class="engine-row header"><span>Engine</span><span>State</span><span>Inputs</span></div>` + engines.map(([name, engine]) => `<div class="engine-row"><span>${name}</span><span class="ready">${engine?.calculationState || "not calculated"}</span><span class="muted">${Object.keys(engine || {}).length} fields</span></div>`).join("");
+  mountGrid("engine-table", engines.map(([name, engine]) => ({ engine: name, state: engine?.calculationState || "not calculated", inputs: `${Object.keys(engine || {}).length} fields` })), [{ title: "Engine", field: "engine", widthGrow: 1.4 }, { title: "State", field: "state", cssClass: "ready" }, { title: "Inputs", field: "inputs", cssClass: "muted" }], { height: "248px", paginationSize: 6 });
+  $("rail-well").textContent = caseData.metadata?.wellName || caseData.caseId || "local fixture";
+  $("rail-contract").textContent = caseData.schemaVersion || "—";
 }
 
 function renderTrajectory() {
@@ -89,7 +119,7 @@ function renderTrajectory() {
   $("trajectory-insights").innerHTML = [["Targets", `${targets.length} target windows loaded`, "ready"], ["Slide intervals", `${slides.length} steering intervals loaded`, "ready"], ["Formation tops", `${formations.length} formation markers loaded`, "ready"], ["Plan / survey", `${caseData.analyses?.directional?.calculationState || "not calculated"}`, "fixture"]].map(([title, copy, state]) => `<div class="insight"><div class="insight-copy"><strong>${title}</strong><span>${copy}</span></div><span class="insight-state">${state}</span></div>`).join("");
   const survey = caseData.trajectory?.survey || [];
   $("survey-count").textContent = `${survey.length} rows`;
-  $("survey-table").innerHTML = `<table class="data-table"><thead><tr><th>Station</th><th>MD</th><th>Inclination</th><th>Azimuth</th></tr></thead><tbody>${survey.slice(0, 18).map((row) => `<tr><td>${esc(row.id)}</td><td class="numeric">${fmt(val(row, "md"), 1)} ${esc(row.md?.unit)}</td><td class="numeric">${fmt(val(row, "inclination"), 2)}°</td><td class="numeric">${fmt(val(row, "azimuth"), 2)}°</td></tr>`).join("")}</tbody></table>`;
+  mountGrid("survey-table", survey.map((row) => ({ station: row.id, md: `${fmt(val(row, "md"), 1)} ${row.md?.unit || ""}`, inclination: `${fmt(val(row, "inclination"), 2)}°`, azimuth: `${fmt(val(row, "azimuth"), 2)}°` })), [{ title: "Station", field: "station" }, { title: "MD", field: "md", hozAlign: "right" }, { title: "Inclination", field: "inclination", hozAlign: "right" }, { title: "Azimuth", field: "azimuth", hozAlign: "right" }], { height: "330px", paginationSize: 10 });
 }
 
 function renderBha() {
@@ -105,7 +135,7 @@ function renderHydraulics() {
   const h = caseData.analyses?.hydraulics || {}, flow = h.flowPath || [], nozzles = caseData.pumpNozzle?.nozzles || [];
   $("hydraulics-kpis").innerHTML = [["Flow rate", `${fmt(val(h, "flowRate") * 1000, 1)}`, "L/s", "shared operating point"], ["Fluid density", `${fmt(val(h, "fluidDensity"), 0)}`, "kg/m³", "input"], ["Pump efficiency", `${fmt(val(h, "pumpEfficiency") * 100, 1)}`, "%", "input"], ["Pressure limit", `${fmt(val(h, "surfacePressureLimit") / 1e6, 1)}`, "MPa", "rig limit"]].map(([label, value, unit, foot]) => `<article class="panel kpi"><div class="kpi-label">${label}</div><div class="kpi-value">${value}<span class="kpi-unit">${unit}</span></div><div class="kpi-foot">${foot}</div></article>`).join("");
   const svg = $("flow-chart"), width = 720, height = 360, pad = 52, maxLen = Math.max(...flow.map((item) => val(item, "length")), 1); svg.setAttribute("viewBox", `0 0 ${width} ${height}`); let y = 20, markup = ""; flow.forEach((item, index) => { const hPx = Math.max(18, val(item, "length") / maxLen * 270); const w = 200 + index * 52; markup += `<rect x="${pad}" y="${y}" width="${w}" height="${hPx-3}" rx="6" fill="${index % 2 ? "#6ed6d0" : "#c3f36b"}" opacity=".8"/><text class="point-label" x="${pad + w + 10}" y="${y + Math.min(16, hPx/2)}">${esc(item.name)}</text>`; y += hPx; }); markup += `<text class="axis-label" x="${pad}" y="${height-8}">relative segment length</text>`; svg.innerHTML = markup;
-  $("nozzle-table").innerHTML = `<table class="data-table"><thead><tr><th>Diameter</th><th>Count</th><th>Cd</th><th>State</th></tr></thead><tbody>${nozzles.map((item) => `<tr><td class="numeric">${fmt(val(item, "diameter") * 1000, 1)} mm</td><td class="numeric">${fmt(val(item, "count"), 0)}</td><td class="numeric">${fmt(val(item, "dischargeCoefficient"), 2)}</td><td>${val(item, "diameter") === val(h, "baseNozzleDiameter") ? "base" : "candidate"}</td></tr>`).join("")}</tbody></table>`;
+  mountGrid("nozzle-table", nozzles.map((item) => ({ diameter: `${fmt(val(item, "diameter") * 1000, 1)} mm`, count: fmt(val(item, "count"), 0), cd: fmt(val(item, "dischargeCoefficient"), 2), state: val(item, "diameter") === val(h, "baseNozzleDiameter") ? "base" : "candidate" })), [{ title: "Diameter", field: "diameter", hozAlign: "right" }, { title: "Count", field: "count", hozAlign: "right" }, { title: "Cd", field: "cd", hozAlign: "right" }, { title: "State", field: "state" }], { height: "305px", paginationSize: 8 });
 }
 
 function renderTorque() {
@@ -123,5 +153,7 @@ function renderAll() { renderOverview(); renderTrajectory(); renderBha(); render
 async function loadData() { try { const response = await fetch(DATA_URL, { cache: "no-store" }); if (!response.ok) throw new Error(`HTTP ${response.status}`); caseData = await response.json(); } catch { caseData = FALLBACK; } renderAll(); }
 
 document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => setView(tab.dataset.view)));
+document.querySelectorAll("[data-rail-view]").forEach((link) => link.addEventListener("click", () => { setView(link.dataset.railView); document.querySelectorAll("[data-rail-view]").forEach((item) => item.classList.toggle("is-active", item === link)); }));
+$("view-filter").addEventListener("input", (event) => { const query = event.target.value.trim().toLowerCase(); document.querySelectorAll(".tab").forEach((tab) => { tab.hidden = Boolean(query) && !tab.textContent.toLowerCase().includes(query); }); document.querySelectorAll("[data-rail-view]").forEach((link) => { link.hidden = Boolean(query) && !link.textContent.toLowerCase().includes(query); }); });
 $("reload-data").addEventListener("click", loadData);
 loadData();
