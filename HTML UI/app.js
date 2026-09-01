@@ -54,6 +54,23 @@ function setView(view) {
     panel.classList.toggle("is-visible", active);
     panel.hidden = !active;
   });
+  document.querySelectorAll("[data-rail-view]").forEach((link) => link.classList.toggle("is-active", link.dataset.railView === view));
+}
+
+function closeLauncher() {
+  const launcher = $("app-launcher");
+  launcher.hidden = true;
+  document.body.classList.remove("launcher-open");
+}
+
+function openLauncher() {
+  const launcher = $("app-launcher");
+  launcher.hidden = false;
+  document.body.classList.add("launcher-open");
+  const search = $("launcher-search");
+  search.value = "";
+  document.querySelectorAll(".launcher-card").forEach((card) => { card.hidden = false; });
+  requestAnimationFrame(() => search.focus());
 }
 
 function scale(values, start, end) {
@@ -155,5 +172,11 @@ async function loadData() { try { const response = await fetch(DATA_URL, { cache
 document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => setView(tab.dataset.view)));
 document.querySelectorAll("[data-rail-view]").forEach((link) => link.addEventListener("click", () => { setView(link.dataset.railView); document.querySelectorAll("[data-rail-view]").forEach((item) => item.classList.toggle("is-active", item === link)); }));
 $("view-filter").addEventListener("input", (event) => { const query = event.target.value.trim().toLowerCase(); document.querySelectorAll(".tab").forEach((tab) => { tab.hidden = Boolean(query) && !tab.textContent.toLowerCase().includes(query); }); document.querySelectorAll("[data-rail-view]").forEach((link) => { link.hidden = Boolean(query) && !link.textContent.toLowerCase().includes(query); }); });
+$("launcher-toggle").addEventListener("click", openLauncher);
+$("launcher-close").addEventListener("click", closeLauncher);
+$("app-launcher").addEventListener("click", (event) => { if (event.target.id === "app-launcher") closeLauncher(); });
+document.querySelectorAll("[data-launch-view]").forEach((card) => card.addEventListener("click", () => { setView(card.dataset.launchView); closeLauncher(); }));
+$("launcher-search").addEventListener("input", (event) => { const query = event.target.value.trim().toLowerCase(); document.querySelectorAll(".launcher-card").forEach((card) => { card.hidden = Boolean(query) && !card.dataset.launchLabel.toLowerCase().includes(query); }); });
+document.addEventListener("keydown", (event) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") { event.preventDefault(); openLauncher(); } else if (event.key === "Escape" && !$("app-launcher").hidden) closeLauncher(); });
 $("reload-data").addEventListener("click", loadData);
 loadData();

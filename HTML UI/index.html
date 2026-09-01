@@ -19,10 +19,27 @@
           </div>
         </div>
         <div class="topbar-meta">
+          <button class="launcher-button" id="launcher-toggle" type="button" aria-haspopup="dialog" aria-controls="app-launcher"><span class="launcher-grid-icon" aria-hidden="true">⠿</span> Apps</button>
           <span class="case-pill"><span class="status-dot"></span><span id="case-name">Loading fixture…</span></span>
           <button class="quiet-button" id="reload-data" type="button">Reload data</button>
         </div>
       </header>
+
+      <div class="launcher-backdrop" id="app-launcher" role="dialog" aria-modal="true" aria-labelledby="launcher-title" hidden>
+        <section class="launcher panel">
+          <div class="launcher-heading"><div><p class="eyebrow">WELLFORGE APPS</p><h2 id="launcher-title">Choose a workspace</h2><p class="muted">Jump into an engine surface or inspect the exchange contract.</p></div><button class="launcher-close" id="launcher-close" type="button" aria-label="Close app launcher">×</button></div>
+          <label class="launcher-search"><span class="sr-only">Search apps</span><span aria-hidden="true">⌕</span><input id="launcher-search" type="search" placeholder="Search apps…" autocomplete="off" /></label>
+          <div class="launcher-grid" id="launcher-grid">
+            <button class="launcher-card" type="button" data-launch-view="overview" data-launch-label="Overview"><span class="launcher-icon lime">◈</span><span><strong>Overview</strong><small>Case health and readiness</small></span><kbd>O</kbd></button>
+            <button class="launcher-card" type="button" data-launch-view="trajectory" data-launch-label="Trajectory"><span class="launcher-icon teal">⌁</span><span><strong>Trajectory</strong><small>Plan, survey, targets</small></span><kbd>T</kbd></button>
+            <button class="launcher-card" type="button" data-launch-view="bha" data-launch-label="BHA schematic"><span class="launcher-icon blue">╋</span><span><strong>BHA schematic</strong><small>Assembly geometry</small></span><kbd>B</kbd></button>
+            <button class="launcher-card" type="button" data-launch-view="hydraulics" data-launch-label="Hydraulics"><span class="launcher-icon amber">≋</span><span><strong>Hydraulics</strong><small>Flow path and pressure</small></span><kbd>H</kbd></button>
+            <button class="launcher-card" type="button" data-launch-view="torque" data-launch-label="Torque &amp; drag"><span class="launcher-icon orange">↕</span><span><strong>Torque &amp; drag</strong><small>Force-depth workbench</small></span><kbd>D</kbd></button>
+            <button class="launcher-card" type="button" data-launch-view="data" data-launch-label="Exchange data"><span class="launcher-icon violet">{ }</span><span><strong>Exchange data</strong><small>Inspect the JSON payload</small></span><kbd>X</kbd></button>
+          </div>
+          <div class="launcher-footer"><span><kbd>Ctrl</kbd><span>+</span><kbd>K</kbd> to open anytime</span><span>Esc to close</span></div>
+        </section>
+      </div>
 
       <main class="workspace">
         <aside class="project-rail" aria-label="Project navigator">
