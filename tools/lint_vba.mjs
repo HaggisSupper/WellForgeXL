@@ -1,8 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 
-const root = path.resolve(new URL('..', import.meta.url).pathname);
+const root = fileURLToPath(new URL('..', import.meta.url));
 const directory = path.join(root, 'VBA');
 const files = (await fs.readdir(directory)).filter((name) => name.endsWith('.bas')).sort();
 const failures = [];
