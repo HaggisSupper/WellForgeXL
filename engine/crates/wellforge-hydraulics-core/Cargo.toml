@@ -1,0 +1,16 @@
+[package]
+name = "wellforge-hydraulics-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+wellforge-hydraulics-contract = { path = "../wellforge-hydraulics-contract", version = "0.1.0" }
+
+[dev-dependencies]
+wellforge-hydraulics-fixtures = { path = "../wellforge-hydraulics-fixtures", version = "0.1.0" }
+
+[lints]
+workspace = true

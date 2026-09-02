@@ -203,10 +203,12 @@ Private Sub WF_ValidateBhaBridge(ByVal lines As Variant, ByVal normalizedRequest
                     If staticCount > 500 Then Err.Raise vbObjectError + 8716, "WF_ValidateBhaBridge", "STATIC RESULT CAPACITY EXCEEDED"
                 Case "M"
                     If UBound(fields) <> 3 Then Err.Raise vbObjectError + 8727, "WF_ValidateBhaBridge", "INVALID MODE RECORD"
+                    If Not IsNumeric(fields(1)) Then Err.Raise vbObjectError + 8731, "WF_ValidateBhaBridge", "INVALID MODE RECORD NUMBER"
                     modeCount = modeCount + 1
                     If modeCount > 20 Then Err.Raise vbObjectError + 8717, "WF_ValidateBhaBridge", "MODE RESULT CAPACITY EXCEEDED"
                 Case "P"
                     If UBound(fields) <> 3 Then Err.Raise vbObjectError + 8728, "WF_ValidateBhaBridge", "INVALID MODE SHAPE RECORD"
+                    If Not IsNumeric(fields(1)) Then Err.Raise vbObjectError + 8732, "WF_ValidateBhaBridge", "INVALID MODE SHAPE RECORD NUMBER"
                     modeNumber = CLng(fields(1))
                     If modeNumber >= 1 And modeNumber <= 3 Then
                         shapeCount(modeNumber) = shapeCount(modeNumber) + 1
