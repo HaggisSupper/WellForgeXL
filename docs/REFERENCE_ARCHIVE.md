@@ -36,7 +36,7 @@ corresponding Rust engines.
 | Hydraulics                         | `Hydraulics Models\`, `Drilling Practices\`, `Oilfield Measurements & Calculations Course\` |
 | BHA static & vibration analysis    | `BHA Analysis\`, `Vibration Primer\`, `Vibration Documents\`, `Directional STUFF\BHA_MU Torque_Bit Grading\` |
 | Directional / survey               | `Directional STUFF\DD Calculations\`, `Directional STUFF\Strap Sheets\`, `Survey with index.xlsb` |
-| Well control (context only)        | `Saudi Aramco - Well Control\`, `GRACE__R._D.__1994_._Advanced_Blowout_and_Well_Control\` |
+| Well control (context only)        | well-control course collection, `GRACE__R._D.__1994_._Advanced_Blowout_and_Well_Control\` |
 | Logging (context only)             | `Logging\`, `Log interpretation\`, `University of Houston - Geophysics+Geology\` |
 
 ## Usage rules for engine authors
@@ -44,6 +44,11 @@ corresponding Rust engines.
 1. Cite the archive folder (not the file) in commit messages and design notes
    when a formula, table, or convention is drawn from it, e.g.
    *"Slack-off tension per Torque and Drag reference set."*
+   **Never include company, operator, vendor, product-brand, or person names
+   in a citation** — even when they appear in the archive's own folder or
+   file names. Use a neutral topical alias instead (e.g. *"operator survey
+   example"*, *"legacy hydraulics engine validation set"*, *"well-control
+   course collection"*). Keep a private alias→path map only in session notes.
 2. Do not copy figures, tables, or copyrighted text into the repo. Re-express
    the underlying math or convention in your own code and comments.
 3. When a reference is decisive for a design choice, add a short entry to the

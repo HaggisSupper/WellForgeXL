@@ -2,7 +2,7 @@
 
 ## Goal
 
-Refactor the WellForge Excel suite from compact screening calculators into detailed, auditable engineering workbooks with the structural depth of the TorqueDrag2013 reference while retaining SI-canonical calculations, formula-driven unit conversion, two-decimal display precision, shared mock data, and JSON exchange.
+Refactor the WellForge Excel suite from compact screening calculators into detailed, auditable engineering workbooks with the structural depth of the supplied legacy torque-and-drag reference workbook while retaining SI-canonical calculations, formula-driven unit conversion, two-decimal display precision, shared mock data, and JSON exchange.
 
 ## Common workbook contract
 
@@ -12,7 +12,7 @@ Every workbook exposes a visible workflow of Summary, Inputs, Survey/Geometry, R
 
 - API 7G: tubular catalog, load cases, section stress/capacity results, governing utilisation, and operation-specific strength charts.
 - Hydraulics: fluid/rheology inputs, complete flow path, nozzle cases, pressure/ECD profile, hydraulic power and optimisation plots.
-- Torque/drag: retain the approved detailed clean-room direction based on TorqueDrag2013 operation blocks.
+- Torque/drag: retain the approved detailed clean-room direction based on the legacy reference workbook operation blocks.
 - BHA: assembly detail, vibration modes, bending response, toolface/WOB tendency matrix, and PolarPlotter-style polar chart construction.
 - Directional: retain its existing detailed planning/survey/QC topology and add dedicated engineering plot and audit surfaces where needed.
 

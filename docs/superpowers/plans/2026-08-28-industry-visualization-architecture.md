@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build coordinated WELLPLAN/Innova-informed engineering dashboards and persistent chart controls across the five WellForge VBA workbooks.
+**Goal:** Build coordinated industry-software-informed engineering dashboards and persistent chart controls across the five WellForge VBA workbooks.
 
 **Architecture:** Artifact-tool builders create auditable formula reference templates and native chart objects. Discipline VBA engines recalculate canonical SI models, write value-only display/helper ranges, apply unit-aware chart titles and stable series styling, and populate selected-depth readers. Shared contracts validate dashboard topology, depth orientation, series composition, unit propagation, and Windows `.xlsm` compilation.
 

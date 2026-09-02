@@ -41,7 +41,7 @@
 - Preserved BHA toolface units in JSON exchange and implemented overlaid WOB rose curves using the PolarPlotter-style radar/XY combination with transparent traces.
 - Added a Windows VBA build self-test that exercises SI, Imperial and Custom displays, verifies depth-chart geometry, rejects residual worksheet formulas, and pauses with the full log path on success or failure.
 - Standardized visible numeric precision to two decimal places and retained one shared mock case wherever inputs repeat across workbooks.
-- Added a WELLPLAN/Innova-informed torque-and-drag `Engineering Dashboard` with six operating modes, observed/mock hookload and torque, tension/torsional ratings, buckling limits, inclination, well context, friction sensitivity, and a selected-depth numerical reader.
+- Added a industry-software-informed torque-and-drag `Engineering Dashboard` with six operating modes, observed/mock hookload and torque, tension/torsional ratings, buckling limits, inclination, well context, friction sensitivity, and a selected-depth numerical reader.
 - Added `Observed Data` with explicit mock provenance; production users must replace it with validated EDR or rig measurements.
 - Added low/base/high hydraulic `Flow Cases` and a synchronized `Hydraulics Dashboard` for pressure, ECD, annular velocity, transport limits, and nozzle optimization.
 - Added persisted `Chart Settings` to all five workbooks and a Windows visualization self-test that rejects missing dashboard series.
