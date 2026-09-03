@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved by the user on 2026-08-28 after reviewing the WELLPLAN, DecisionSpace, Innova Engineering, and supplied TorqueDrag2013 visual benchmarks.
+Approved by the user on 2026-08-28 after reviewing several commercial drilling-engineering software interfaces and the user's supplied torque-and-drag visual benchmarks.
 
 ## Goal
 
@@ -12,12 +12,12 @@ Replace the v4 collection of mostly independent charts with coordinated, enginee
 
 The implementation derives behavior from public product pages, public manuals/training material, published drilling-engineering papers, and the user's supplied workbook. It must not copy proprietary code, formulas, artwork, macros, or report templates.
 
-Primary references:
+Primary references (vendor, product, and person names intentionally omitted — see `docs/REFERENCE_ARCHIVE.md` rule 1):
 
-- Halliburton WELLPLAN product interface and module description: https://www.halliburton.com/en/products/engineers-desktop-suite/wellplan-software
-- Innova Engineering documentation and quick-start material: https://docs.innova-drilling.com/introduction/innova-engineering-manual/innova-engineering/1.0-software-overview
-- AADE torque-and-drag graphical output discussion: https://www.aade.org/download_file/2710/491
-- Supplied TorqueDrag2013 workbook and PolarPlotter2010 add-in, used only as observable visual/behavioral references.
+- Public product pages and module descriptions of commercial drilling-engineering suites.
+- Public documentation and quick-start material of an independent drilling-engineering package.
+- Trade-association paper on torque-and-drag graphical output.
+- The user's supplied torque-and-drag workbook and polar-plot add-in, used only as observable visual/behavioral references.
 
 ## Invariants
 

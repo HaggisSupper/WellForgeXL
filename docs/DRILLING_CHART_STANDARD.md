@@ -31,11 +31,13 @@ Operation and semantic colors are stable across charts. Observed data uses a dar
 
 ## References
 
-- SLB Oilfield Review, *Slide Drilling—Farther and Faster*: https://www.slb.com/-/media/files/oilfield-review/04-slide-drilling-english
-- AADE, *A Graphical Hole Monitoring Procedure...*: https://www.aade.org/download_file/2821/492
-- Texas A&M, stress-based torque-and-drag roadmap discussion: https://oaktrust.library.tamu.edu/bitstreams/3fab200c-435c-448a-a9de-51c902a02be3/download
-- WELLPLAN ECD-versus-depth example: https://utpedia.utp.edu.my/3357/1/FYP_Dissertation_-_William.pdf
-- OMV drilling roadmap and hydraulics overlay discussion: https://pure.unileoben.ac.at/ws/files/7787010/AC16358266.pdf
-- Halliburton WELLPLAN product interface: https://www.halliburton.com/en/products/engineers-desktop-suite/wellplan-software
-- Innova Engineering documentation: https://docs.innova-drilling.com/introduction/innova-engineering-manual/innova-engineering/1.0-software-overview
-- AADE torque-and-drag output convention: https://www.aade.org/download_file/2710/491
+Public-domain / academic references only. Vendor, operator, and product names
+are intentionally omitted from this document (see `docs/REFERENCE_ARCHIVE.md`,
+usage rule 1).
+
+- Industry technical-review article on slide drilling practice.
+- Trade-association paper on graphical hole-condition monitoring procedure.
+- University thesis on stress-based torque-and-drag roadmap presentation.
+- University thesis presenting an ECD-versus-depth dashboard example.
+- University thesis on drilling roadmap with hydraulics overlay.
+- Trade-association paper on torque-and-drag output conventions.

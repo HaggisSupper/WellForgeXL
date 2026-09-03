@@ -639,6 +639,16 @@ fn result_and_version_share_the_build_captured_rustc_identity() {
 }
 
 #[test]
+fn doctor_emits_build_metadata_and_succeeds() {
+    let process = run(&["doctor"]);
+    assert_eq!(exit(&process), 0);
+    let value: Value = serde_json::from_slice(&process.stdout).unwrap();
+    assert_eq!(value["name"], "wellforge-trajectory");
+    assert_eq!(value["version"], env!("CARGO_PKG_VERSION"));
+    assert!(value["lockfile_hash"].as_str().is_some());
+}
+
+#[test]
 fn bridge_has_one_header_and_ordered_bounded_record_counts() {
     let directory = tempfile::tempdir().unwrap();
     let input = directory.path().join("request.json");

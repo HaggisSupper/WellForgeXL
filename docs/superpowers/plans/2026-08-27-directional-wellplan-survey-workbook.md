@@ -42,7 +42,7 @@ The workspace is not initialized as a Git repository, so this plan uses test/ver
 - Production code must not import the test oracle.
 
 - [ ] Write `tests/directional_math.test.mjs` first so it fails because the fixture and oracle do not exist.
-- [ ] Assert that the fixture contains exactly the nonblank source rows and no value containing `Scott Birse`, `C:\\Users`, or `VBA_Macros.bas`.
+- [ ] Assert that the fixture contains exactly the nonblank source rows and no value containing a personal author name, `C:\\Users`, or `VBA_Macros.bas`.
 - [ ] Use the uploaded workbook only as a read-only extraction source. Preserve displayed input values, target inputs, slide inputs, and formation picks; exclude formulas, authorship, comments, web extensions, and file paths.
 - [ ] Implement the independent oracle with direction vectors and clamped minimum curvature.
 - [ ] Assert the 60 plan and 60 survey stations reproduce the audited source positions within `1E-8 m` and DLS within `1E-10 rad/m` after unit conversion.
@@ -259,7 +259,7 @@ The workspace is not initialized as a Git repository, so this plan uses test/ver
 - [ ] While revising the runner, replace `new URL(...).pathname` plus string concatenation with `fileURLToPath()` and `path.join()` so encoded and Windows paths remain valid.
 - [ ] Update acceptance wording and assertions from four to five VBA-free workbooks.
 - [ ] Add a result-display cell from the directional workbook to `unit_display_contract.test.mjs` and prove it references `Unit Map`.
-- [ ] Expand acceptance inspection to reject `vbaProject.bin`, `externalLinks/`, `C:\\Users`, `Scott Birse`, and `VBA_Macros.bas` in the directional OOXML payload.
+- [ ] Expand acceptance inspection to reject `vbaProject.bin`, `externalLinks/`, `C:\\Users`, a personal author name, and `VBA_Macros.bas` in the directional OOXML payload.
 - [ ] Update README use guidance to distinguish raw-input units from display units and document the Survey Contract plus explicit uncertainty exclusions.
 - [ ] Run the complete build and test sequence:
 

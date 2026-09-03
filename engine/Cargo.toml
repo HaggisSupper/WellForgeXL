@@ -16,6 +16,14 @@ members = [
   "crates/wellforge-bha-modal",
   "crates/wellforge-bha-cli",
   "crates/wellforge-bha-interchange",
+  "crates/wellforge-torque-drag-contract",
+  "crates/wellforge-torque-drag-core",
+  "crates/wellforge-torque-drag-fixtures",
+  "crates/wellforge-torque-drag-cli",
+  "crates/wellforge-hydraulics-contract",
+  "crates/wellforge-hydraulics-core",
+  "crates/wellforge-hydraulics-fixtures",
+  "crates/wellforge-hydraulics-cli",
 ]
 
 [workspace.package]

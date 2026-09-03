@@ -1,0 +1,17 @@
+{
+  "name": "wellforge-doc-ingest",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "mcp:doc": "node tools/doc-rag-mcp/server.mjs",
+    "doc:run": "node tools/doc-rag-mcp/runner.mjs",
+    "doc:classify": "node tools/doc-rag-mcp/classify.mjs",
+    "doc:batch": "node tools/doc-rag-mcp/batch.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "docling": "^0.0.0",
+    "fast-glob": "^3.3.3",
+    "undici": "^7.16.0"
+  }
+}

@@ -100,7 +100,7 @@ export function buildBhaWorkbook() {
   Graphs.getRange('A21:D33').formulas=Array.from({length:13},(_,i)=>{const j=i===12?0:i; return [`=Results!I${j+6}`,`=Results!J${j+6}`,`=Results!L${j+6}`,`=Results!M${j+6}`];});
   Graphs.getRange('H35:J35').values=[['Toolface rad','WOB 1 magnitude','WOB 2 magnitude']]; Graphs.getRange('H35').formulas=[[`="Toolface "&'Unit Map'!$H$18`]];
   Graphs.getRange('H36:J47').formulas=Array.from({length:12},(_,i)=>[`=Results!G${i+6}`,`=Results!H${i+6}`,`=Results!K${i+6}`]);
-  // PolarPlotter2010 construction: radar grid layer + true XY scatter data.
+  // Legacy polar-plot add-in construction: radar grid layer + true XY scatter data.
   Graphs.getRange('H65:L65').values=[['Angle','Ring 25%','Ring 50%','Ring 75%','Ring 100%']];
   Graphs.getRange('H66:L77').formulas=Array.from({length:12},(_,i)=>[`=${i*30}`,`=MAX($I$36:$J$47)*0.25`,`=MAX($I$36:$J$47)*0.50`,`=MAX($I$36:$J$47)*0.75`,`=MAX($I$36:$J$47)`]);
   const polarGrid = Graphs.charts.add('radar', Graphs.getRange('H65:L77'));
