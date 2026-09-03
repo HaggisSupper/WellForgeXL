@@ -39,6 +39,12 @@ corresponding Rust engines.
 | Well control (context only)        | well-control course collection, `GRACE__R._D.__1994_._Advanced_Blowout_and_Well_Control\` |
 | Logging (context only)             | `Logging\`, `Log interpretation\`, `University of Houston - Geophysics+Geology\` |
 
+## Theory / mechanism sources
+
+- **BHA mechanics**: `SYNC_MOD\Drilling Dynamics\References\BHA Background Material\BHA Config\`, `SYNC_MOD\Drilling Dynamics\UM\BHA Valdiation Project\`, `SYNC_MOD\Drilling Dynamics\BHA Methods Study\`, `SYNC_MOD\Drilling Dynamics\BHA Test cases\Trajectory Files\`
+- **Torque-and-drag theory**: `^Technical Reference Tools\DS MarkTech\Technical Papers\2014 SPE Drilling and Completion - Dynamic Model for Stiff-String Torque and Drag.pdf`, `Torque and Drag\`, `Drilling Engineering\tnd.pdf`
+- **Hydraulics/rheology validation**: `SYNC_MOD\Hydraulics\Development\Cepheus\`, `SYNC_MOD\Hydraulics\Development\ShearGeniusValidation\`, `Drilling Calcs 2009\Bit_Hydraulics.xls`, `Drilling Calcs 2009\Hydraulics_Analyzed.xls`
+
 ## Usage rules for engine authors
 
 1. Cite the archive folder (not the file) in commit messages and design notes
