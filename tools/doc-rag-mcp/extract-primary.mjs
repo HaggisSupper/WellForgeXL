@@ -28,16 +28,43 @@ const extractedPath = path.join(outDir, 'extracted-primary.jsonl');
 const summaryPath = path.join(outDir, 'extraction-summary.json');
 
 console.error(`Extracting ${primaryRows.length} primary files (limit=${limit})`);
+console.error(`Using concurrent pool size: 3 (tuned for 6GB VRAM + q5_k_m model)`);
 
-const extracted = [];
-for (let i = 0; i < primaryRows.length; i += 1) {
-  const row = primaryRows[i];
-  if ((i + 1) % 10 === 0) {
-    console.error(`  ${i + 1}/${primaryRows.length}...`);
+// Semaphore for concurrency control
+class Semaphore {
+  constructor(max) {
+    this.max = max;
+    this.current = 0;
+    this.queue = [];
   }
+  async acquire() {
+    if (this.current < this.max) {
+      this.current += 1;
+      return;
+    }
+    return new Promise((resolve) => {
+      this.queue.push(resolve);
+    });
+  }
+  release() {
+    this.current -= 1;
+    const resolve = this.queue.shift();
+    if (resolve) {
+      this.current += 1;
+      resolve();
+    }
+  }
+}
+
+const sem = new Semaphore(3); // 3 concurrent extraction tasks
+const extracted = [];
+let completed = 0;
+
+const extractTask = async (row) => {
+  await sem.acquire();
   try {
     const result = await extractWithDocling(row.path, config);
-    extracted.push({
+    const entry = {
       path: row.path,
       rel: row.rel,
       families: row.families,
@@ -47,9 +74,14 @@ for (let i = 0; i < primaryRows.length; i += 1) {
       backend: result.backend,
       warnings: result.warnings,
       textLength: result.text?.length ?? 0,
-    });
+    };
+    extracted.push(entry);
+    completed += 1;
+    if (completed % 10 === 0) {
+      console.error(`  ${completed}/${primaryRows.length}...`);
+    }
   } catch (err) {
-    extracted.push({
+    const entry = {
       path: row.path,
       rel: row.rel,
       families: row.families,
@@ -59,9 +91,18 @@ for (let i = 0; i < primaryRows.length; i += 1) {
       backend: 'error',
       warnings: [err.message],
       textLength: 0,
-    });
+    };
+    extracted.push(entry);
+    completed += 1;
+    if (completed % 10 === 0) {
+      console.error(`  ${completed}/${primaryRows.length}...`);
+    }
+  } finally {
+    sem.release();
   }
-}
+};
+
+await Promise.all(primaryRows.map((row) => extractTask(row)));
 
 await writeJsonl(extractedPath, extracted);
 
