@@ -2,6 +2,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import fg from 'fast-glob';
 import { request } from 'undici';
+import { execSync } from 'node:child_process';
 
 const DOC_EXTENSIONS = new Set(['.pdf', '.docx', '.pptx', '.xlsx', '.xlsm', '.xlsb', '.txt', '.html', '.htm', '.png', '.jpg', '.jpeg', '.tif', '.tiff']);
 
@@ -349,4 +350,52 @@ export function mergeOkfResult({ extracted, okf }) {
     formulas: okf?.formulas ?? [],
     okfConfidence: okf?.confidence ?? null,
   };
+}
+
+// LM Studio manager integration
+export async function callLmsManager(command, ...args) {
+  const currentDir = path.dirname(import.meta.url.replace(/^file:\/\/\/?/, ''));
+  const managerPath = path.join(currentDir, 'lms-manager.mjs');
+  try {
+    const output = execSync(`node "${managerPath}" ${command} ${args.join(' ')}`, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: 60000,
+    }).trim();
+    return output;
+  } catch (e) {
+    console.error(`lms-manager error (${command}):`, e.message);
+    return null;
+  }
+}
+
+export async function ensureServerRunning() {
+  try {
+    const result = await callLmsManager('start');
+    if (result !== null) {
+      console.error('[pipeline] LM Studio server is ready');
+      return true;
+    }
+  } catch (e) {
+    console.error('[pipeline] Failed to start server:', e.message);
+  }
+  return false;
+}
+
+export async function ensureModelReady(modelId = null) {
+  if (!modelId) {
+    const best = await callLmsManager('select-best');
+    modelId = best || 'qwen3.8-4b-distill@q5_k_m';
+  }
+  const loaded = await callLmsManager('ensure-loaded', modelId);
+  return loaded !== 'null' ? loaded : null;
+}
+
+export async function getLoadedModels() {
+  try {
+    const json = await callLmsManager('get-loaded');
+    return json ? JSON.parse(json) : [];
+  } catch {
+    return [];
+  }
 }
