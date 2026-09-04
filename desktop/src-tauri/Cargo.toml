@@ -12,7 +12,7 @@ tauri-build = { version = "2", features = [] }
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
-time = { version = "0.3", features = ["formatting"] }
+time = { version = "0.3.45", features = ["formatting"] }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 wellforge-core = { path = "../crates/core" }
