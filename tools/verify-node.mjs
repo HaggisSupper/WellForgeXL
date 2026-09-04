@@ -18,6 +18,7 @@ const releaseTests = [
   'exchange_mock_payload.test.mjs',
   'exchange_roundtrip.test.mjs',
   'exchange_schema.test.mjs',
+  'html_ui_contract.test.mjs',
   'office_script_exchange.test.mjs',
   'post_merge_review.test.mjs',
   'release_package.test.mjs',
