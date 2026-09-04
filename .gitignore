@@ -9,4 +9,11 @@ package_previous_*/
 .superpowers/sdd/
 node_modules
 engine/target/
+desktop/node_modules/
+desktop/target/
+desktop/dist/
+desktop/graphify-out/
+desktop/.superpowers/
+desktop/work/
+graphify-out/
 logs/

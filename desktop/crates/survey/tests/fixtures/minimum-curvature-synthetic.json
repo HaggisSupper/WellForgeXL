@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "wellforge.minimum-curvature.v1",
+  "description": "Synthetic quarter-turn interval expressed in SI units.",
+  "stations": [
+    { "md_m": 0.0, "inclination_rad": 1.5707963267948966, "azimuth_true_rad": 0.0 },
+    { "md_m": 100.0, "inclination_rad": 1.5707963267948966, "azimuth_true_rad": 1.5707963267948966 }
+  ],
+  "expectedDisplacement": {
+    "north_m": 63.66197723675813,
+    "east_m": 63.66197723675813,
+    "tvd_m": 0.0,
+    "dogleg_rad": 1.5707963267948966,
+    "dogleg_severity_rad_per_m": 0.015707963267948967
+  }
+}

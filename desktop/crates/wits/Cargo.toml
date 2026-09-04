@@ -1,0 +1,14 @@
+[package]
+name = "wellforge-wits"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+time = { version = "0.3", features = ["parsing", "serde", "serde-well-known"] }
+wellforge-core = { path = "../core" }
+
+[dev-dependencies]
+serde_json.workspace = true
