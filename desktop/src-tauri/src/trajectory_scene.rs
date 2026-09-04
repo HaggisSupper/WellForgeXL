@@ -5,6 +5,8 @@ use wellforge_3d::{
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct CanonicalTrajectoryResult {
+    contract_version: String,
+    status: String,
     calculation: CanonicalCalculation,
     evidence: CanonicalEvidence,
 }
@@ -17,6 +19,7 @@ pub(crate) struct CanonicalCalculation {
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct CanonicalStation {
+    source_uid: Option<String>,
     north_m: f64,
     east_m: f64,
     tvd_m: f64,
@@ -31,6 +34,12 @@ pub(crate) struct CanonicalEvidence {
 pub(crate) fn build_trajectory_scene(
     result: &CanonicalTrajectoryResult,
 ) -> Result<SceneDocumentV1, SceneError> {
+    if result.contract_version != "1.0.0" {
+        return Err(SceneError::InvalidProvenance);
+    }
+    if result.status == "failed" {
+        return Err(SceneError::InvalidProvenance);
+    }
     let plan_points = result.calculation.plan.iter().map(scene_point).collect();
     let survey_points = result.calculation.survey.iter().map(scene_point).collect();
     let station_markers = result
@@ -39,7 +48,10 @@ pub(crate) fn build_trajectory_scene(
         .iter()
         .enumerate()
         .map(|(index, station)| SceneMarkerV1 {
-            id: format!("survey-station-{index}"),
+            id: station
+                .source_uid
+                .clone()
+                .unwrap_or_else(|| format!("survey-station-{index}")),
             label: format!("MD {:.3} m", station.md_m),
             point: scene_point(station),
         })
@@ -96,6 +108,27 @@ mod tests {
         assert_eq!(
             scene.provenance.input_revision.as_deref(),
             Some(result.evidence.result_hash.as_str())
+        );
+        let marker_id = match &scene.layers[2].primitives[1] {
+            wellforge_3d::ScenePrimitiveV1::Marker { id, .. } => id.as_str(),
+            _ => panic!("survey station primitive is not a marker"),
+        };
+        assert_eq!(marker_id, "00000000-0000-0000-0000-000000000015");
+    }
+
+    #[test]
+    fn rejects_failed_canonical_results() {
+        let mut json = include_str!(
+            "../../../engine/fixtures/expected/trajectory-release-one-minimal.result.json"
+        )
+        .to_owned();
+        json = json.replace("complete_with_warnings", "failed");
+        let result: CanonicalTrajectoryResult =
+            serde_json::from_str(&json).expect("fixture parses");
+
+        assert_eq!(
+            build_trajectory_scene(&result).expect_err("failed results are not visualizable"),
+            SceneError::InvalidProvenance
         );
     }
 }

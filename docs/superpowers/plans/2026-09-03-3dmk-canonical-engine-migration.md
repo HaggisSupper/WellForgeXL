@@ -78,6 +78,15 @@
 - [x] Commit as `feat: add universal canonical engine runner`.
 - [ ] Add a state-bound command that chooses project-scoped request and result paths internally.
 
+**Adversarial checkpoint:**
+
+- [x] Restrict project execution keys to a safe single path component.
+- [x] Reject symlink and Windows reparse-point packaged executables before checksum verification.
+- [x] Validate canonical result contract version and reject failed results at scene ingestion.
+- [x] Preserve canonical survey `source_uid` values as marker identities.
+- [x] Pass focused runner and trajectory-scene tests after hardening.
+- [ ] Re-verify the executable immediately before launch and add bounded process/result limits in the state-bound command chunk.
+
 ### Task 3: Load real trajectory scenes in the desktop survey workspace
 
 **Files:**

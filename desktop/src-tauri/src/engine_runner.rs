@@ -55,6 +55,30 @@ pub(crate) fn run_trajectory_engine_in_workspace(
     run_trajectory_engine(executable, input, output)
 }
 
+pub(crate) fn run_trajectory_engine_for_project(
+    executable: &Path,
+    project_workspace: &Path,
+    project_key: &str,
+    request_json: &[u8],
+) -> Result<Vec<u8>, EngineRunnerError> {
+    if project_key.is_empty()
+        || !project_key
+            .chars()
+            .all(|character| character.is_ascii_alphanumeric() || matches!(character, '-' | '_'))
+    {
+        return Err(EngineRunnerError::PathOutsideWorkspace);
+    }
+
+    let workspace = normalized_path(project_workspace).join(project_key);
+    fs::create_dir_all(&workspace)
+        .map_err(|error| EngineRunnerError::Inspect(error.to_string()))?;
+    let input = workspace.join("trajectory-request.json");
+    let output = workspace.join("trajectory-result.json");
+    fs::write(&input, request_json)
+        .map_err(|error| EngineRunnerError::Inspect(error.to_string()))?;
+    run_trajectory_engine_in_workspace(executable, &workspace, &input, &output)
+}
+
 pub(crate) fn discover_trajectory_executable(
     roots: &[&Path],
 ) -> Result<PathBuf, EngineRunnerError> {
@@ -65,13 +89,31 @@ pub(crate) fn discover_trajectory_executable(
             Path::new("outputs/vba-engine/wellforge-trajectory.exe"),
         ] {
             let executable = root.join(relative);
-            if executable.is_file() {
+            if executable.is_file() && !is_reparse_point(&executable) {
                 verify_sidecar(&executable)?;
                 return Ok(executable);
             }
         }
     }
     Err(EngineRunnerError::ExecutableNotFound)
+}
+
+fn is_reparse_point(path: &Path) -> bool {
+    let Ok(metadata) = fs::symlink_metadata(path) else {
+        return true;
+    };
+    if metadata.file_type().is_symlink() {
+        return true;
+    }
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        return metadata.file_attributes() & 0x400 != 0;
+    }
+    #[cfg(not(windows))]
+    {
+        false
+    }
 }
 
 fn verify_sidecar(executable: &Path) -> Result<(), EngineRunnerError> {
@@ -178,6 +220,20 @@ mod tests {
             &root.path().join("result.json"),
         )
         .expect_err("request outside workspace must be rejected");
+
+        assert_eq!(error.code(), "ENGINE_PATH_OUTSIDE_WORKSPACE");
+    }
+
+    #[test]
+    fn rejects_project_keys_that_could_escape_the_execution_workspace() {
+        let root = tempfile::tempdir().expect("temporary root creates");
+        let error = run_trajectory_engine_for_project(
+            Path::new("engine.exe"),
+            root.path(),
+            "..\\outside",
+            b"{}",
+        )
+        .expect_err("project key traversal must be rejected");
 
         assert_eq!(error.code(), "ENGINE_PATH_OUTSIDE_WORKSPACE");
     }
