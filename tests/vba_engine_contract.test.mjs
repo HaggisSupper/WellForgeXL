@@ -96,6 +96,14 @@ test('engine manifest declares the hybrid Rust/VBA authority and five formula-fr
   assert.equal(bha.entryPoint, 'WF_RunBhaRustEngine');
   assert.equal(bha.executable, 'wellforge-bha.exe');
   assert.equal(bha.hashManifest, 'wellforge-bha.exe.sha256');
+  assert.deepEqual(
+    manifest.standaloneRustEngines.map(({ executable }) => executable),
+    ['wellforge-bha.exe', 'wellforge-trajectory.exe', 'wellforge-torque-drag.exe', 'wellforge-hydraulics.exe'],
+  );
+  assert.deepEqual(
+    manifest.standaloneRustEngines.map(({ package: enginePackage }) => enginePackage),
+    ['wellforge-bha-cli', 'wellforge-trajectory-cli', 'wellforge-torque-drag-cli', 'wellforge-hydraulics-cli'],
+  );
 });
 
 test('VBA source passes deterministic structural lint', () => {

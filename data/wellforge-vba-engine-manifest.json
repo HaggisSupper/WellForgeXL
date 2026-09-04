@@ -7,6 +7,12 @@
   "unitModes": ["SI", "Imperial", "Mixed", "Custom"],
   "builder": "tools/Build-WellForgeVbaSuite.ps1",
   "outputDirectory": "outputs/vba-engine",
+  "standaloneRustEngines": [
+    { "executable": "wellforge-bha.exe", "package": "wellforge-bha-cli", "calculationAuthority": "Rust" },
+    { "executable": "wellforge-trajectory.exe", "package": "wellforge-trajectory-cli", "calculationAuthority": "Rust" },
+    { "executable": "wellforge-torque-drag.exe", "package": "wellforge-torque-drag-cli", "calculationAuthority": "Rust" },
+    { "executable": "wellforge-hydraulics.exe", "package": "wellforge-hydraulics-cli", "calculationAuthority": "Rust" }
+  ],
   "sharedModules": [
     "WellForgeCore",
     "WellForgeJsonExchange"

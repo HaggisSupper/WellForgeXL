@@ -89,11 +89,13 @@ pub fn solve_soft_string(request: &TnDAnalysisRequest) -> Result<TnDAnalysisResu
             (weight_per_m * s_upper.inclination_rad.sin()).abs() + effective_tension * dogleg_rad_m;
 
         // Increment tension for the section BELOW the current station (bottom-up).
-        let axial_gain = weight_per_m * avg_inc.cos() * delta_md + mu_sign * mu * normal_per_m * delta_md;
+        let axial_gain =
+            weight_per_m * avg_inc.cos() * delta_md + mu_sign * mu * normal_per_m * delta_md;
         effective_tension += axial_gain;
         running_torque += mu * normal_per_m * component.od_m * 0.5 * delta_md;
 
-        let (sin_th, hel_th) = buckling_thresholds(component, weight_per_m, s_upper.inclination_rad);
+        let (sin_th, hel_th) =
+            buckling_thresholds(component, weight_per_m, s_upper.inclination_rad);
         let compression = (-effective_tension).max(0.0);
         station_buf.push(StationResult {
             md_m: s_upper.md_m,
@@ -154,22 +156,33 @@ pub fn solve_soft_string(request: &TnDAnalysisRequest) -> Result<TnDAnalysisResu
     })
 }
 
-fn find_component(components: &[StringComponent], md_m: f64) -> Result<&StringComponent, SolveError> {
+fn find_component(
+    components: &[StringComponent],
+    md_m: f64,
+) -> Result<&StringComponent, SolveError> {
     components
         .iter()
         .find(|c| md_m >= c.top_md_m && md_m <= c.bottom_md_m)
-        .or_else(|| components.iter().min_by(|a, b| {
-            (md_m - a.top_md_m).abs().partial_cmp(&(md_m - b.top_md_m).abs()).unwrap_or(std::cmp::Ordering::Equal)
-        }))
+        .or_else(|| {
+            components.iter().min_by(|a, b| {
+                (md_m - a.top_md_m)
+                    .abs()
+                    .partial_cmp(&(md_m - b.top_md_m).abs())
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            })
+        })
         .ok_or(SolveError::NoComponentAtStation { md_m })
 }
 
-fn buckling_thresholds(component: &StringComponent, weight_per_m: f64, inclination_rad: f64) -> (f64, f64) {
+fn buckling_thresholds(
+    component: &StringComponent,
+    weight_per_m: f64,
+    inclination_rad: f64,
+) -> (f64, f64) {
     // Dawson-Paslay sinusoidal: F_sin = 2 * sqrt(E * I * w * sin(inc) / r)
     // r is the radial clearance; here we approximate r = OD / 2 (no hole spec at this layer).
     let e = component.youngs_modulus_pa;
-    let i_area =
-        std::f64::consts::PI * (component.od_m.powi(4) - component.id_m.powi(4)) / 64.0;
+    let i_area = std::f64::consts::PI * (component.od_m.powi(4) - component.id_m.powi(4)) / 64.0;
     let r = component.od_m / 2.0;
     let w_sin_inc = weight_per_m * inclination_rad.sin().abs();
     if r <= 0.0 || w_sin_inc <= 0.0 || i_area <= 0.0 {

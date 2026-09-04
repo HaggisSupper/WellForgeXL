@@ -1,6 +1,6 @@
 # WellForge Analysis Workbook Suite — canonical SI with configurable display units
 
-This package contains five Excel engineering workbooks, two production Rust engine lanes, and three VBA prototype engines. The BHA and directional workbooks require their colocated, hash-verified `wellforge-bha.exe` and `wellforge-trajectory.exe`; neither falls back to VBA screening or trajectory calculations. The other three workbooks remain on the VBA prototype engines pending their Rust ports. `T&D 4.002b.xlsm` informed the workflow and visual topology only; its protected macros and catalog are not reproduced.
+This package contains five Excel engineering workbooks and four standalone Rust engine CLIs. The BHA and directional workbooks require their colocated, hash-verified `wellforge-bha.exe` and `wellforge-trajectory.exe`; neither falls back to VBA screening or trajectory calculations. The torque-drag and hydraulics Rust CLIs are now built, hashed, and shipped with the package, while their workbook bridges remain on VBA pending a separate contract migration. The API 7G workbook remains on its VBA prototype engine. `T&D 4.002b.xlsm` informed the workflow and visual topology only; its protected macros and catalog are not reproduced.
 
 The repository also contains the migrated Tauri desktop workspace under `desktop/`. See `docs/DESKTOP_MIGRATION.md` for the boundary between the desktop compatibility crates and the canonical Rust engine lanes.
 

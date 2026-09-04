@@ -15,9 +15,15 @@ fn cli() -> Command {
 #[test]
 fn version_reports_engine_name() {
     let output = cli().arg("version").output().expect("run version");
-    assert!(output.status.success(), "version subcommand failed: {output:?}");
+    assert!(
+        output.status.success(),
+        "version subcommand failed: {output:?}"
+    );
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.starts_with("wellforge-torque-drag "), "unexpected: {stdout}");
+    assert!(
+        stdout.starts_with("wellforge-torque-drag "),
+        "unexpected: {stdout}"
+    );
 }
 
 #[test]
@@ -39,7 +45,13 @@ fn run_produces_result_with_populated_hashes() {
     fs::write(&input, serde_json::to_vec(&request).unwrap()).unwrap();
 
     let status = cli()
-        .args(["run", "--input", input.to_str().unwrap(), "--output", output.to_str().unwrap()])
+        .args([
+            "run",
+            "--input",
+            input.to_str().unwrap(),
+            "--output",
+            output.to_str().unwrap(),
+        ])
         .stdout(Stdio::null())
         .status()
         .expect("run subcommand");
@@ -48,14 +60,20 @@ fn run_produces_result_with_populated_hashes() {
     let bytes = fs::read(&output).expect("read result");
     let value: serde_json::Value = serde_json::from_slice(&bytes).expect("valid json");
     assert_eq!(value["contract_version"], "0.1.0");
-    assert_eq!(value["evidence"]["request_hash"].as_str().unwrap().len(), 64);
+    assert_eq!(
+        value["evidence"]["request_hash"].as_str().unwrap().len(),
+        64
+    );
     assert_eq!(value["evidence"]["result_hash"].as_str().unwrap().len(), 64);
     let stations = value["stations"].as_array().unwrap();
     assert_eq!(stations.len(), request.trajectory.len());
     // For a pickup on an inclined string, the top-of-string tension must be positive.
     let top = &stations[0];
     let top_tension = top["effective_tension_n"].as_f64().unwrap();
-    assert!(top_tension > 0.0, "top-of-string tension must be positive on pickup: {top_tension}");
+    assert!(
+        top_tension > 0.0,
+        "top-of-string tension must be positive on pickup: {top_tension}"
+    );
 }
 
 #[test]
@@ -74,7 +92,10 @@ fn validate_rejects_reversed_trajectory() {
         .expect("validate");
     assert!(!output.status.success(), "validate must fail");
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("WF-TND-REQ-"), "expected structured error: {stdout}");
+    assert!(
+        stdout.contains("WF-TND-REQ-"),
+        "expected structured error: {stdout}"
+    );
 }
 
 #[test]

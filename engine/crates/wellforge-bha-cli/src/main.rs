@@ -9,8 +9,8 @@ use std::{
 
 use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand};
-use serde::Serialize;
 use schemars::schema_for;
+use serde::Serialize;
 use sha2::{Digest, Sha256};
 use wellforge_bha_contract::{
     AnalysisStatus, BhaAnalysisRequest, BhaAnalysisResult, SolverEvidence, validate_request,
@@ -378,5 +378,8 @@ fn emit_json_error(code: &'static str, message: impl Into<String>) {
         code,
         message: message.into(),
     };
-    println!("{}", serde_json::to_string(&payload).expect("serializing cli error"));
+    println!(
+        "{}",
+        serde_json::to_string(&payload).expect("serializing cli error")
+    );
 }

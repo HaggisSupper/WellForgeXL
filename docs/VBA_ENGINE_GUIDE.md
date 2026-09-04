@@ -14,7 +14,7 @@ The `.xlsx` files under `outputs` are regression references and styled templates
 - `WellForgeDirectional`: retained legacy prototype plus presentation, unit-header and chart-refresh helpers; it is not the directional calculation authority and production dispatch never calls its VBA physics.
 - `WellForgeJsonExchange`: unit-preserving JSON import/export and validation.
 
-The API 7G, hydraulics and torque/drag engines calculate in VBA arrays. BHA and directional use fixed, colocated, SHA-256-verified Rust executables with no VBA calculation fallback. The trajectory client owns explicit request projection, SI/display conversion and presentation only; it does not parse result JSON or reproduce Rust geometry, interpolation, target, slide, formation or projection physics. Charts remain native Excel chart objects pointing at value-only ranges.
+The API 7G, hydraulics and torque/drag workbook clients calculate in VBA arrays. All four corresponding Rust engines are also built as fixed, standalone, SHA-256-hashed CLI executables for distribution and headless use. BHA and directional currently dispatch through the Rust executables with no VBA calculation fallback; hydraulics and torque/drag remain VBA workbook authorities until their bridges receive the same contract migration and Windows acceptance gates. The trajectory client owns explicit request projection, SI/display conversion and presentation only; it does not parse result JSON or reproduce Rust geometry, interpolation, target, slide, formation or projection physics. Charts remain native Excel chart objects pointing at value-only ranges.
 
 ## Build
 
@@ -37,8 +37,7 @@ Use `-VisibleExcel` when diagnosing an Excel-side problem.
 For each workbook the builder:
 
 1. Preflights the source `.xlsx` OOXML manifest and rejects any declared package part that is missing before Excel starts.
-2. Builds, tests and SHA-256 hashes `wellforge-bha.exe`, writing its checksum manifest before Excel starts.
-3. Selects and verifies Rust 1.98.0, runs the trajectory CLI gates locked/offline, builds `wellforge-trajectory.exe`, and writes its colocated SHA-256 checksum manifest before Excel starts.
+2. Selects and verifies Rust 1.98.0, runs the locked/offline workspace gates, builds and SHA-256 hashes `wellforge-bha.exe`, `wellforge-trajectory.exe`, `wellforge-torque-drag.exe`, and `wellforge-hydraulics.exe`, and writes each colocated checksum manifest before Excel starts.
 4. Saves a temporary `.xlsm` through Excel.
 5. Imports all VBA/client modules and installs `ThisWorkbook` events.
 6. Executes `WellForge_BuildInitialize`, which snapshots/removes POC formulas and runs the appropriate authority.
@@ -62,7 +61,7 @@ The bounded directional table rows are fixed identity slots backed by UUIDs on h
 
 Linux source tests verify the adapter, workbook model and release-script wiring. They do not claim acceptance of a native Windows executable, Excel/COM automation, compiled VBA, macro execution, rendering or final workbook packages; those remain Windows release gates.
 
-The manual `Windows Excel release verification` workflow targets only a self-hosted runner carrying the labels `Windows` and `wellforgexl-excel`. That runner must have desktop Excel, trusted VBA project access, Rust 1.98.0, cargo-deny 0.20.2 capability, Node 24.19.0 compatibility, and a current Actions runner. The bounded workflow uses a unique run directory and an exact clean git SHA. It smoke-tests both native executables, creates an exact deterministic ZIP, verifies its manifest and executable sidecars, extracts into a clean directory, explicitly compiles and reopens all five `.xlsm` files through Excel COM, executes the VBA clients, switches SI/Imperial/Custom units, exports every native chart to a nonempty PNG, and fault-injects the exchange, BHA, and trajectory commit paths to prove equality-restored rollback. Final package acceptance verifies a second clean extraction and reopens it in a fresh Excel process. It uploads the exact archive, per-gate JSON, fail-closed `release-evidence.json`, logs, and rendered charts on success or failure; the evidence JSON inventories the retained logs and PNGs by SHA-256. No gate is inferred from stale files or from another SHA/run.
+The manual `Windows Excel release verification` workflow targets only a self-hosted runner carrying the labels `Windows` and `wellforgexl-excel`. That runner must have desktop Excel, trusted VBA project access, Rust 1.98.0, cargo-deny 0.20.2 capability, Node 24.19.0 compatibility, and a current Actions runner. The bounded workflow uses a unique run directory and an exact clean git SHA. It smoke-tests all four native executables, creates an exact deterministic ZIP, verifies its manifest and executable sidecars, extracts into a clean directory, explicitly compiles and reopens all five `.xlsm` files through Excel COM, executes the VBA clients, switches SI/Imperial/Custom units, exports every native chart to a nonempty PNG, and fault-injects the exchange, BHA, and trajectory commit paths to prove equality-restored rollback. Final package acceptance verifies a second clean extraction and reopens it in a fresh Excel process. It uploads the exact archive, per-gate JSON, fail-closed `release-evidence.json`, logs, and rendered charts on success or failure; the evidence JSON inventories the retained logs and PNGs by SHA-256. No gate is inferred from stale files or from another SHA/run.
 
 ## Scope
 

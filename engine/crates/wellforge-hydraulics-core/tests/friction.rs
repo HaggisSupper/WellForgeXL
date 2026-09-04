@@ -15,10 +15,7 @@ fn bingham_case_produces_positive_losses_and_reasonable_ecd() {
 
     // ECD must be within a physically sensible band for a 1200 kg/m^3 mud.
     let ecd = result.equivalent_circulating_density_kg_m3;
-    assert!(
-        (1150.0..=1500.0).contains(&ecd),
-        "ECD out of band: {ecd}"
-    );
+    assert!((1150.0..=1500.0).contains(&ecd), "ECD out of band: {ecd}");
 
     // Each section should emit exactly two records (pipe + annulus).
     assert_eq!(result.sections.len(), request.sections.len() * 2);

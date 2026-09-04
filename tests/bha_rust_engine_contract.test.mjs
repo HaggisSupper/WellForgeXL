@@ -43,9 +43,10 @@ test('BHA bridge commits are transactional and expose a runtime rollback fault t
 });
 
 test('Windows suite builder compiles and hashes the Rust engine before Excel', () => {
-  const rustBuild = builder.indexOf('Build-WellForgeBhaEngine.ps1');
+  const rustBuild = builder.indexOf('Build-WellForgeRustEngine.ps1');
   const excelStart = builder.indexOf('New-Object -ComObject Excel.Application');
   assert.ok(rustBuild >= 0 && rustBuild < excelStart);
+  assert.match(builder, /wellforge-bha-cli/);
   assert.match(builder, /WellForgeBhaEngine\.bas/);
 });
 

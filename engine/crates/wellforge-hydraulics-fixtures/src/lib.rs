@@ -60,9 +60,15 @@ pub fn canonical_bingham_case() -> HydraulicsAnalysisRequest {
             flow_rate_m3_s: 0.030,
             surface_temperature_k: 300.0,
             nozzles: vec![
-                Nozzle { diameter_m: 12.0 / 32.0 * 0.0254 },
-                Nozzle { diameter_m: 12.0 / 32.0 * 0.0254 },
-                Nozzle { diameter_m: 12.0 / 32.0 * 0.0254 },
+                Nozzle {
+                    diameter_m: 12.0 / 32.0 * 0.0254,
+                },
+                Nozzle {
+                    diameter_m: 12.0 / 32.0 * 0.0254,
+                },
+                Nozzle {
+                    diameter_m: 12.0 / 32.0 * 0.0254,
+                },
             ],
         },
     }

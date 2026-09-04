@@ -100,9 +100,7 @@ pub fn validate_request(request: &TnDAnalysisRequest) -> Result<(), Vec<Contract
             if !(0.0..=1.0).contains(&spec.wear_class_derating) {
                 errors.push(ContractError::new(
                     "WF-TND-REQ-030",
-                    format!(
-                        "components[{i}].api7g_spec.wear_class_derating must be within [0, 1]"
-                    ),
+                    format!("components[{i}].api7g_spec.wear_class_derating must be within [0, 1]"),
                 ));
             }
             if spec.safety_factor < 1.0 || !spec.safety_factor.is_finite() {
@@ -144,5 +142,9 @@ pub fn validate_request(request: &TnDAnalysisRequest) -> Result<(), Vec<Contract
         ));
     }
 
-    if errors.is_empty() { Ok(()) } else { Err(errors) }
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors)
+    }
 }

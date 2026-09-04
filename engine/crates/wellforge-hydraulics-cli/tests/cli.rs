@@ -15,17 +15,22 @@ fn cli() -> Command {
 #[test]
 fn version_reports_engine_name() {
     let output = cli().arg("version").output().expect("run version");
-    assert!(output.status.success(), "version subcommand failed: {output:?}");
+    assert!(
+        output.status.success(),
+        "version subcommand failed: {output:?}"
+    );
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.starts_with("wellforge-hydraulics "), "unexpected: {stdout}");
+    assert!(
+        stdout.starts_with("wellforge-hydraulics "),
+        "unexpected: {stdout}"
+    );
 }
 
 #[test]
 fn doctor_emits_json_metadata() {
     let output = cli().arg("doctor").output().expect("run doctor");
     assert!(output.status.success(), "doctor failed: {output:?}");
-    let value: serde_json::Value =
-        serde_json::from_slice(&output.stdout).expect("valid json");
+    let value: serde_json::Value = serde_json::from_slice(&output.stdout).expect("valid json");
     assert_eq!(value["engine"], "wellforge-hydraulics");
     assert!(value["dependency_lock_hash"].as_str().is_some());
 }
@@ -39,7 +44,13 @@ fn run_produces_result_with_populated_hashes() {
     fs::write(&input, serde_json::to_vec(&request).unwrap()).unwrap();
 
     let status = cli()
-        .args(["run", "--input", input.to_str().unwrap(), "--output", output.to_str().unwrap()])
+        .args([
+            "run",
+            "--input",
+            input.to_str().unwrap(),
+            "--output",
+            output.to_str().unwrap(),
+        ])
         .stdout(Stdio::null())
         .status()
         .expect("run subcommand");
@@ -48,13 +59,18 @@ fn run_produces_result_with_populated_hashes() {
     let bytes = fs::read(&output).unwrap();
     let value: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(value["contract_version"], "0.1.0");
-    assert_eq!(value["evidence"]["request_hash"].as_str().unwrap().len(), 64);
+    assert_eq!(
+        value["evidence"]["request_hash"].as_str().unwrap().len(),
+        64
+    );
     assert_eq!(value["evidence"]["result_hash"].as_str().unwrap().len(), 64);
     assert_eq!(value["evidence"]["profile_standard"], "API RP 13D");
     // Bit dP must be strictly positive for a flow rate through non-zero nozzles.
     assert!(value["bit_pressure_loss_pa"].as_f64().unwrap() > 0.0);
     // ECD must exceed the surface mud density because we added annular losses.
-    let ecd = value["equivalent_circulating_density_kg_m3"].as_f64().unwrap();
+    let ecd = value["equivalent_circulating_density_kg_m3"]
+        .as_f64()
+        .unwrap();
     assert!(ecd >= 1200.0, "ECD must be at least mud density: {ecd}");
 }
 
@@ -72,7 +88,10 @@ fn validate_rejects_missing_bingham_parameters() {
         .expect("validate");
     assert!(!output.status.success(), "validate must fail");
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("WF-HYD-REQ-"), "expected structured error: {stdout}");
+    assert!(
+        stdout.contains("WF-HYD-REQ-"),
+        "expected structured error: {stdout}"
+    );
 }
 
 #[test]

@@ -167,9 +167,13 @@ fn reynolds_and_friction(
     }
 
     let apparent_viscosity = match rheology.model {
-        RheologyModel::Newtonian => rheology.dynamic_viscosity_pa_s.ok_or(SolveError::Rheology)?,
+        RheologyModel::Newtonian => rheology
+            .dynamic_viscosity_pa_s
+            .ok_or(SolveError::Rheology)?,
         RheologyModel::Bingham => {
-            let pv = rheology.plastic_viscosity_pa_s.ok_or(SolveError::Rheology)?;
+            let pv = rheology
+                .plastic_viscosity_pa_s
+                .ok_or(SolveError::Rheology)?;
             let ty = rheology.yield_stress_pa.ok_or(SolveError::Rheology)?;
             let gamma_wall = 8.0 * velocity_m_s / hydraulic_diameter_m;
             if gamma_wall > 0.0 {

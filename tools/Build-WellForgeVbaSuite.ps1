@@ -297,14 +297,20 @@ try {
     }
 
     New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
-    $bhaEngineBuilder = Join-Path $repositoryRoot 'tools\Build-WellForgeBhaEngine.ps1'
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $bhaEngineBuilder -OutputDirectory $OutputDirectory -LogDirectory $LogDirectory -NoPause
-    if ($LASTEXITCODE -ne 0) { throw 'The Rust BHA engine build failed; workbook compilation was stopped.' }
-    Write-BuildEvent SUCCESS 'Rust BHA engine built and hashed beside workbook outputs.' @{ executable = (Join-Path $OutputDirectory 'wellforge-bha.exe') }
-    $trajectoryEngineBuilder = Join-Path $repositoryRoot 'tools\Build-WellForgeTrajectoryEngine.ps1'
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $trajectoryEngineBuilder -OutputDirectory $OutputDirectory -LogDirectory $LogDirectory -NoPause
-    if ($LASTEXITCODE -ne 0) { throw 'The Rust trajectory engine build failed; workbook compilation was stopped.' }
-    Write-BuildEvent SUCCESS 'Rust trajectory engine built and hashed beside workbook outputs.' @{ executable = (Join-Path $OutputDirectory 'wellforge-trajectory.exe') }
+    $rustEngineBuilder = Join-Path $repositoryRoot 'tools\Build-WellForgeRustEngine.ps1'
+    $rustEngines = @(
+        @{ package = 'wellforge-bha-cli'; executable = 'wellforge-bha.exe'; label = 'BHA' },
+        @{ package = 'wellforge-trajectory-cli'; executable = 'wellforge-trajectory.exe'; label = 'trajectory' },
+        @{ package = 'wellforge-torque-drag-cli'; executable = 'wellforge-torque-drag.exe'; label = 'torque-drag' },
+        @{ package = 'wellforge-hydraulics-cli'; executable = 'wellforge-hydraulics.exe'; label = 'hydraulics' }
+    )
+    foreach ($rustEngine in $rustEngines) {
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $rustEngineBuilder `
+            -EnginePackage $rustEngine.package -ExecutableName $rustEngine.executable `
+            -OutputDirectory $OutputDirectory -LogDirectory $LogDirectory -NoPause
+        if ($LASTEXITCODE -ne 0) { throw ("The Rust {0} engine build failed; workbook compilation was stopped." -f $rustEngine.label) }
+        Write-BuildEvent SUCCESS ("Rust {0} engine built and hashed beside workbook outputs." -f $rustEngine.label) @{ executable = (Join-Path $OutputDirectory $rustEngine.executable) }
+    }
     Invoke-BhaEngineEndToEnd -OutputDirectory $OutputDirectory
     Write-BuildEvent SUCCESS 'External BHA engine end-to-end contract passed.' @{ result = (Join-Path $OutputDirectory 'bha-e2e-result.json') }
     try { $excel = New-Object -ComObject Excel.Application } catch { throw 'Desktop Microsoft Excel could not be started.' }

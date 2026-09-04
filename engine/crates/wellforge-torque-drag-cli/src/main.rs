@@ -7,9 +7,7 @@ use clap::{Parser, Subcommand};
 use schemars::schema_for;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use wellforge_torque_drag_contract::{
-    TnDAnalysisRequest, TnDAnalysisResult, validate_request,
-};
+use wellforge_torque_drag_contract::{TnDAnalysisRequest, TnDAnalysisResult, validate_request};
 use wellforge_torque_drag_core::solve_soft_string;
 
 #[derive(Parser)]
@@ -116,7 +114,10 @@ fn execute() -> Result<()> {
             let bytes = serde_json::to_vec_pretty(&result)?;
             fs::write(&output, &bytes)
                 .with_context(|| format!("cannot write {}", output.display()))?;
-            println!("{{\"status\":\"ok\",\"stations\":{}}}", result.stations.len());
+            println!(
+                "{{\"status\":\"ok\",\"stations\":{}}}",
+                result.stations.len()
+            );
         }
         Command::Schema { request, result } => {
             let request_schema = schema_for!(TnDAnalysisRequest);

@@ -11,7 +11,7 @@ const engine = read('VBA/WellForgeTrajectoryEngine.bas');
 const core = read('VBA/WellForgeCore.bas');
 const directional = read('VBA/WellForgeDirectional.bas');
 const suiteBuilder = read('tools/Build-WellForgeVbaSuite.ps1');
-const engineBuilder = read('tools/Build-WellForgeTrajectoryEngine.ps1');
+const engineBuilder = read('tools/Build-WellForgeRustEngine.ps1');
 const engineTester = read('tools/Test-WellForgeTrajectoryEngine.ps1');
 
 function procedure(source, name) {
@@ -178,14 +178,16 @@ test('release scripts declare pinned workspace gates, hash, smoke-test wiring, a
   assert.match(engineBuilder, /cargo \+1\.98\.0 clippy --workspace --all-targets --locked --offline -- -D warnings/);
   assert.match(engineBuilder, /cargo \+1\.98\.0 test --workspace --locked --offline/);
   assert.doesNotMatch(engineBuilder, /cargo \+1\.98\.0 (?:clippy|test) -p wellforge-trajectory-cli/);
-  assert.match(engineBuilder, /cargo \+1\.98\.0 build --release --locked --offline -p wellforge-trajectory-cli/);
+  assert.match(engineBuilder, /ValidateSet\([^\n]*wellforge-trajectory-cli/);
+  assert.match(engineBuilder, /cargo \+1\.98\.0 build --release --locked --offline -p \$EnginePackage/);
   assert.match(engineBuilder, /wellforge-trajectory\.exe/);
   assert.match(engineBuilder, /Get-FileHash[\s\S]*SHA256/);
   assert.match(engineTester, /trajectory-release-one-minimal\.json/);
   assert.match(engineTester, /validate[\s\S]*run[\s\S]*verify-result[\s\S]*bridge/);
-  const trajectoryBuild = suiteBuilder.indexOf('Build-WellForgeTrajectoryEngine.ps1');
+  const trajectoryBuild = suiteBuilder.indexOf('Build-WellForgeRustEngine.ps1');
   const excelStart = suiteBuilder.indexOf('New-Object -ComObject Excel.Application');
   assert.ok(trajectoryBuild >= 0 && trajectoryBuild < excelStart);
+  assert.match(suiteBuilder, /wellforge-trajectory-cli/);
   assert.match(suiteBuilder, /WellForgeTrajectoryEngine\.bas/);
   assert.match(core, /\.Range\("J3"\)\.Value2 = "Calculation client \/ engine"/);
   assert.match(core, /compiled calculation client\/engine workbook/);

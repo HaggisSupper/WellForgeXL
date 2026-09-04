@@ -32,6 +32,10 @@ const packageFiles = [
   'wellforge-bha.exe.sha256',
   'wellforge-trajectory.exe',
   'wellforge-trajectory.exe.sha256',
+  'wellforge-torque-drag.exe',
+  'wellforge-torque-drag.exe.sha256',
+  'wellforge-hydraulics.exe',
+  'wellforge-hydraulics.exe.sha256',
 ];
 
 function sha256(value) {
@@ -52,7 +56,7 @@ async function arrangePackage() {
   for (const name of packageFiles.filter((entry) => !entry.endsWith('.sha256'))) {
     await writeFile(path.join(packageDirectory, name), `release-bytes:${name}`);
   }
-  for (const executable of ['wellforge-bha.exe', 'wellforge-trajectory.exe']) {
+  for (const executable of ['wellforge-bha.exe', 'wellforge-trajectory.exe', 'wellforge-torque-drag.exe', 'wellforge-hydraulics.exe']) {
     const bytes = await readFile(path.join(packageDirectory, executable));
     await writeFile(path.join(packageDirectory, `${executable}.sha256`), sha256(bytes));
   }

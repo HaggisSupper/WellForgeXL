@@ -418,8 +418,7 @@ fn doctor() -> Result<(), CommandError> {
             .map_err(|error| CommandError::Calculation(error.to_string()))?,
     )
     .map_err(|error| CommandError::Integrity(error.to_string()))?;
-    if parsed["name"] != "wellforge-trajectory" || parsed["version"] != env!("CARGO_PKG_VERSION")
-    {
+    if parsed["name"] != "wellforge-trajectory" || parsed["version"] != env!("CARGO_PKG_VERSION") {
         return Err(CommandError::Integrity(
             "build metadata validation failed".to_owned(),
         ));

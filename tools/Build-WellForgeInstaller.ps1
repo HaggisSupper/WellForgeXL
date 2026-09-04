@@ -20,7 +20,9 @@ $workbookNames = @(
 )
 $runtimeNames = @(
     'wellforge-bha.exe', 'wellforge-bha.exe.sha256',
-    'wellforge-trajectory.exe', 'wellforge-trajectory.exe.sha256'
+    'wellforge-trajectory.exe', 'wellforge-trajectory.exe.sha256',
+    'wellforge-torque-drag.exe', 'wellforge-torque-drag.exe.sha256',
+    'wellforge-hydraulics.exe', 'wellforge-hydraulics.exe.sha256'
 )
 
 if (-not (Get-Command iexpress.exe -ErrorAction SilentlyContinue)) {

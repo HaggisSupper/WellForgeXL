@@ -1,5 +1,11 @@
 # WellForge Rust/VBA Engineering Workbook Suite — 2026-08-29 v7
 
+## Four standalone Rust engines — 2026-09-04
+
+- Added a shared pinned Rust 1.98.0 Windows builder for `wellforge-bha.exe`, `wellforge-trajectory.exe`, `wellforge-torque-drag.exe`, and `wellforge-hydraulics.exe`.
+- Added SHA-256 sidecars for the torque-drag and hydraulics executables and included all four engines in release archives and the Windows installer.
+- Kept workbook authority explicit: BHA and directional dispatch to Rust; hydraulics and torque-drag remain VBA clients until their bridge migrations pass the Windows acceptance gates.
+
 ## Full release hardening — 2026-08-30
 
 ### PR #3 current-head acceptance hardening — 2026-08-31
