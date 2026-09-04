@@ -56,8 +56,25 @@
 - [x] Implement explicit command input and typed error mapping without accepting raw UI geometry.
 - [x] Register the command once and validate the response at the TypeScript ingress.
 - [x] Run Rust command tests, frontend typecheck, and IPC tests.
-- [ ] Add a focused malformed-result command test before the next command expansion.
-- [ ] Commit as `feat: publish canonical trajectory scenes through tauri`.
+- [x] Add a focused malformed-result command test before the next command expansion.
+- [x] Commit as `feat: expose canonical trajectory scenes through tauri`.
+
+### Task 2A: Add the universal canonical engine runner
+
+**Files:**
+- Create: `desktop/src-tauri/src/engine_runner.rs`
+- Modify: `desktop/src-tauri/src/main.rs`
+- Modify: `desktop/src-tauri/Cargo.toml`
+
+**Interfaces:**
+- Consumes: an engine executable path and explicit request/result paths.
+- Produces: canonical result bytes or typed launch, execution, read, and path-alias errors.
+
+- [x] Write a failing path-alias test and verify it fails before implementation.
+- [x] Implement explicit `run --input --output --no-backup` invocation.
+- [x] Run formatting and the full Tauri test suite.
+- [ ] Commit as `feat: add universal canonical engine runner`.
+- [ ] Add executable discovery and project-scoped invocation only after this checkpoint.
 
 ### Task 3: Load real trajectory scenes in the desktop survey workspace
 

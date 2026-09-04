@@ -19,6 +19,10 @@ the result projection in Rust, and returns a `wellforge.scene/v1` document to
 the renderer. Future BHA, hydraulics, and torque/drag commands should follow
 the same result-JSON-to-scene pattern.
 
+The host also contains a shared engine runner that invokes canonical CLI
+lanes with explicit input and output paths. It rejects path aliasing before
+launch and reports typed launch, execution, and result-read failures.
+
 ## Deliberately not duplicated
 
 The source `survey`, `bha`, `hydra`, `tnd`, and `wits` crates overlap the

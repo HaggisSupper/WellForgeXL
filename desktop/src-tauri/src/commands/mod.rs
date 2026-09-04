@@ -936,7 +936,7 @@ pub fn run_scan(request: AcScanRequest) -> Result<ClosestApproach, ApiError> {
 
 #[cfg(test)]
 mod scene_tests {
-    use super::SurveySceneRequest;
+    use super::{SurveySceneRequest, build_trajectory_scene};
     use serde_json::json;
 
     #[test]
@@ -966,6 +966,14 @@ mod scene_tests {
             request.is_err(),
             "out-of-range JSON values must be rejected"
         );
+    }
+
+    #[test]
+    fn trajectory_scene_rejects_malformed_canonical_result_json() {
+        let error = build_trajectory_scene("{not-json}".to_owned())
+            .expect_err("malformed engine result must be rejected");
+
+        assert_eq!(error.code, "INVALID_TRAJECTORY_RESULT");
     }
 }
 
