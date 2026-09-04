@@ -34,11 +34,11 @@
 - Consumes: the canonical serialized `TrajectoryAnalysisResult` JSON contract produced by `engine`.
 - Produces: `build_trajectory_scene(&TrajectoryAnalysisResult) -> Result<SceneDocumentV1, SceneError>`.
 
-- [ ] Write a failing test proving plan and survey calculated stations become separate ordered scene layers, with NE-TVD coordinates and source provenance preserved.
-- [ ] Run `cargo test -p wellforge-app trajectory_scene` and confirm failure because the adapter is absent.
-- [ ] Define a strict local deserialization projection for the canonical result fields and implement the smallest adapter: plan path, survey path, station markers, Rust-side scene validation, and evidence-derived provenance.
-- [ ] Run the focused test and then `cargo test --workspace` in `desktop`.
-- [ ] Commit as `feat: adapt canonical trajectory results to 3dmk`.
+- [x] Write a failing test proving plan and survey calculated stations become separate ordered scene layers, with NE-TVD coordinates and source provenance preserved.
+- [x] Run `cargo test -p wellforge-app trajectory_scene` and confirm failure because the adapter is absent.
+- [x] Define a strict local deserialization projection for the canonical result fields and implement the smallest adapter: plan path, survey path, station markers, Rust-side scene validation, and evidence-derived provenance.
+- [x] Run the focused test and then `cargo test --workspace` in `desktop`.
+- [x] Commit as `feat: add canonical trajectory to 3dmk adapter`.
 
 ### Task 2: Publish canonical trajectory scenes through Tauri
 
@@ -53,9 +53,10 @@
 - Produces: typed `build_trajectory_scene` IPC response using `SceneDocumentV1`.
 
 - [ ] Write a failing command test for a missing or malformed trajectory result.
-- [ ] Implement explicit command input and typed error mapping without accepting raw UI geometry.
-- [ ] Register the command once and validate the response at the TypeScript ingress.
-- [ ] Run Rust command tests, frontend typecheck, and IPC tests.
+- [x] Implement explicit command input and typed error mapping without accepting raw UI geometry.
+- [x] Register the command once and validate the response at the TypeScript ingress.
+- [x] Run Rust command tests, frontend typecheck, and IPC tests.
+- [ ] Add a focused malformed-result command test before the next command expansion.
 - [ ] Commit as `feat: publish canonical trajectory scenes through tauri`.
 
 ### Task 3: Load real trajectory scenes in the desktop survey workspace

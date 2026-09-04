@@ -24,6 +24,9 @@ use wellforge_survey::{
 };
 
 use crate::state::AppState;
+use crate::trajectory_scene::{
+    build_trajectory_scene as build_trajectory_scene_document, parse_trajectory_result,
+};
 
 #[derive(Clone, Debug, Serialize)]
 pub struct PingResponse {
@@ -901,6 +904,21 @@ pub fn build_survey_plot(request: SurveyPlotRequest) -> Result<PlotSpec, ApiErro
 #[tauri::command]
 pub fn build_survey_scene(request: SurveySceneRequest) -> Result<SceneDocumentV1, ApiError> {
     build_survey_scene_document(&request.stations).map_err(|error| ApiError {
+        code: error.code().to_owned(),
+        message: error.to_string(),
+        details: None,
+    })
+}
+
+/// Converts a canonical engine result into a validated 3Dmk scene.
+#[tauri::command]
+pub fn build_trajectory_scene(result_json: String) -> Result<SceneDocumentV1, ApiError> {
+    let result = parse_trajectory_result(&result_json).map_err(|error| ApiError {
+        code: "INVALID_TRAJECTORY_RESULT".to_owned(),
+        message: "The canonical trajectory result could not be parsed".to_owned(),
+        details: Some(serde_json::json!({ "source": error.to_string() })),
+    })?;
+    build_trajectory_scene_document(&result).map_err(|error| ApiError {
         code: error.code().to_owned(),
         message: error.to_string(),
         details: None,

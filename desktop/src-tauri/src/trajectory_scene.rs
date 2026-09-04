@@ -60,6 +60,12 @@ pub(crate) fn build_trajectory_scene(
     )
 }
 
+pub(crate) fn parse_trajectory_result(
+    result_json: &str,
+) -> Result<CanonicalTrajectoryResult, serde_json::Error> {
+    serde_json::from_str(result_json)
+}
+
 fn scene_point(station: &CanonicalStation) -> ScenePoint {
     ScenePoint::new(station.north_m, station.east_m, station.tvd_m)
 }

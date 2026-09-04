@@ -316,4 +316,7 @@ export const wellforgeIpc = {
   buildSurveyScene: async (stations: SurveyPosition[]): Promise<SceneDocumentV1> => parseSceneDocumentV1(
     await invoke<unknown>("build_survey_scene", { request: { stations } }),
   ),
+  buildTrajectoryScene: async (resultJson: string): Promise<SceneDocumentV1> => parseSceneDocumentV1(
+    await invoke<unknown>("build_trajectory_scene", { resultJson }),
+  ),
 };

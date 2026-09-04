@@ -3,8 +3,9 @@ mod state;
 mod trajectory_scene;
 
 use commands::{
-    build_survey_plot, build_survey_scene, calculate_minimum_curvature, get_plot_preferences,
-    get_project_audit, get_units, inspect_document, ping, run_scan, save_project, select_project,
+    build_survey_plot, build_survey_scene, build_trajectory_scene, calculate_minimum_curvature,
+    get_plot_preferences, get_project_audit, get_units, inspect_document, ping, run_scan,
+    save_project, select_project,
 };
 use state::AppState;
 use tauri::Manager;
@@ -30,6 +31,7 @@ fn main() {
             calculate_minimum_curvature,
             build_survey_plot,
             build_survey_scene,
+            build_trajectory_scene,
             run_scan
         ])
         .run(tauri::generate_context!())
