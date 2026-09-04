@@ -24,6 +24,11 @@ lanes with explicit input and output paths. It rejects path aliasing before
 launch, verifies packaged executable SHA-256 sidecars, and reports typed
 discovery, launch, execution, and result-read failures.
 
+Workspace-scoped execution additionally requires request and result paths to
+remain inside the selected project workspace before the executable is
+launched. React does not supply an executable path or an unrestricted output
+location.
+
 ## Deliberately not duplicated
 
 The source `survey`, `bha`, `hydra`, `tnd`, and `wits` crates overlap the

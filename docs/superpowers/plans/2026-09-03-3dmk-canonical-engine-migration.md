@@ -74,8 +74,9 @@
 - [x] Implement explicit `run --input --output --no-backup` invocation.
 - [x] Run formatting and the full Tauri test suite.
 - [x] Add deterministic packaged-executable discovery and adjacent SHA-256 sidecar verification.
+- [x] Add project-workspace containment checks for request and result paths.
 - [x] Commit as `feat: add universal canonical engine runner`.
-- [ ] Add project-scoped invocation only after this checkpoint.
+- [ ] Add a state-bound command that chooses project-scoped request and result paths internally.
 
 ### Task 3: Load real trajectory scenes in the desktop survey workspace
 

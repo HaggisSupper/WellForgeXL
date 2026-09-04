@@ -22,6 +22,8 @@ pub(crate) enum EngineRunnerError {
     ChecksumMismatch,
     #[error("trajectory executable could not be inspected: {0}")]
     Inspect(String),
+    #[error("engine request and result paths must remain inside the project workspace")]
+    PathOutsideWorkspace,
 }
 
 impl EngineRunnerError {
@@ -35,8 +37,22 @@ impl EngineRunnerError {
             Self::ChecksumMissing => "ENGINE_CHECKSUM_MISSING",
             Self::ChecksumMismatch => "ENGINE_CHECKSUM_MISMATCH",
             Self::Inspect(_) => "ENGINE_EXECUTABLE_INSPECTION_FAILED",
+            Self::PathOutsideWorkspace => "ENGINE_PATH_OUTSIDE_WORKSPACE",
         }
     }
+}
+
+pub(crate) fn run_trajectory_engine_in_workspace(
+    executable: &Path,
+    workspace: &Path,
+    input: &Path,
+    output: &Path,
+) -> Result<Vec<u8>, EngineRunnerError> {
+    let workspace = normalized_path(workspace);
+    if !is_within(&workspace, input) || !is_within(&workspace, output) {
+        return Err(EngineRunnerError::PathOutsideWorkspace);
+    }
+    run_trajectory_engine(executable, input, output)
 }
 
 pub(crate) fn discover_trajectory_executable(
@@ -113,6 +129,10 @@ fn normalized_path(path: &Path) -> std::path::PathBuf {
     })
 }
 
+fn is_within(root: &Path, child: &Path) -> bool {
+    normalized_path(child).starts_with(root)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -144,5 +164,21 @@ mod tests {
         let found = discover_trajectory_executable(&[root.path()]).expect("engine discovers");
 
         assert_eq!(found, executable);
+    }
+
+    #[test]
+    fn rejects_request_and_result_paths_outside_the_project_workspace() {
+        let root = tempfile::tempdir().expect("temporary root creates");
+        let outside = tempfile::tempdir().expect("outside root creates");
+
+        let error = run_trajectory_engine_in_workspace(
+            Path::new("engine.exe"),
+            root.path(),
+            &outside.path().join("request.json"),
+            &root.path().join("result.json"),
+        )
+        .expect_err("request outside workspace must be rejected");
+
+        assert_eq!(error.code(), "ENGINE_PATH_OUTSIDE_WORKSPACE");
     }
 }
