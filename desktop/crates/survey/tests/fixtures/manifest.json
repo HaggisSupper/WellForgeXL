@@ -1,0 +1,8 @@
+{
+  "fixtures": [
+    {
+      "path": "minimum-curvature-synthetic.json",
+      "sha256": "sha256:6927786571435d5a3a1023a9911f55235696f199d2a63de412db526f94173e3e"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default desktop capability for the local WellForge shell. Native project selection is performed by the Rust backend; the renderer has no dialog-plugin permission.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

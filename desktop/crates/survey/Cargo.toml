@@ -1,0 +1,15 @@
+[package]
+name = "wellforge-survey"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+wellforge-core = { path = "../core" }
+wellforge-3d = { path = "../three_d" }
+
+[dev-dependencies]
+sha2 = "0.10"
+serde_json.workspace = true
