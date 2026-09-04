@@ -21,7 +21,8 @@ the same result-JSON-to-scene pattern.
 
 The host also contains a shared engine runner that invokes canonical CLI
 lanes with explicit input and output paths. It rejects path aliasing before
-launch and reports typed launch, execution, and result-read failures.
+launch, verifies packaged executable SHA-256 sidecars, and reports typed
+discovery, launch, execution, and result-read failures.
 
 ## Deliberately not duplicated
 

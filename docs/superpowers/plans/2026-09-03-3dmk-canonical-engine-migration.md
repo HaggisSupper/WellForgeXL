@@ -73,8 +73,9 @@
 - [x] Write a failing path-alias test and verify it fails before implementation.
 - [x] Implement explicit `run --input --output --no-backup` invocation.
 - [x] Run formatting and the full Tauri test suite.
-- [ ] Commit as `feat: add universal canonical engine runner`.
-- [ ] Add executable discovery and project-scoped invocation only after this checkpoint.
+- [x] Add deterministic packaged-executable discovery and adjacent SHA-256 sidecar verification.
+- [x] Commit as `feat: add universal canonical engine runner`.
+- [ ] Add project-scoped invocation only after this checkpoint.
 
 ### Task 3: Load real trajectory scenes in the desktop survey workspace
 
