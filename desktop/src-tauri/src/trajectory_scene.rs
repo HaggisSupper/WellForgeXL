@@ -37,7 +37,10 @@ pub(crate) fn build_trajectory_scene(
     if result.contract_version != "1.0.0" {
         return Err(SceneError::InvalidProvenance);
     }
-    if !matches!(result.status.as_str(), "complete" | "complete_with_warnings") {
+    if !matches!(
+        result.status.as_str(),
+        "complete" | "complete_with_warnings"
+    ) {
         return Err(SceneError::InvalidProvenance);
     }
     let plan_points = result.calculation.plan.iter().map(scene_point).collect();
@@ -138,8 +141,12 @@ mod tests {
             "../../../engine/fixtures/expected/trajectory-release-one-minimal.result.json"
         )
         .to_owned();
-        json = json.replace("\"contract_version\": \"1.0.0\"", "\"contract_version\": \"2.0.0\"");
-        let result: CanonicalTrajectoryResult = serde_json::from_str(&json).expect("fixture parses");
+        json = json.replace(
+            "\"contract_version\": \"1.0.0\"",
+            "\"contract_version\": \"2.0.0\"",
+        );
+        let result: CanonicalTrajectoryResult =
+            serde_json::from_str(&json).expect("fixture parses");
 
         assert_eq!(
             build_trajectory_scene(&result).expect_err("unsupported contract must be rejected"),
@@ -154,7 +161,8 @@ mod tests {
         )
         .to_owned();
         json = json.replace("complete_with_warnings", "partial");
-        let result: CanonicalTrajectoryResult = serde_json::from_str(&json).expect("fixture parses");
+        let result: CanonicalTrajectoryResult =
+            serde_json::from_str(&json).expect("fixture parses");
 
         assert_eq!(
             build_trajectory_scene(&result).expect_err("unknown status must be rejected"),
