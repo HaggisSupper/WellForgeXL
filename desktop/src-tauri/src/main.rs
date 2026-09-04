@@ -1,5 +1,6 @@
 mod commands;
 mod state;
+mod trajectory_scene;
 
 use commands::{
     build_survey_plot, build_survey_scene, calculate_minimum_curvature, get_plot_preferences,
