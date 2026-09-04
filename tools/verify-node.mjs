@@ -22,6 +22,7 @@ const releaseTests = [
   'office_script_exchange.test.mjs',
   'post_merge_review.test.mjs',
   'release_package.test.mjs',
+  'rust_workbook_engine_contract.test.mjs',
   'suite_acceptance.test.mjs',
   'trajectory_rust_engine_contract.test.mjs',
   'unit_contract.test.mjs',

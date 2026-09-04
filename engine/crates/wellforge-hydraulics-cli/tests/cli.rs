@@ -95,6 +95,80 @@ fn validate_rejects_missing_bingham_parameters() {
 }
 
 #[test]
+fn validate_rejects_invalid_source_identity() {
+    let dir = tempdir().unwrap();
+    let input = dir.path().join("bad-source.json");
+    let mut request = canonical_bingham_case();
+    request.sources[0].content_hash = "sha1:0123".to_owned();
+    fs::write(&input, serde_json::to_vec(&request).unwrap()).unwrap();
+
+    let output = cli()
+        .args(["validate", "--input", input.to_str().unwrap()])
+        .output()
+        .expect("validate");
+    assert!(!output.status.success(), "validate must fail");
+    assert!(String::from_utf8_lossy(&output.stdout).contains("WF-HYD-REQ-006"));
+}
+
+#[test]
+fn validate_reports_normalized_request_hash_and_verify_result_rejects_tampering() {
+    let dir = tempdir().unwrap();
+    let input = dir.path().join("request.json");
+    let output = dir.path().join("result.json");
+    let request = canonical_bingham_case();
+    fs::write(&input, serde_json::to_vec_pretty(&request).unwrap()).unwrap();
+
+    let validation = cli()
+        .args(["validate", "--input", input.to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(validation.status.success());
+    let validation_json: serde_json::Value = serde_json::from_slice(&validation.stdout).unwrap();
+    let request_hash = validation_json["request_hash"].as_str().unwrap();
+    assert_eq!(request_hash.len(), 64);
+
+    let run = cli()
+        .args([
+            "run",
+            "--input",
+            input.to_str().unwrap(),
+            "--output",
+            output.to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(run.status.success());
+
+    let verified = cli()
+        .args([
+            "verify-result",
+            "--input",
+            output.to_str().unwrap(),
+            "--request-hash",
+            request_hash,
+        ])
+        .output()
+        .unwrap();
+    assert!(verified.status.success(), "verify failed: {verified:?}");
+
+    let mut result: serde_json::Value =
+        serde_json::from_slice(&fs::read(&output).unwrap()).unwrap();
+    result["bit_pressure_loss_pa"] = serde_json::json!(0.0);
+    fs::write(&output, serde_json::to_vec(&result).unwrap()).unwrap();
+    let tampered = cli()
+        .args([
+            "verify-result",
+            "--input",
+            output.to_str().unwrap(),
+            "--request-hash",
+            request_hash,
+        ])
+        .output()
+        .unwrap();
+    assert!(!tampered.status.success());
+}
+
+#[test]
 fn schema_writes_deterministic_documents() {
     let dir = tempdir().unwrap();
     let request_path = dir.path().join("req.schema.json");

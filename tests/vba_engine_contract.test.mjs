@@ -9,9 +9,10 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const read = (relative) => fs.readFile(path.join(root, relative), 'utf8');
 
 test('VBA engines expose complete calculation entry points and shared SI/unit runtime', async () => {
-  const [core, api, hydraulics, torqueDrag, bha, directional, json] = await Promise.all([
+  const [core, api, hydraulics, hydraulicsEngine, torqueDrag, torqueDragEngine, bha, directional, json] = await Promise.all([
     read('VBA/WellForgeCore.bas'), read('VBA/WellForgeApi7G.bas'), read('VBA/WellForgeHydraulics.bas'),
-    read('VBA/WellForgeTorqueDrag.bas'), read('VBA/WellForgeBha.bas'), read('VBA/WellForgeDirectional.bas'),
+    read('VBA/WellForgeHydraulicsEngine.bas'), read('VBA/WellForgeTorqueDrag.bas'), read('VBA/WellForgeTorqueDragEngine.bas'),
+    read('VBA/WellForgeBha.bas'), read('VBA/WellForgeDirectional.bas'),
     read('VBA/WellForgeJsonExchange.bas'),
   ]);
   assert.match(core, /WF_ENGINE_VERSION As String = "2\.0\.0-vba"/);
@@ -22,8 +23,12 @@ test('VBA engines expose complete calculation entry points and shared SI/unit ru
   assert.match(api, /Public Sub WF_CalcAPI7G/);
   assert.match(api, /Sqr\(tensionUtil \^ 2 \+ torqueUtil \^ 2\)/);
   assert.match(hydraulics, /Public Sub WF_CalcHydraulics/);
+  assert.match(hydraulicsEngine, /Public Sub WF_RunHydraulicsRustEngine/);
+  assert.match(hydraulicsEngine, /wellforge-hydraulics\.exe/);
   assert.match(hydraulics, /flowDiameter \^ 2 - \(flowDiameter - hydraulicDiameter\) \^ 2/);
   assert.match(torqueDrag, /Public Sub WF_CalcTorqueDrag/);
+  assert.match(torqueDragEngine, /Public Sub WF_RunTorqueDragRustEngine/);
+  assert.match(torqueDragEngine, /six operation states verified/);
   assert.match(torqueDrag, /sinusoidal = 2# \* Sqr/);
   assert.match(bha, /Public Sub WF_CalcBHA/);
   assert.match(bha, /frequency = 1# \/ \(2# \* BHA_PI\) \* Sqr/);
@@ -41,7 +46,7 @@ test('Windows builder compiles self-contained XLSM files, rejects residual formu
     'default XLSM output path must resolve to outputs\\vba-engine');
   assert.match(script, /Join-Path \$repositoryRoot 'VBA\\ThisWorkbookEvents\.txt'/,
     'ThisWorkbook event source must resolve inside the VBA directory');
-  for (const module of ['WellForgeCore.bas', 'WellForgeJsonExchange.bas', 'WellForgeApi7G.bas', 'WellForgeHydraulics.bas', 'WellForgeTorqueDrag.bas', 'WellForgeBha.bas', 'WellForgeBhaEngine.bas', 'WellForgeDirectional.bas']) {
+  for (const module of ['WellForgeCore.bas', 'WellForgeJsonExchange.bas', 'WellForgeRustEngineRuntime.bas', 'WellForgeApi7G.bas', 'WellForgeHydraulics.bas', 'WellForgeHydraulicsEngine.bas', 'WellForgeTorqueDrag.bas', 'WellForgeTorqueDragEngine.bas', 'WellForgeBha.bas', 'WellForgeBhaEngine.bas', 'WellForgeDirectional.bas']) {
     assert.ok(script.includes(`'${module}'`), module);
   }
   assert.match(script, /WellForge_BuildInitialize/);
@@ -96,6 +101,14 @@ test('engine manifest declares the hybrid Rust/VBA authority and five formula-fr
   assert.equal(bha.entryPoint, 'WF_RunBhaRustEngine');
   assert.equal(bha.executable, 'wellforge-bha.exe');
   assert.equal(bha.hashManifest, 'wellforge-bha.exe.sha256');
+  const hydraulics = manifest.workbooks.find(({ kind }) => kind === 'hydraulics');
+  assert.equal(hydraulics.calculationAuthority, 'Rust');
+  assert.equal(hydraulics.entryPoint, 'WF_RunHydraulicsRustEngine');
+  assert.equal(hydraulics.executable, 'wellforge-hydraulics.exe');
+  const torqueDrag = manifest.workbooks.find(({ kind }) => kind === 'torqueDrag');
+  assert.equal(torqueDrag.calculationAuthority, 'Rust');
+  assert.equal(torqueDrag.entryPoint, 'WF_RunTorqueDragRustEngine');
+  assert.equal(torqueDrag.executable, 'wellforge-torque-drag.exe');
   assert.deepEqual(
     manifest.standaloneRustEngines.map(({ executable }) => executable),
     ['wellforge-bha.exe', 'wellforge-trajectory.exe', 'wellforge-torque-drag.exe', 'wellforge-hydraulics.exe'],

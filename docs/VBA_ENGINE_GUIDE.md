@@ -6,15 +6,16 @@ The `.xlsx` files under `outputs` are regression references and styled templates
 
 - `WellForgeCore`: dispatch, unit selection, formula freezing, controls, status, chart refresh and automatic input-change handling.
 - `WellForgeApi7G`: tubular strength, six load cases and combined-utilization envelopes.
-- `WellForgeHydraulics`: all flow-path sections, Darcy pressure loss, ECD screening and nozzle optimization.
-- `WellForgeTorqueDrag`: survey-derived drag, six operating states, torque and buckling screens.
+- `WellForgeHydraulicsEngine`: hash-verifies and invokes the colocated Rust hydraulics executable for five nozzle candidates, then stages flow-path, pressure-profile, nozzle and dashboard values.
+- `WellForgeTorqueDragEngine`: hash-verifies and invokes the colocated Rust torque-drag executable six times, once per operation state, then aggregates the verified profiles into the workbook presentation ranges.
+- `WellForgeHydraulics` and `WellForgeTorqueDrag`: retained legacy presentation helpers and compatibility entry points; their VBA physics procedures are not production authority.
 - `WellForgeBhaEngine`: hash-verifies and invokes the colocated Rust BHA executable, validates request/result evidence, and writes value-only static, modal, FRF and Campbell outputs.
 - `WellForgeBha`: retained prototype/presentation helpers; it is not the BHA calculation authority.
 - `WellForgeTrajectoryEngine`: hash-verifies and invokes the colocated Rust trajectory executable, exports explicit workbook provenance and row identities, validates the complete fixed bridge in memory, and commits value-only plan, survey, target, slide, formation and projection outputs.
 - `WellForgeDirectional`: retained legacy prototype plus presentation, unit-header and chart-refresh helpers; it is not the directional calculation authority and production dispatch never calls its VBA physics.
 - `WellForgeJsonExchange`: unit-preserving JSON import/export and validation.
 
-The API 7G, hydraulics and torque/drag workbook clients calculate in VBA arrays. All four corresponding Rust engines are also built as fixed, standalone, SHA-256-hashed CLI executables for distribution and headless use. BHA and directional currently dispatch through the Rust executables with no VBA calculation fallback; hydraulics and torque/drag remain VBA workbook authorities until their bridges receive the same contract migration and Windows acceptance gates. The trajectory client owns explicit request projection, SI/display conversion and presentation only; it does not parse result JSON or reproduce Rust geometry, interpolation, target, slide, formation or projection physics. Charts remain native Excel chart objects pointing at value-only ranges.
+The API 7G workbook remains VBA-authoritative. Hydraulics and torque/drag now dispatch through their Rust executables with no VBA calculation fallback; the VBA modules retain only request/output adapters and presentation helpers. BHA and directional also dispatch through Rust. The trajectory client owns explicit request projection, SI/display conversion and presentation only; it does not parse result JSON or reproduce Rust geometry, interpolation, target, slide, formation or projection physics. Charts remain native Excel chart objects pointing at value-only ranges.
 
 ## Build
 
@@ -37,21 +38,23 @@ Use `-VisibleExcel` when diagnosing an Excel-side problem.
 For each workbook the builder:
 
 1. Preflights the source `.xlsx` OOXML manifest and rejects any declared package part that is missing before Excel starts.
-2. Selects and verifies Rust 1.98.0, runs the locked/offline workspace gates, builds and SHA-256 hashes `wellforge-bha.exe`, `wellforge-trajectory.exe`, `wellforge-torque-drag.exe`, and `wellforge-hydraulics.exe`, and writes each colocated checksum manifest before Excel starts.
-4. Saves a temporary `.xlsm` through Excel.
-5. Imports all VBA/client modules and installs `ThisWorkbook` events.
-6. Executes `WellForge_BuildInitialize`, which snapshots/removes POC formulas and runs the appropriate authority.
-7. Executes `WellForge_UnitSwitchSelfTest`, which cycles SI, Imperial and a per-domain Custom selection and rejects unchanged calculated values or UOM labels.
-8. Verifies that depth roadmaps retain response-X, reversed depth-Y geometry.
-9. Rejects the workbook if any worksheet formula remains.
-10. Confirms client/runtime version `2.0.0-vba` on `Summary`; BHA records evidence on `Rust Engine`, while directional records execution mode, state, paths, request/result hashes, engine version, executable hash and real accepted UTC on `Results!O5:P14`.
-11. Saves the self-contained `.xlsm`, backing up any previous output.
+2. Selects and verifies Rust 1.98.0, runs the locked/offline workspace gates, builds and SHA-256 hashes all four standalone Rust executables, and writes each colocated checksum manifest before Excel starts.
+3. Saves a temporary `.xlsm` through Excel.
+4. Imports all VBA/client modules and installs `ThisWorkbook` events.
+5. Executes `WellForge_BuildInitialize`, which snapshots/removes POC formulas and runs the appropriate authority.
+6. Executes `WellForge_UnitSwitchSelfTest`, which cycles SI, Imperial and a per-domain Custom selection and rejects unchanged calculated values or UOM labels.
+7. Verifies that depth roadmaps retain response-X, reversed depth-Y geometry.
+8. Rejects the workbook if any worksheet formula remains.
+9. Confirms client/runtime version `2.0.0-vba` on `Summary`; BHA records evidence on `Rust Engine`, while directional records execution mode, state, paths, request/result hashes, engine version, executable hash and real accepted UTC on `Results!O5:P14`.
+10. Saves the self-contained `.xlsm`, backing up any previous output.
 
 ## Runtime controls
 
 The `Summary` sheet contains Calculate, Validate, Load JSON and Save JSON buttons. The workbook also recalculates when relevant inputs, survey data, unit selections or discipline tables change. Event recursion is suppressed while the engine writes outputs.
 
-The calculation status block records engine state, version, timestamp and detail. Two-decimal worksheet display is retained; unit-map conversion factors retain their higher precision.
+The calculation status block records engine state, version, timestamp and detail. Two-decimal worksheet display is retained; unit-map conversion factors retain their higher precision. Hydraulics runs five nozzle requests; torque-drag runs pickup, slack-off, backreaming, sliding, rotating-off-bottom and drilling requests. Each run is validated and result-hash verified before any workbook range is cleared.
+
+The current 0.1 hydraulics contract models both pipe and annulus loops for each typed section; the workbook adapter maps each mixed flow-path row into that shape and selects the declared row loop for presentation. The 0.1 torque-drag adapter supplies the explicit API 7G fields when present and uses the documented S135/default envelope only when the legacy workbook has no dedicated grade metadata. These are adapter boundaries, not VBA calculation fallbacks.
 
 Each directional calculation creates a fresh `%TEMP%\WellForgeTrajectory\<run-id>` directory and invokes `validate`, `run` with diagnostics, `verify-result`, then `bridge` through a bounded process without `cmd.exe`. The client accepts only the fixed bridge grammar after checking version, request/result hashes, status, deterministic flag, counts, capacities, record ordering and exact ID parity. All records are staged before any result range is cleared or written. Commit snapshots are restored if a write or presentation refresh fails; if restoration itself is incomplete, the result state says so instead of claiming that prior values were preserved.
 

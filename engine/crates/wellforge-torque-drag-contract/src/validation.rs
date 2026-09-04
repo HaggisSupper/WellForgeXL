@@ -1,5 +1,7 @@
 //! Strict pre-solver validation for `TnDAnalysisRequest`.
 
+use std::collections::HashSet;
+
 use crate::request::{OperationState, TnDAnalysisRequest};
 
 /// A single contract validation failure.
@@ -30,6 +32,35 @@ impl ContractError {
 #[allow(clippy::too_many_lines)]
 pub fn validate_request(request: &TnDAnalysisRequest) -> Result<(), Vec<ContractError>> {
     let mut errors = Vec::new();
+
+    if request.analysis_id.is_nil() {
+        errors.push(ContractError::new(
+            "WF-TND-REQ-002",
+            "analysis_id must not be nil",
+        ));
+    }
+
+    if request.sources.is_empty() {
+        errors.push(ContractError::new(
+            "WF-TND-REQ-003",
+            "sources must contain at least one WITSML source reference",
+        ));
+    }
+    let mut source_ids = HashSet::new();
+    for (i, source) in request.sources.iter().enumerate() {
+        if !source_ids.insert(source.uuid) {
+            errors.push(ContractError::new(
+                "WF-TND-REQ-004",
+                format!("sources[{i}] reuses a source UUID"),
+            ));
+        }
+        if let Err(identity_error) = source.validate() {
+            errors.push(ContractError::new(
+                "WF-TND-REQ-005",
+                format!("sources[{i}] is invalid: {identity_error}"),
+            ));
+        }
+    }
 
     if request.contract_version.trim().is_empty() {
         errors.push(ContractError::new(

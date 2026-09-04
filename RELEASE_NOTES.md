@@ -4,7 +4,7 @@
 
 - Added a shared pinned Rust 1.98.0 Windows builder for `wellforge-bha.exe`, `wellforge-trajectory.exe`, `wellforge-torque-drag.exe`, and `wellforge-hydraulics.exe`.
 - Added SHA-256 sidecars for the torque-drag and hydraulics executables and included all four engines in release archives and the Windows installer.
-- Kept workbook authority explicit: BHA and directional dispatch to Rust; hydraulics and torque-drag remain VBA clients until their bridge migrations pass the Windows acceptance gates.
+- Kept workbook authority explicit: BHA, directional, hydraulics and torque-drag dispatch to Rust; API 7G remains the VBA calculation lane pending a separate migration.
 
 ## Full release hardening — 2026-08-30
 
@@ -82,3 +82,9 @@
 - VBA source passed deterministic structural lint.
 
 The final `.xlsm` compilation is performed by desktop Excel on Windows through `tools/Build-WellForgeVbaSuite.cmd`.
+
+## Four Rust workbook authorities - 2026-09-04
+
+- Hydraulics now dispatches from Excel through `wellforge-hydraulics.exe`, verifying five nozzle candidates before staging flow-path, pressure-profile, nozzle and dashboard outputs.
+- Torque-drag now dispatches through `wellforge-torque-drag.exe` for pickup, slack-off, backreaming, sliding, rotating-off-bottom and drilling states before aggregating workbook views.
+- Both clients verify colocated executable sidecars, request hashes and result hashes, and restore snapshots when presentation commit fails.

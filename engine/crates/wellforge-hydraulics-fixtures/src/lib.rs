@@ -42,7 +42,7 @@ pub fn canonical_bingham_case() -> HydraulicsAnalysisRequest {
             uuid: CANONICAL_SOURCE_ID,
             uri: None,
             object_type: WitsmlObjectType::Tubular,
-            content_hash: "0".repeat(64),
+            content_hash: format!("sha256:{}", "0".repeat(64)),
             citation_name: "canonical_bingham_case".to_string(),
             source_system: "wellforge-hydraulics-fixtures".to_string(),
         }],

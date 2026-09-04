@@ -8,7 +8,7 @@ use schemars::schema_for;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use wellforge_hydraulics_contract::{
-    HydraulicsAnalysisRequest, HydraulicsAnalysisResult, validate_request,
+    AnalysisStatus, HydraulicsAnalysisRequest, HydraulicsAnalysisResult, validate_request,
 };
 use wellforge_hydraulics_core::solve_hydraulics;
 
@@ -37,6 +37,13 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Verify a result against its request hash and embedded result hash.
+    VerifyResult {
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        request_hash: String,
+    },
     /// Write deterministic request and result JSON Schemas.
     Schema {
         #[arg(long)]
@@ -58,9 +65,9 @@ fn hash(bytes: &[u8]) -> String {
 }
 
 fn result_payload_hash(result: &HydraulicsAnalysisResult) -> Result<String> {
-    let mut normalized = result.clone();
-    normalized.evidence.result_hash = String::new();
-    let value = serde_json::to_value(normalized)?;
+    let bytes = serde_json::to_vec(result)?;
+    let mut value: serde_json::Value = serde_json::from_slice(&bytes)?;
+    value["evidence"]["result_hash"] = serde_json::Value::String(String::new());
     Ok(hash(&serde_json::to_vec(&value)?))
 }
 
@@ -80,6 +87,24 @@ fn read_request(path: &PathBuf) -> Result<HydraulicsAnalysisRequest> {
         bail!("request validation failed with {} error(s)", errors.len());
     }
     Ok(request)
+}
+
+fn verify_result(path: &PathBuf, request_hash: &str) -> Result<()> {
+    let bytes = fs::read(path).with_context(|| format!("cannot read {}", path.display()))?;
+    let result: HydraulicsAnalysisResult =
+        serde_json::from_slice(&bytes).context("result JSON does not match the strict contract")?;
+    if result.evidence.request_hash != request_hash {
+        bail!("result request hash does not match the validated request");
+    }
+    let expected_hash = result_payload_hash(&result)?;
+    if result.evidence.result_hash != expected_hash {
+        bail!("result hash mismatch");
+    }
+    if matches!(result.status, AnalysisStatus::Failed) {
+        bail!("hydraulics result is failed");
+    }
+    println!("{{\"status\":\"valid\"}}");
+    Ok(())
 }
 
 fn doctor() -> Result<()> {
@@ -103,8 +128,12 @@ fn execute() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
         Command::Validate { input } => {
-            let _ = read_request(&input)?;
-            println!("{{\"status\":\"valid\"}}");
+            let request = read_request(&input)?;
+            let request_bytes = serde_json::to_vec(&request)?;
+            println!(
+                "{{\"status\":\"valid\",\"request_hash\":\"{}\"}}",
+                hash(&request_bytes)
+            );
         }
         Command::Run { input, output } => {
             let request = read_request(&input)?;
@@ -121,6 +150,10 @@ fn execute() -> Result<()> {
                 result.sections.len()
             );
         }
+        Command::VerifyResult {
+            input,
+            request_hash,
+        } => verify_result(&input, &request_hash)?,
         Command::Schema { request, result } => {
             let request_schema = schema_for!(HydraulicsAnalysisRequest);
             let result_schema = schema_for!(HydraulicsAnalysisResult);
@@ -172,4 +205,22 @@ fn emit_json_error(code: &'static str, message: impl Into<String>) {
         "{}",
         serde_json::to_string(&payload).expect("serializing cli error")
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use wellforge_hydraulics_fixtures::canonical_bingham_case;
+
+    #[test]
+    fn result_hash_survives_json_round_trip() {
+        let request = canonical_bingham_case();
+        let mut result = solve_hydraulics(&request).unwrap();
+        result.evidence.request_hash = hash(&serde_json::to_vec(&request).unwrap());
+        let before = result_payload_hash(&result).unwrap();
+        let parsed: HydraulicsAnalysisResult =
+            serde_json::from_slice(&serde_json::to_vec_pretty(&result).unwrap()).unwrap();
+        let after = result_payload_hash(&parsed).unwrap();
+        assert_eq!(before, after);
+    }
 }

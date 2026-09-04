@@ -1,6 +1,6 @@
 # WellForge Analysis Workbook Suite — canonical SI with configurable display units
 
-This package contains five Excel engineering workbooks and four standalone Rust engine CLIs. The BHA and directional workbooks require their colocated, hash-verified `wellforge-bha.exe` and `wellforge-trajectory.exe`; neither falls back to VBA screening or trajectory calculations. The torque-drag and hydraulics Rust CLIs are now built, hashed, and shipped with the package, while their workbook bridges remain on VBA pending a separate contract migration. The API 7G workbook remains on its VBA prototype engine. `T&D 4.002b.xlsm` informed the workflow and visual topology only; its protected macros and catalog are not reproduced.
+This package contains five Excel engineering workbooks and four standalone Rust engine CLIs. The BHA, directional, hydraulics and torque-drag workbooks require their colocated, hash-verified Rust executables; none falls back to VBA calculation. The API 7G workbook remains on its VBA prototype engine. `T&D 4.002b.xlsm` informed the workflow and visual topology only; its protected macros and catalog are not reproduced.
 
 The repository also contains the migrated Tauri desktop workspace under `desktop/`. See `docs/DESKTOP_MIGRATION.md` for the boundary between the desktop compatibility crates and the canonical Rust engine lanes.
 
@@ -16,7 +16,7 @@ The workbooks are:
 
 1. On Windows, double-click `tools/Build-WellForgeVbaSuite.cmd`, or run `tools/Build-WellForgeVbaSuite.ps1`. A fresh checkout uses the versioned source workbooks under `workbooks/source`; Node authoring dependencies are not required. The PowerShell window remains open on success or failure and prints the full JSONL log path.
 2. Open the resulting files in `outputs/vba-engine`, enable macros, and enter or paste source inputs in the blue input cells. In the directional workbook, Plan, Survey, Target, Slide, and Formation source values retain their declared raw input units.
-3. The three VBA prototype engines convert inputs to canonical SI in memory. The BHA and directional VBA clients invoke their colocated Rust engines. Rust/`serde_json` parses and validates each lane's JSON and emits a bounded versioned table bridge; the VBA clients do not parse result JSON. All lanes write value-only outputs and refresh charts.
+3. The API 7G VBA prototype converts inputs to canonical SI in memory. The BHA, directional, hydraulics and torque-drag VBA clients invoke their colocated Rust engines, verify executable sidecars, validate request/result hashes and stage value-only outputs before commit. All lanes refresh charts without worksheet calculation formulas.
 4. Use `Unit Map!B5` to select SI, Imperial, Mixed or Custom display values. In Custom mode, choose SI, Imperial or Mixed independently for every physical domain from the dropdowns in column J. VBA updates unit labels and displayed values together.
 5. Use the Summary buttons to Calculate, Validate, Load JSON or Save JSON. Relevant input changes also trigger VBA recalculation automatically.
 6. Review `Checks`, then `Summary` for the governing constraint. Use `Results`, `Graphs`, and the discipline-specific detail tabs to investigate the depth/profile outcome.

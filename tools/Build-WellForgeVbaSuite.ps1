@@ -36,9 +36,12 @@ if ($null -eq $WorkbookNames -or $WorkbookNames.Count -eq 0) { $WorkbookNames = 
 $moduleFiles = @(
     'WellForgeCore.bas',
     'WellForgeJsonExchange.bas',
+    'WellForgeRustEngineRuntime.bas',
     'WellForgeApi7G.bas',
     'WellForgeHydraulics.bas',
+    'WellForgeHydraulicsEngine.bas',
     'WellForgeTorqueDrag.bas',
+    'WellForgeTorqueDragEngine.bas',
     'WellForgeBha.bas',
     'WellForgeBhaEngine.bas',
     'WellForgeTrajectoryEngine.bas',

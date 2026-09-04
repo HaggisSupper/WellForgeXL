@@ -15,7 +15,8 @@
   ],
   "sharedModules": [
     "WellForgeCore",
-    "WellForgeJsonExchange"
+    "WellForgeJsonExchange",
+    "WellForgeRustEngineRuntime"
   ],
   "workbooks": [
     {
@@ -30,17 +31,21 @@
       "kind": "hydraulics",
       "template": "Steady_State_Hydraulics_and_Nozzle_Optimization_SI.xlsx",
       "output": "Steady_State_Hydraulics_and_Nozzle_Optimization_SI.xlsm",
-      "entryPoint": "WF_CalcHydraulics",
-      "engineModule": "WellForgeHydraulics",
-      "calculationAuthority": "VBA"
+      "entryPoint": "WF_RunHydraulicsRustEngine",
+      "engineModule": "WellForgeHydraulicsEngine",
+      "calculationAuthority": "Rust",
+      "executable": "wellforge-hydraulics.exe",
+      "hashManifest": "wellforge-hydraulics.exe.sha256"
     },
     {
       "kind": "torqueDrag",
       "template": "Torque_Drag_and_Buckling_SI.xlsx",
       "output": "Torque_Drag_and_Buckling_SI.xlsm",
-      "entryPoint": "WF_CalcTorqueDrag",
-      "engineModule": "WellForgeTorqueDrag",
-      "calculationAuthority": "VBA"
+      "entryPoint": "WF_RunTorqueDragRustEngine",
+      "engineModule": "WellForgeTorqueDragEngine",
+      "calculationAuthority": "Rust",
+      "executable": "wellforge-torque-drag.exe",
+      "hashManifest": "wellforge-torque-drag.exe.sha256"
     },
     {
       "kind": "bha",

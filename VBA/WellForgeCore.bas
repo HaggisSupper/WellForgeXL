@@ -117,8 +117,8 @@ End Sub
 Private Sub WF_DispatchModel(ByVal model As String)
     Select Case model
         Case "API7G": WF_CalcAPI7G
-        Case "HYDRAULICS": WF_CalcHydraulics
-        Case "TORQUE_DRAG": WF_CalcTorqueDrag
+        Case "HYDRAULICS": WF_RunHydraulicsRustEngine
+        Case "TORQUE_DRAG": WF_RunTorqueDragRustEngine
         Case "BHA": WF_RunBhaRustEngine
         Case "DIRECTIONAL": WF_RunTrajectoryRustEngine
         Case Else: Err.Raise vbObjectError + 8200, "WF_DispatchModel", "Unable to identify workbook analysis type"

@@ -19,6 +19,7 @@ if ([string]::IsNullOrWhiteSpace($LogDirectory)) { $LogDirectory = Join-Path $re
 New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null
 $logPath = Join-Path $LogDirectory ('{0}-build-{1}.jsonl' -f $ExecutableName.Replace('.exe', ''), (Get-Date -Format 'yyyyMMdd-HHmmss'))
 $succeeded = $false
+$locationPushed = $false
 
 function Get-FileHash {
     param([Parameter(Mandatory = $true)][string]$LiteralPath)
@@ -49,7 +50,8 @@ try {
         throw 'Expected Rust 1.98.0 toolchain identity.'
     }
     $rustIdentity | ForEach-Object { Write-EngineEvent INFO $_ }
-    Set-Location $engineRoot
+    Push-Location $engineRoot
+    $locationPushed = $true
     & cargo +1.98.0 fmt --all -- --check
     if ($LASTEXITCODE -ne 0) { throw 'cargo fmt failed' }
     & cargo +1.98.0 clippy --workspace --all-targets --locked --offline -- -D warnings
@@ -75,6 +77,7 @@ catch {
     Write-Host ($_ | Format-List * -Force | Out-String) -ForegroundColor Red
 }
 finally {
+    if ($locationPushed) { Pop-Location }
     Write-Host ('Full JSONL log: {0}' -f $logPath)
     if (-not $NoPause) { [void](Read-Host 'Press Enter to close this window') }
 }
