@@ -1,5 +1,24 @@
 # WellForge Rust/VBA Engineering Workbook Suite — 2026-08-29 v7
 
+## Full release hardening — 2026-08-30
+
+### PR #3 current-head acceptance hardening — 2026-08-31
+
+- Replaced existence-based Windows evidence with six explicit, fail-closed gates bound to one workflow run, exact git SHA, and exact deterministic archive: native binaries, VBA compilation/Excel COM, unit switching, chart rendering, runtime rollback, and package acceptance.
+- Added clean run directories, exact package allowlisting (including both declared license texts), SHA-256 manifests, deterministic ZIP creation, clean extraction, archive re-verification, executable-sidecar verification, and nonempty native Excel chart exports retained as PNG evidence.
+- Added real injected-failure rollback self-tests for JSON exchange, the Rust BHA bridge, and the Rust trajectory bridge. Each test restores captured values and verifies equality before it can report success.
+- Added a 75-minute parent watchdog that terminates the child process tree and every Excel process created after the dedicated runner's baseline while preserving partial gate evidence for the workflow's always-run evidence and artifact steps.
+- Added explicit whole-project VBA compilation, a second clean extraction reopened in a fresh Excel process, and SHA-256 inventory of retained logs and rendered PNG evidence.
+- Pinned action revisions, Node 24.19.0, Rust 1.98.0, cargo-deny 0.20.2, Ubuntu 24.04, and expanded dependency policy to include advisories.
+- Linux release verification proves source and contract readiness only. Merge readiness requires the updated Linux checks to pass on this head. Release readiness remains explicitly withheld until the merged workflow runs on the qualified self-hosted Windows/Excel runner and `release-evidence.json` reports `overall_status: passed` for that exact commit.
+
+- Added a deterministic repository verifier that hash-checks and materializes all five immutable source workbooks before running each Node test file in an isolated, timeout-bounded process, followed by VBA structural lint.
+- Added a reproducible public-dependency release gate (`npm ci && npm run verify:release`) and pinned Linux CI for Node 24, Rust 1.98.0, rustfmt, warnings-denied Clippy, locked all-feature workspace tests, and cargo-deny 0.20.2.
+- Split the private authoring-tool workbook contract from the public unit-contract surface so a fresh checkout no longer requires the internal `@oai/artifact-tool` package to execute the release gate.
+- Added a manually dispatched Windows release workflow for a qualified desktop-Excel runner. It always retains JSON evidence, JSONL logs, executable hashes, and the five generated `.xlsm` files.
+- The complete local authoring gate passed all 163 declared Node tests and deterministic structural lint for nine VBA modules. A clean public-dependency release run also passed.
+- Rust compilation/policy CI and native Windows executable/hash, VBA compilation, Excel/COM, unit-switching, chart-refresh/rendering, rollback-runtime, and package-acceptance evidence remain platform gates; release readiness is not claimed until those workflows pass.
+
 ## Rust Trajectory Release 1 — source complete; Windows/Excel acceptance pending
 
 - Added a pure Rust trajectory analysis lane for minimum-curvature plan/survey construction, exact partial-course interpolation, plan-versus-survey residuals, target envelopes, slide response, formation evaluation and optional tendency projection.

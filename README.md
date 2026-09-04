@@ -66,3 +66,11 @@ Add `OfficeScripts/WellForgeJsonExchange.ts` from Excel's Automate tab and call 
 See `docs/JSON_EXCHANGE_GUIDE.md` for the complete workflow and recovery notes.
 
 The approved Rust port sequence and the soft-string-to-stiff-string interval contract are recorded in `docs/RUST_ENGINE_ROADMAP.md`.
+
+## Source verification
+
+Run `node tools/verify-node.mjs` after the repository's workbook-authoring runtime is available. The verifier checks and materializes all five immutable source workbooks before running every Node test file in an isolated, bounded child process, then runs the deterministic VBA structural lint. `--materialize-only` performs only the workbook hash and materialization gate.
+
+The workbook authoring tests use the private `@oai/artifact-tool` development runtime and are therefore an extended development gate. The release CI gate validates checked-in workbook packages and all dependency-free contracts without claiming it can regenerate those packages. Native Rust executables and Excel/VBA/COM behavior remain separate Windows evidence gates.
+
+The manual `Windows Excel release verification` workflow is the release-acceptance authority. It creates a run-scoped package from an exact git SHA, smoke-tests both native executables, verifies and cleanly extracts a deterministic archive, opens all five extracted `.xlsm` clients in desktop Excel, runs VBA compilation/COM, SI/Imperial/Custom switching, chart export to nonempty PNG files, injected rollback equality checks, and final package acceptance. `release-evidence.json` is fail-closed unless every named gate passes for the same workflow run, git SHA, and archive. A green Linux source workflow or the presence of generated files is not release evidence.

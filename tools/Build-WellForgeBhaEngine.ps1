@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$OutputDirectory,
+    [string]$LogDirectory,
     [switch]$NoPause
 )
 
@@ -11,9 +12,9 @@ $engineRoot = Join-Path $repositoryRoot 'engine'
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot 'outputs\vba-engine' }
 if (-not [System.IO.Path]::IsPathRooted($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot $OutputDirectory }
 $OutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory)
-$logDirectory = Join-Path $repositoryRoot 'logs'
-New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
-$logPath = Join-Path $logDirectory ('bha-engine-build-{0}.jsonl' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
+if ([string]::IsNullOrWhiteSpace($LogDirectory)) { $LogDirectory = Join-Path $repositoryRoot 'logs' }
+New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null
+$logPath = Join-Path $LogDirectory ('bha-engine-build-{0}.jsonl' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
 $succeeded = $false
 
 function Get-FileHash {
@@ -59,9 +60,10 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'cargo clippy failed' }
     & cargo +1.98.0 test --workspace --locked --offline
     if ($LASTEXITCODE -ne 0) { throw 'cargo test failed' }
-    if ($null -eq (Get-Command cargo-deny -ErrorAction SilentlyContinue)) {
+    $cargoDenyVersion = if ($null -ne (Get-Command cargo-deny -ErrorAction SilentlyContinue)) { (& cargo-deny --version) -join ' ' } else { '' }
+    if ($cargoDenyVersion -notmatch '^cargo-deny 0\.20\.2(?:\s|$)') {
         Write-EngineEvent INFO 'Installing the pinned cargo-deny release for the dependency-policy gate.'
-        & cargo install cargo-deny --version 0.20.2 --locked
+        & cargo +1.98.0 install cargo-deny --version 0.20.2 --locked --force
         if ($LASTEXITCODE -ne 0) { throw 'cargo-deny installation failed' }
     }
     & cargo-deny --frozen check licenses bans sources

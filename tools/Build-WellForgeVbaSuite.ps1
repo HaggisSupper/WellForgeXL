@@ -3,6 +3,7 @@ param(
     [string]$SourceDirectory,
     [string]$OutputDirectory,
     [string[]]$WorkbookNames,
+    [string]$LogDirectory,
     [switch]$VisibleExcel,
     [switch]$NoPause
 )
@@ -19,9 +20,10 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $usingVersionedSourceDirectory = [string]::IsNullOrWhiteSpace($SourceDirectory)
 if ($usingVersionedSourceDirectory) { $SourceDirectory = Join-Path $repositoryRoot 'workbooks\source' }
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot 'outputs\vba-engine' }
-$logDirectory = Join-Path $repositoryRoot 'logs'
-New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
-$logPath = Join-Path $logDirectory ('vba-suite-build-{0}.jsonl' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
+if ([string]::IsNullOrWhiteSpace($LogDirectory)) { $LogDirectory = Join-Path $repositoryRoot 'logs' }
+New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null
+$logPath = Join-Path $LogDirectory ('vba-suite-build-{0}.jsonl' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
+$materializedSourceDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ('WellForgeSource-' + [guid]::NewGuid().ToString('N'))
 
 $defaultWorkbookNames = @(
     'API_7G_Drill_String_Strength_and_Torque_SI.xlsx',
@@ -273,12 +275,12 @@ try {
             $sourceHashes[$Matches[2]] = $Matches[1].ToLowerInvariant()
         }
     }
+    $sourcePaths = @{}
     foreach ($name in $WorkbookNames) {
         $sourcePath = Join-Path $SourceDirectory $name
         if ($usingVersionedSourceDirectory -and -not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
             $compressedSourcePath = $sourcePath + '.gz'
             if (Test-Path -LiteralPath $compressedSourcePath -PathType Leaf) {
-                $materializedSourceDirectory = Join-Path $OutputDirectory '.source-workbooks'
                 New-Item -ItemType Directory -Path $materializedSourceDirectory -Force | Out-Null
                 $sourcePath = Join-Path $materializedSourceDirectory $name
                 Expand-GzipFile -Source $compressedSourcePath -Destination $sourcePath
@@ -291,15 +293,16 @@ try {
             if ($actualSourceHash -ne $sourceHashes[$name]) { throw "Source workbook hash mismatch: $name" }
         }
         Assert-XlsxPackageIntegrity -Path $sourcePath
+        $sourcePaths[$name] = $sourcePath
     }
 
     New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
     $bhaEngineBuilder = Join-Path $repositoryRoot 'tools\Build-WellForgeBhaEngine.ps1'
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $bhaEngineBuilder -OutputDirectory $OutputDirectory -NoPause
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $bhaEngineBuilder -OutputDirectory $OutputDirectory -LogDirectory $LogDirectory -NoPause
     if ($LASTEXITCODE -ne 0) { throw 'The Rust BHA engine build failed; workbook compilation was stopped.' }
     Write-BuildEvent SUCCESS 'Rust BHA engine built and hashed beside workbook outputs.' @{ executable = (Join-Path $OutputDirectory 'wellforge-bha.exe') }
     $trajectoryEngineBuilder = Join-Path $repositoryRoot 'tools\Build-WellForgeTrajectoryEngine.ps1'
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $trajectoryEngineBuilder -OutputDirectory $OutputDirectory -NoPause
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $trajectoryEngineBuilder -OutputDirectory $OutputDirectory -LogDirectory $LogDirectory -NoPause
     if ($LASTEXITCODE -ne 0) { throw 'The Rust trajectory engine build failed; workbook compilation was stopped.' }
     Write-BuildEvent SUCCESS 'Rust trajectory engine built and hashed beside workbook outputs.' @{ executable = (Join-Path $OutputDirectory 'wellforge-trajectory.exe') }
     Invoke-BhaEngineEndToEnd -OutputDirectory $OutputDirectory
@@ -329,16 +332,7 @@ try {
 
     $eventCode = Get-Content -LiteralPath $eventCodePath -Raw
     foreach ($name in $WorkbookNames) {
-        $sourcePath = Join-Path $SourceDirectory $name
-        if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
-            $compressedSourcePath = $sourcePath + '.gz'
-            if (Test-Path -LiteralPath $compressedSourcePath -PathType Leaf) {
-                $materializedSourceDirectory = Join-Path $OutputDirectory '.source-workbooks'
-                New-Item -ItemType Directory -Path $materializedSourceDirectory -Force | Out-Null
-                $sourcePath = Join-Path $materializedSourceDirectory $name
-                Expand-GzipFile -Source $compressedSourcePath -Destination $sourcePath
-            }
-        }
+        $sourcePath = $sourcePaths[$name]
         $targetName = [System.IO.Path]::ChangeExtension($name, '.xlsm')
         $targetPath = Join-Path $OutputDirectory $targetName
         $stagingPath = Join-Path $OutputDirectory ('.{0}.{1}.building.xlsm' -f [System.IO.Path]::GetFileNameWithoutExtension($name), [guid]::NewGuid().ToString('N'))
@@ -412,6 +406,9 @@ catch {
 finally {
     if ($null -ne $excel) { try { $excel.Quit() } catch { } }
     Release-ComObject $workbooks; Release-ComObject $excel
+    if (Test-Path -LiteralPath $materializedSourceDirectory -PathType Container) {
+        Remove-Item -LiteralPath $materializedSourceDirectory -Recurse -Force
+    }
     [GC]::Collect(); [GC]::WaitForPendingFinalizers(); [GC]::Collect(); [GC]::WaitForPendingFinalizers()
     Write-Host ''
     if ($succeeded) {

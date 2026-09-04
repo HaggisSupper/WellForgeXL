@@ -40,4 +40,3 @@ if (failures.length) {
 } else {
   process.stdout.write(`VBA structural lint passed for ${files.length} modules.\n`);
 }
-

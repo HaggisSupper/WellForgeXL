@@ -114,6 +114,26 @@ test('adapter source stages and validates the complete strict bridge before resu
   assert.match(directional, /Public Sub WF_RefreshDirectionalPresentation/);
 });
 
+test('trajectory rollback is equality-verified and exercised through an injected commit failure', () => {
+  const entry = procedure(engine, 'WF_RunTrajectoryRustEngine');
+  const selfTest = procedure(engine, 'WellForge_TrajectoryRollbackSelfTest');
+  const capture = procedure(engine, 'WF_TrajectoryCaptureSnapshots');
+  assert.match(engine, /WF_TRAJECTORY_INJECT_COMMIT_FAILURE/);
+  assert.match(engine, /WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED/);
+  assert.match(engine, /WF_TrajectorySnapshotsMatch/);
+  assert.match(engine, /Public Sub WellForge_TrajectoryRollbackSelfTest/);
+  assert.match(engine, /Rollback:[\s\S]*WF_TrajectoryRestoreSnapshots[\s\S]*WF_TrajectorySnapshotsMatch/);
+  assert.match(capture, /WF_TrajectorySnapshot snapshots, "Results", "P7:P8"/);
+  assert.match(capture, /WF_TrajectorySnapshot snapshots, "Results", "P10:P14"/);
+  assert.doesNotMatch(capture, /"P5:P14"|"P5"|"P6"|"P9"/);
+  assert.match(selfTest, /Set snapshots = WF_TrajectoryCaptureSnapshots\(\)[\s\S]*WF_RunTrajectoryRustEngine[\s\S]*If Not WF_TrajectorySnapshotsMatch\(snapshots\)/);
+  assert.match(selfTest, /Range\("P5"\)[\s\S]*WF_TRAJECTORY_EXECUTION_MODE/);
+  assert.match(selfTest, /Range\("P6"\)[\s\S]*FAILED — LAST ACCEPTED VALUES PRESERVED/);
+  assert.match(selfTest, /previousDiagnostic = CStr\(ThisWorkbook\.Worksheets\("Results"\)\.Range\("P9"\)\.Value2\)[\s\S]*WF_RunTrajectoryRustEngine/);
+  assert.match(selfTest, /telemetryDiagnostic[\s\S]*StrComp\(telemetryDiagnostic, previousDiagnostic, vbBinaryCompare\)[\s\S]*Dir\$/);
+  assert.match(entry, /WF_PublishTrajectoryFailure failureState, diagnosticPath, lastAcceptedValuesPreserved/);
+});
+
 test('adapter keeps presentation-only rotations out of canonical result blocks', () => {
   const commit = procedure(engine, 'WF_CommitTrajectoryBridge');
   const station = procedure(engine, 'WF_TrajectoryFillStationCalc');

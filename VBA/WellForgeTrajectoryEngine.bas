@@ -11,6 +11,9 @@ Private Const WF_TRAJECTORY_MAX_FORMATIONS = 100
 Private Const WF_TRAJECTORY_PI As Double = 3.14159265358979
 Private Const WF_TRAJECTORY_TWO_PI As Double = 6.28318530717959
 
+Private WF_TRAJECTORY_INJECT_COMMIT_FAILURE As Boolean
+Private WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED As Boolean
+
 Private Type WF_TrajectorySystemTime
     Year As Integer
     Month As Integer
@@ -64,6 +67,7 @@ Public Sub WF_RunTrajectoryRustEngine()
     previousEvents = Application.EnableEvents
     previousInteractive = Application.Interactive
     runtimeCaptured = True
+    WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED = False
     WF_Busy = True
     Application.EnableEvents = False
     Application.Interactive = False
@@ -125,6 +129,41 @@ Failed:
     End If
     On Error GoTo 0
     Err.Raise failureNumber, "WF_RunTrajectoryRustEngine", failureDescription
+End Sub
+
+Public Sub WellForge_TrajectoryRollbackSelfTest()
+    Dim failureNumber As Long, failureDescription As String, injectedFailure As Long
+    Dim previousDiagnostic As String, telemetryDiagnostic As String
+    Dim snapshots As Collection
+    On Error GoTo Failed
+
+    WF_RunTrajectoryRustEngine
+    previousDiagnostic = CStr(ThisWorkbook.Worksheets("Results").Range("P9").Value2)
+    Set snapshots = WF_TrajectoryCaptureSnapshots()
+    WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED = False
+    WF_TRAJECTORY_INJECT_COMMIT_FAILURE = True
+    On Error Resume Next
+    WF_RunTrajectoryRustEngine
+    injectedFailure = Err.Number
+    Err.Clear
+    On Error GoTo Failed
+    WF_TRAJECTORY_INJECT_COMMIT_FAILURE = False
+    If injectedFailure = 0 Then Err.Raise vbObjectError + 8900, "WellForge_TrajectoryRollbackSelfTest", "INJECTED COMMIT FAILURE DID NOT OCCUR"
+    If Not WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED Then Err.Raise vbObjectError + 8901, "WellForge_TrajectoryRollbackSelfTest", "ROLLBACK EQUALITY VERIFICATION FAILED"
+    If Not WF_TrajectorySnapshotsMatch(snapshots) Then Err.Raise vbObjectError + 8903, "WellForge_TrajectoryRollbackSelfTest", "END-TO-END ROLLBACK EQUALITY VERIFICATION FAILED"
+    If StrComp(CStr(ThisWorkbook.Worksheets("Results").Range("P5").Value2), WF_TRAJECTORY_EXECUTION_MODE, vbBinaryCompare) <> 0 Then Err.Raise vbObjectError + 8904, "WellForge_TrajectoryRollbackSelfTest", "FAILURE MODE TELEMETRY VERIFICATION FAILED"
+    If StrComp(CStr(ThisWorkbook.Worksheets("Results").Range("P6").Value2), "INVALID RESULT — FAILED — LAST ACCEPTED VALUES PRESERVED", vbBinaryCompare) <> 0 Then Err.Raise vbObjectError + 8905, "WellForge_TrajectoryRollbackSelfTest", "FAILURE STATUS TELEMETRY VERIFICATION FAILED"
+    telemetryDiagnostic = CStr(ThisWorkbook.Worksheets("Results").Range("P9").Value2)
+    If StrComp(telemetryDiagnostic, previousDiagnostic, vbBinaryCompare) = 0 Then Err.Raise vbObjectError + 8907, "WellForge_TrajectoryRollbackSelfTest", "FAILURE DIAGNOSTIC TELEMETRY IS STALE"
+    If Len(telemetryDiagnostic) = 0 Or Len(Dir$(telemetryDiagnostic, vbNormal)) = 0 Then Err.Raise vbObjectError + 8906, "WellForge_TrajectoryRollbackSelfTest", "FAILURE DIAGNOSTIC TELEMETRY VERIFICATION FAILED"
+    WF_RunTrajectoryRustEngine
+    Exit Sub
+
+Failed:
+    failureNumber = Err.Number
+    failureDescription = Err.Description
+    WF_TRAJECTORY_INJECT_COMMIT_FAILURE = False
+    Err.Raise failureNumber, "WellForge_TrajectoryRollbackSelfTest", failureDescription
 End Sub
 
 Private Function WF_BuildTrajectoryRequest() As Object
@@ -766,32 +805,9 @@ Private Sub WF_CommitTrajectoryBridge(ByRef staged As WF_TrajectoryBridgeStage, 
     Dim targetIssues As Long, slideIssues As Long, formationIssues As Long, actualFormationPicks As Long, cautionCount As Long, stopCount As Long
     Dim overallState As String, maxRows As Long, failureNumber As Long, failureDescription As String
 
-    Set snapshots = New Collection
-    WF_TrajectorySnapshot snapshots, "Plan", "F7:M506"
-    WF_TrajectorySnapshot snapshots, "Survey", "F7:Y506"
-    WF_TrajectorySnapshot snapshots, "Targets", "L7:Q106"
-    WF_TrajectorySnapshot snapshots, "Slide Performance", "K7:S206"
-    WF_TrajectorySnapshot snapshots, "Formation Tops", "G7:K106"
-    WF_TrajectorySnapshot snapshots, "Results", "A26:M525"
-    WF_TrajectorySnapshot snapshots, "Results", "B6:B15"
-    WF_TrajectorySnapshot snapshots, "Results", "B19:B21"
-    WF_TrajectorySnapshot snapshots, "Results", "P5:P14"
-    WF_TrajectorySnapshot snapshots, "Checks", "B6:D25"
-    WF_TrajectorySnapshot snapshots, "Summary", "B5:C9"
-    WF_TrajectorySnapshot snapshots, "Summary", "B10"
-    WF_TrajectorySnapshot snapshots, "Calc", "A7:R506"
-    WF_TrajectorySnapshot snapshots, "Calc", "T7:BS506"
-    WF_TrajectorySnapshot snapshots, "Calc", "FI7:GJ612"
-    WF_TrajectorySnapshot snapshots, "Calc", "GL6:GM45"
-    WF_TrajectorySnapshot snapshots, "Calc", "HB7:HT106"
-    WF_TrajectorySnapshot snapshots, "Calc", "DA7:EG506"
-    WF_TrajectorySnapshot snapshots, "Plan", "G5:L5"
-    WF_TrajectorySnapshot snapshots, "Survey", "G5:X5"
-    WF_TrajectorySnapshot snapshots, "Targets", "M5:N5"
-    WF_TrajectorySnapshot snapshots, "Slide Performance", "K5:R5"
-    WF_TrajectorySnapshot snapshots, "Formation Tops", "G5:H5"
-    WF_TrajectorySnapshot snapshots, "Calc", "DA6:DY6"
+    Set snapshots = WF_TrajectoryCaptureSnapshots()
 
+    WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED = False
     On Error GoTo Rollback
     plan = staged.PlanRecords
     survey = staged.SurveyRecords
@@ -1049,6 +1065,7 @@ Private Sub WF_CommitTrajectoryBridge(ByRef staged As WF_TrajectoryBridgeStage, 
 
     With ThisWorkbook.Worksheets("Plan")
         .Range("F7:M506").ClearContents
+        If WF_TRAJECTORY_INJECT_COMMIT_FAILURE Then Err.Raise vbObjectError + 8902, "WF_CommitTrajectoryBridge", "INJECTED COMMIT FAILURE"
         .Range("F7").Resize(staged.PlanCount, 8).Value2 = planVisible
     End With
     With ThisWorkbook.Worksheets("Survey")
@@ -1118,7 +1135,11 @@ Private Sub WF_CommitTrajectoryBridge(ByRef staged As WF_TrajectoryBridgeStage, 
 Rollback:
     failureNumber = Err.Number
     failureDescription = Err.Description
-    If Not WF_TrajectoryRestoreSnapshots(snapshots) Then
+    WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED = WF_TrajectoryRestoreSnapshots(snapshots)
+    If WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED Then
+        WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED = WF_TrajectorySnapshotsMatch(snapshots)
+    End If
+    If Not WF_TRAJECTORY_LAST_ROLLBACK_VERIFIED Then
         failureDescription = failureDescription & " | ROLLBACK INCOMPLETE — LAST ACCEPTED VALUES MAY BE PARTIALLY REPLACED"
     End If
     Err.Raise failureNumber, "WF_CommitTrajectoryBridge", failureDescription
@@ -1248,6 +1269,37 @@ Private Function WF_TrajectoryDisplayEnum(ByVal value As String) As String
     WF_TrajectoryDisplayEnum = UCase$(Replace$(value, "_", " "))
 End Function
 
+Private Function WF_TrajectoryCaptureSnapshots() As Collection
+    Dim snapshots As Collection
+    Set snapshots = New Collection
+    WF_TrajectorySnapshot snapshots, "Plan", "F7:M506"
+    WF_TrajectorySnapshot snapshots, "Survey", "F7:Y506"
+    WF_TrajectorySnapshot snapshots, "Targets", "L7:Q106"
+    WF_TrajectorySnapshot snapshots, "Slide Performance", "K7:S206"
+    WF_TrajectorySnapshot snapshots, "Formation Tops", "G7:K106"
+    WF_TrajectorySnapshot snapshots, "Results", "A26:M525"
+    WF_TrajectorySnapshot snapshots, "Results", "B6:B15"
+    WF_TrajectorySnapshot snapshots, "Results", "B19:B21"
+    WF_TrajectorySnapshot snapshots, "Results", "P7:P8"
+    WF_TrajectorySnapshot snapshots, "Results", "P10:P14"
+    WF_TrajectorySnapshot snapshots, "Checks", "B6:D25"
+    WF_TrajectorySnapshot snapshots, "Summary", "B5:C9"
+    WF_TrajectorySnapshot snapshots, "Summary", "B10"
+    WF_TrajectorySnapshot snapshots, "Calc", "A7:R506"
+    WF_TrajectorySnapshot snapshots, "Calc", "T7:BS506"
+    WF_TrajectorySnapshot snapshots, "Calc", "FI7:GJ612"
+    WF_TrajectorySnapshot snapshots, "Calc", "GL6:GM45"
+    WF_TrajectorySnapshot snapshots, "Calc", "HB7:HT106"
+    WF_TrajectorySnapshot snapshots, "Calc", "DA7:EG506"
+    WF_TrajectorySnapshot snapshots, "Plan", "G5:L5"
+    WF_TrajectorySnapshot snapshots, "Survey", "G5:X5"
+    WF_TrajectorySnapshot snapshots, "Targets", "M5:N5"
+    WF_TrajectorySnapshot snapshots, "Slide Performance", "K5:R5"
+    WF_TrajectorySnapshot snapshots, "Formation Tops", "G5:H5"
+    WF_TrajectorySnapshot snapshots, "Calc", "DA6:DY6"
+    Set WF_TrajectoryCaptureSnapshots = snapshots
+End Function
+
 Private Sub WF_TrajectorySnapshot(ByVal snapshots As Collection, ByVal sheetName As String, ByVal address As String)
     Dim snapshot As Object
     Set snapshot = CreateObject("Scripting.Dictionary")
@@ -1269,6 +1321,47 @@ Private Function WF_TrajectoryRestoreSnapshots(ByVal snapshots As Collection) As
         On Error GoTo 0
     Next index
     WF_TrajectoryRestoreSnapshots = restoreSucceeded
+End Function
+
+Private Function WF_TrajectorySnapshotsMatch(ByVal snapshots As Collection) As Boolean
+    Dim index As Long, snapshot As Object, actualValues As Variant, expectedValues As Variant
+    WF_TrajectorySnapshotsMatch = False
+    On Error GoTo Mismatch
+    For index = 1 To snapshots.Count
+        Set snapshot = snapshots.Item(index)
+        actualValues = ThisWorkbook.Worksheets(CStr(snapshot.Item("sheet"))).Range(CStr(snapshot.Item("address"))).Value2
+        expectedValues = snapshot.Item("values")
+        If Not WF_TrajectoryValuesMatch(actualValues, expectedValues) Then Exit Function
+    Next index
+    WF_TrajectorySnapshotsMatch = True
+Mismatch:
+End Function
+
+Private Function WF_TrajectoryValuesMatch(ByVal actualValues As Variant, ByVal expectedValues As Variant) As Boolean
+    Dim rowIndex As Long, columnIndex As Long
+    On Error GoTo Mismatch
+    If IsArray(expectedValues) Then
+        If Not IsArray(actualValues) Then Exit Function
+        For rowIndex = LBound(expectedValues, 1) To UBound(expectedValues, 1)
+            For columnIndex = LBound(expectedValues, 2) To UBound(expectedValues, 2)
+                If Not WF_TrajectoryValueMatches(actualValues(rowIndex, columnIndex), expectedValues(rowIndex, columnIndex)) Then Exit Function
+            Next columnIndex
+        Next rowIndex
+    ElseIf Not WF_TrajectoryValueMatches(actualValues, expectedValues) Then
+        Exit Function
+    End If
+    WF_TrajectoryValuesMatch = True
+Mismatch:
+End Function
+
+Private Function WF_TrajectoryValueMatches(ByVal actualValue As Variant, ByVal expectedValue As Variant) As Boolean
+    If IsError(actualValue) Or IsError(expectedValue) Then
+        WF_TrajectoryValueMatches = IsError(actualValue) And IsError(expectedValue) And CStr(actualValue) = CStr(expectedValue)
+    ElseIf IsEmpty(actualValue) Or IsEmpty(expectedValue) Then
+        WF_TrajectoryValueMatches = IsEmpty(actualValue) And IsEmpty(expectedValue)
+    Else
+        WF_TrajectoryValueMatches = (VarType(actualValue) = VarType(expectedValue) And CStr(actualValue) = CStr(expectedValue))
+    End If
 End Function
 
 Private Sub WF_PublishTrajectoryFailure(ByVal stateText As String, ByVal diagnosticPath As String, ByVal lastAcceptedValuesPreserved As Boolean)
