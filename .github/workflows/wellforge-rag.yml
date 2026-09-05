@@ -1,0 +1,32 @@
+name: WellForgeRag
+
+on:
+  push:
+    branches:
+      - feat/wellforge-rag
+    paths:
+      - 'WellForgeRag/**'
+      - '.github/workflows/wellforge-rag.yml'
+  pull_request:
+    paths:
+      - 'WellForgeRag/**'
+      - '.github/workflows/wellforge-rag.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: WellForgeRag
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.98.0
+          components: rustfmt, clippy
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
