@@ -1,0 +1,29 @@
+name: Build workbook audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research/production-workover-workbooks
+    paths:
+      - '.github/workflows/build-workbook-audit.yml'
+      - 'engine/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build workbook audit
+        working-directory: engine
+        run: cargo build --release -p wellforge-workbook-audit
+      - name: Upload workbook audit binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: wellforge-workbook-audit-linux
+          path: engine/target/release/wellforge-workbook-audit
+          if-no-files-found: error
