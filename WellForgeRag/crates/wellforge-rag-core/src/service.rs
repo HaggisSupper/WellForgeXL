@@ -10,7 +10,6 @@ use anyhow::{Context, Result, bail};
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use tempfile::NamedTempFile;
-use uuid::Uuid;
 use wait_timeout::ChildExt;
 
 use crate::{
