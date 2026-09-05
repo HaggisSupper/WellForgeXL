@@ -24,7 +24,10 @@ bind = "127.0.0.1:8765"
     .unwrap();
 
     let config = RagConfig::load(&config_path).unwrap();
-    assert_eq!(config.storage.sqlite, root.path().join("data/corpus.sqlite3"));
+    assert_eq!(
+        config.storage.sqlite,
+        root.path().join("data/corpus.sqlite3")
+    );
     assert_eq!(config.storage.lancedb, root.path().join("data/lancedb"));
     assert_eq!(config.storage.okf, root.path().join("data/okf"));
     assert_eq!(config.server.bind.to_string(), "127.0.0.1:8765");
