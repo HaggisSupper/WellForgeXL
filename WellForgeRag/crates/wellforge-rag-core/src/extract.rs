@@ -1,7 +1,7 @@
 use std::{
     collections::BTreeMap,
     fs::{self, File},
-    io::{BufRead, BufReader, Read},
+    io::{BufRead, BufReader},
     path::Path,
 };
 
@@ -121,8 +121,8 @@ pub fn extract_path(path: impl AsRef<Path>) -> Result<ExtractionEnvelope> {
             ArtifactFamily::Database,
             "DuckDB is recognized but requires a verified DuckDB adapter before content extraction",
         )),
-        "pdf" | "docx" | "pptx" | "xlsx" | "xlsm" | "xlsb" | "png" | "jpg" | "jpeg"
-        | "tif" | "tiff" => Ok(ExtractionEnvelope::unsupported(
+        "pdf" | "docx" | "pptx" | "xlsx" | "xlsm" | "xlsb" | "png" | "jpg" | "jpeg" | "tif"
+        | "tiff" => Ok(ExtractionEnvelope::unsupported(
             ArtifactFamily::Document,
             "document/image format is routed to the configured non-executing extraction sidecar",
         )),
@@ -171,7 +171,11 @@ fn extract_json_lines(path: &Path) -> Result<ExtractionEnvelope> {
     let text = bounded_text(path)?;
     let mut count = 0_u64;
     let mut first = Vec::new();
-    for (index, line) in text.lines().filter(|line| !line.trim().is_empty()).enumerate() {
+    for (index, line) in text
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .enumerate()
+    {
         let value: Value = serde_json::from_str(line)
             .with_context(|| format!("invalid JSONL row {} in {}", index + 1, path.display()))?;
         count += 1;
@@ -190,8 +194,8 @@ fn extract_json_lines(path: &Path) -> Result<ExtractionEnvelope> {
 
 fn extract_yaml(path: &Path) -> Result<ExtractionEnvelope> {
     let text = bounded_text(path)?;
-    let value: yaml_serde::Value = yaml_serde::from_str(&text)
-        .with_context(|| format!("invalid YAML {}", path.display()))?;
+    let value: yaml_serde::Value =
+        yaml_serde::from_str(&text).with_context(|| format!("invalid YAML {}", path.display()))?;
     let mut result = ExtractionEnvelope::extracted(ArtifactFamily::StructuredData, "rust-yaml");
     result.text_sections.push(TextSection {
         locator: "$".to_owned(),
@@ -215,7 +219,10 @@ fn extract_delimited(path: &Path, delimiter: u8) -> Result<ExtractionEnvelope> {
     let metadata = fs::metadata(path)
         .with_context(|| format!("cannot stat delimited file {}", path.display()))?;
     if metadata.len() > 512 * 1024 * 1024 {
-        bail!("delimited artifact {} exceeds 512 MiB limit", path.display());
+        bail!(
+            "delimited artifact {} exceeds 512 MiB limit",
+            path.display()
+        );
     }
     let mut reader = csv::ReaderBuilder::new()
         .delimiter(delimiter)
@@ -298,9 +305,9 @@ fn extract_xml(path: &Path, drilling: bool) -> Result<ExtractionEnvelope> {
         text: serde_json::to_string_pretty(&result.metadata)?,
     });
     if seen >= MAX_XML_ELEMENTS {
-        result
-            .warnings
-            .push(format!("XML element profiling stopped at {MAX_XML_ELEMENTS}"));
+        result.warnings.push(format!(
+            "XML element profiling stopped at {MAX_XML_ELEMENTS}"
+        ));
     }
     Ok(result)
 }
@@ -419,7 +426,8 @@ fn extract_arrow(path: &Path) -> Result<ExtractionEnvelope> {
                 .checked_add(u64::try_from(batch?.num_rows())?)
                 .context("Arrow row count overflow")?;
         }
-        let mut result = ExtractionEnvelope::extracted(ArtifactFamily::AnalyticalData, "rust-arrow-ipc-file");
+        let mut result =
+            ExtractionEnvelope::extracted(ArtifactFamily::AnalyticalData, "rust-arrow-ipc-file");
         result.profiles.push(DataProfile {
             name: "arrow".to_owned(),
             row_count: Some(rows),
@@ -439,7 +447,8 @@ fn extract_arrow(path: &Path) -> Result<ExtractionEnvelope> {
             .checked_add(u64::try_from(batch?.num_rows())?)
             .context("Arrow row count overflow")?;
     }
-    let mut result = ExtractionEnvelope::extracted(ArtifactFamily::AnalyticalData, "rust-arrow-ipc-stream");
+    let mut result =
+        ExtractionEnvelope::extracted(ArtifactFamily::AnalyticalData, "rust-arrow-ipc-stream");
     result.profiles.push(DataProfile {
         name: "arrow".to_owned(),
         row_count: Some(rows),
@@ -478,7 +487,8 @@ fn extract_sqlite(path: &Path) -> Result<ExtractionEnvelope> {
         .collect::<std::result::Result<Vec<_>, _>>()?;
     drop(objects);
 
-    let mut result = ExtractionEnvelope::extracted(ArtifactFamily::Database, "rust-sqlite-schema");
+    let mut result =
+        ExtractionEnvelope::extracted(ArtifactFamily::Database, "rust-sqlite-schema");
     for (name, kind) in object_rows {
         let quoted = name.replace('"', "\"\"");
         let pragma = format!("PRAGMA table_info(\"{quoted}\")");
