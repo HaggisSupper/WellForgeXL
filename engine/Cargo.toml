@@ -24,6 +24,7 @@ members = [
   "crates/wellforge-hydraulics-core",
   "crates/wellforge-hydraulics-fixtures",
   "crates/wellforge-hydraulics-cli",
+  "crates/wellforge-workbook-audit",
 ]
 
 [workspace.package]
@@ -55,6 +56,8 @@ rayon = "1.11.0"
 semver = "1.0.28"
 tempfile = "3.27.0"
 url = "2.5.8"
+calamine = "=0.36.1"
+same-file = "=1.0.6"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

@@ -43,6 +43,27 @@ The frozen `0.1.0` request/result pair is captured under `wellforge-hydraulics-f
 
 The generalized correlation remains an opt-in engineering model until the external parity matrix and licensed-standard clause review are accepted. Selecting it does not by itself claim full standard compliance.
 
+## Workbook research evidence
+
+The static catalog under `research/drilling-calculation-workbooks` provides
+comparison evidence, not implementation authority. Its 41 hydraulics workbooks
+contain 384,239 formula cells compacted into 1,059 structural families. Three
+large Bingham/power-law/yield-power-law datasets contain 330,096 of those cells
+but only 14 families, so they are parity datasets rather than independent model
+counts. Workbook `2f31e7e9f41839d2` contributes the broadest operational
+surface, including pressure loss, ECD, surge/swab, lag, well control, and survey
+support. Each candidate still requires an independent standard or first-principles
+acceptance case before migration.
+
+No complete counter-current wellbore solver was identified in the locally
+extracted formulas, VBA source, or p-code analysis. Workbook `dc888cd53f297b84`
+contributes property conversions and a small cylindrical radial-resistance
+network; workbook `348dd5eb51c7fac7` contributes a linear formation-temperature
+profile and gradient fixtures. Workbook `b147eb91b2f2fd18` concerns elastomer
+expansion, fit, wear, and life derating, not down-going string/up-going annulus
+heat exchange. These sources can seed adversarial fixtures, but they do not
+change the neutral model boundary below.
+
 ## Planned counter-current temperature layer
 
 Temperature will be implemented as a separate `wellforge-wellbore-thermal` contract/core pair, coupled to hydraulics through section-local fluid states. Its public model name will be `counter_current_wellbore_exchange`.
@@ -56,7 +77,14 @@ The model will represent:
 - formation temperature and transient radial thermal resistance;
 - pressure/temperature-dependent density, heat capacity, conductivity and rheology.
 
-The axial coordinate `s` increases with measured depth. Positive mass flow follows increasing `s` in the string; the same positive mass-flow magnitude travels toward decreasing `s` in the annulus. Heat-transfer area is integrated over MD, including horizontal cells, while formation temperature is evaluated from TVD. The initial steady equations are:
+The axial coordinate `s` increases with measured depth. Conventional circulation
+uses positive mass flow in `kg/s` toward increasing `s` in the string and the
+same magnitude toward decreasing `s` in the annulus. Physical reverse
+circulation is a separate passage assignment and inlet-boundary configuration,
+not a reversal of numerical marching order. Heat-transfer area is integrated
+over MD, including horizontal cells, while formation temperature is evaluated
+from TVD. The initial steady equations use linear conductances `G_sa` and `G_af`
+in `W/(m*K)`:
 
 ```text
 (m_dot * cp_s) dT_s/ds = G_sa (T_a - T_s)
@@ -65,7 +93,13 @@ The axial coordinate `s` increases with measured depth. Positive mass flow follo
 
 The boundary conditions are one surface string inlet, `T_s(0) = T_in`, and bottom enthalpy continuity across the turnaround. With no specified bit heat, `h_a(L) = h_s(L)`; a future bit heat source enters explicitly as `m_dot * (h_a(L) - h_s(L)) = q_bit`. The annulus surface outlet `T_a(0)` is solved, not supplied as a second inlet.
 
-Hydraulics will hand the thermal lane an internal `HydraulicFieldSi`: ordered MD/TVD cells, face pressure, signed mass flux, density, viscosity and velocity for each passage. Thermal output returns cell temperatures, properties and heat fluxes without changing the public hydraulics result contract. The reference thermal slice uses constant properties, prescribed formation temperature and prescribed conductances. Transient radial formation state is a later contract addition.
+Hydraulics will hand the thermal lane an internal `HydraulicFieldSi`: ordered
+MD/TVD cells, face pressure, signed passage mass flow in `kg/s`, density,
+viscosity, and velocity. Any mass flux is a separate `kg/(m^2*s)` field. Thermal
+output returns cell temperatures, properties, and heat rates without changing
+the public hydraulics result contract. The reference thermal slice uses constant
+properties, prescribed formation temperature, and prescribed linear
+conductances. Transient radial formation state is a later contract addition.
 
 The first implementation should use an implicit block-banded finite-volume solve with a reported energy residual. Hydraulics and temperature iterate until both pressure and temperature changes satisfy explicit tolerances; neither solver silently owns the other solver's convergence.
 
@@ -77,7 +111,8 @@ Required thermal acceptance cases are:
 - uniform inlet and formation temperature remains uniform everywhere;
 - insulated formation conserves combined string/annulus enthalpy;
 - increasing tubular conductance reduces the string/annulus temperature difference;
-- reversing the annulus marching direction changes the solution and is covered by a regression fixture;
+- reversing only the numerical solve order leaves the solution invariant;
+- physical reverse circulation swaps passage assignment and inlet boundary while preserving energy conservation;
 - grid refinement converges outlet temperatures and energy residual;
 - horizontal cells exchange heat over MD while using TVD for formation temperature;
 - a coupled pressure/temperature case converges to the isothermal result as all temperature coefficients approach zero.

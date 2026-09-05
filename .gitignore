@@ -1,4 +1,5 @@
 outputs/
+__pycache__/
 qa_renders/
 package/
 package_previous_*/

@@ -1,0 +1,75 @@
+workbook_id,category,indicator_type,risk_class,occurrences
+17219f0e78ccdcfd,bha-tools,Suspicious,obfuscation-indicator,1
+1d0b997e43f13c8f,torque-drag-drillstring,AutoExec,auto-execution,5
+1d0b997e43f13c8f,torque-drag-drillstring,Base64 String,review-required,2
+1d0b997e43f13c8f,torque-drag-drillstring,IOC,indicator-of-compromise,3
+1d0b997e43f13c8f,torque-drag-drillstring,Suspicious,external-process,3
+1d0b997e43f13c8f,torque-drag-drillstring,Suspicious,obfuscation-indicator,2
+1d0b997e43f13c8f,torque-drag-drillstring,Suspicious,review-required,9
+1e6f56798a002c5f,torque-drag-drillstring,Suspicious,obfuscation-indicator,1
+2f31e7e9f41839d2,hydraulics,AutoExec,auto-execution,2
+2f31e7e9f41839d2,hydraulics,Suspicious,obfuscation-indicator,2
+2f31e7e9f41839d2,hydraulics,Suspicious,review-required,1
+332bc3b3c75e571d,torque-drag-drillstring,Suspicious,obfuscation-indicator,1
+659bcaadadb110f0,torque-drag-drillstring,AutoExec,auto-execution,5
+659bcaadadb110f0,torque-drag-drillstring,Base64 String,review-required,2
+659bcaadadb110f0,torque-drag-drillstring,IOC,indicator-of-compromise,3
+659bcaadadb110f0,torque-drag-drillstring,Suspicious,external-process,3
+659bcaadadb110f0,torque-drag-drillstring,Suspicious,obfuscation-indicator,2
+659bcaadadb110f0,torque-drag-drillstring,Suspicious,review-required,9
+65e07d7859867671,hydraulics,AutoExec,auto-execution,3
+65e07d7859867671,hydraulics,Hex String,review-required,1
+65e07d7859867671,hydraulics,Suspicious,obfuscation-indicator,2
+65e07d7859867671,hydraulics,Suspicious,review-required,2
+779e267fd49f229e,directional,AutoExec,auto-execution,1
+779e267fd49f229e,directional,Suspicious,external-process,1
+779e267fd49f229e,directional,Suspicious,obfuscation-indicator,3
+779e267fd49f229e,directional,Suspicious,review-required,1
+7d8cc3b6df44e74a,bha-tools,Suspicious,filesystem-write,1
+7d8cc3b6df44e74a,bha-tools,Suspicious,obfuscation-indicator,2
+7d8cc3b6df44e74a,bha-tools,Suspicious,review-required,3
+86e1a87c92bcaf52,bha-tools,Suspicious,obfuscation-indicator,1
+8c2e041f05eb97d0,general-drilling,AutoExec,auto-execution,2
+8c2e041f05eb97d0,general-drilling,Hex String,review-required,4
+8c2e041f05eb97d0,general-drilling,Suspicious,external-process,1
+8c2e041f05eb97d0,general-drilling,Suspicious,obfuscation-indicator,1
+8c2e041f05eb97d0,general-drilling,Suspicious,review-required,2
+919d5d19a825b186,hydraulics,Suspicious,obfuscation-indicator,1
+9900762f1edd4ae6,directional,AutoExec,auto-execution,1
+9900762f1edd4ae6,directional,Suspicious,external-process,1
+9900762f1edd4ae6,directional,Suspicious,obfuscation-indicator,3
+9900762f1edd4ae6,directional,Suspicious,review-required,1
+a09760979bc979fd,torque-drag-drillstring,Suspicious,obfuscation-indicator,1
+a20de360a6901fad,bha-tools,AutoExec,auto-execution,2
+a20de360a6901fad,bha-tools,Suspicious,obfuscation-indicator,1
+b147eb91b2f2fd18,thermal,AutoExec,auto-execution,3
+b147eb91b2f2fd18,thermal,Base64 String,review-required,1
+b147eb91b2f2fd18,thermal,Hex String,review-required,31
+b147eb91b2f2fd18,thermal,IOC,indicator-of-compromise,1
+b147eb91b2f2fd18,thermal,Suspicious,environment-access,1
+b147eb91b2f2fd18,thermal,Suspicious,filesystem-write,1
+b147eb91b2f2fd18,thermal,Suspicious,obfuscation-indicator,3
+b147eb91b2f2fd18,thermal,Suspicious,review-required,9
+c00c3d2869bee7b4,directional,AutoExec,auto-execution,1
+c00c3d2869bee7b4,directional,Suspicious,external-process,1
+c00c3d2869bee7b4,directional,Suspicious,obfuscation-indicator,3
+c00c3d2869bee7b4,directional,Suspicious,review-required,1
+d338233f05c5e396,directional,AutoExec,auto-execution,1
+d338233f05c5e396,directional,Suspicious,external-process,1
+d338233f05c5e396,directional,Suspicious,obfuscation-indicator,3
+d338233f05c5e396,directional,Suspicious,review-required,1
+dbfddbefee5b196d,uncategorized,Hex String,review-required,1
+dbfddbefee5b196d,uncategorized,Suspicious,obfuscation-indicator,2
+dbfddbefee5b196d,uncategorized,Suspicious,review-required,3
+e2a8f7179c81b8c0,torque-drag-drillstring,Suspicious,obfuscation-indicator,1
+f0be457863a6cecc,hydraulics,Suspicious,obfuscation-indicator,1
+f6201fb121ebbf2c,directional,AutoExec,auto-execution,1
+f6201fb121ebbf2c,directional,Suspicious,external-process,1
+f6201fb121ebbf2c,directional,Suspicious,obfuscation-indicator,3
+f6201fb121ebbf2c,directional,Suspicious,review-required,1
+fd6bc4683cd208c1,torque-drag-drillstring,AutoExec,auto-execution,5
+fd6bc4683cd208c1,torque-drag-drillstring,Base64 String,review-required,2
+fd6bc4683cd208c1,torque-drag-drillstring,IOC,indicator-of-compromise,3
+fd6bc4683cd208c1,torque-drag-drillstring,Suspicious,external-process,3
+fd6bc4683cd208c1,torque-drag-drillstring,Suspicious,obfuscation-indicator,2
+fd6bc4683cd208c1,torque-drag-drillstring,Suspicious,review-required,10

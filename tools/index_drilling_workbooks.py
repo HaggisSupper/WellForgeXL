@@ -444,7 +444,7 @@ def main() -> int:
     ]
 
     write_csv(
-        destination / "INDEX.csv",
+        destination / "PRIVATE_INDEX.csv",
         unique_rows,
         [
             "id",
@@ -463,6 +463,43 @@ def main() -> int:
             "has_macros",
             "inspection_status",
             "signals",
+        ],
+    )
+    public_rows = [
+        {
+            "workbook_id": row["id"],
+            "classification": row["classification"],
+            "category": row["category"],
+            "extension": row["extension"],
+            "bytes": row["bytes"],
+            "source_occurrences": row["source_occurrences"],
+            "sheet_count": row["sheet_count"],
+            "formula_cells": row["formula_count"],
+            "has_vba": row["has_macros"],
+            "audit_stage": "preliminary-static",
+            "audit_status": row["inspection_status"],
+            "static_coverage": "ooxml-preliminary"
+            if row["extension"] in {".xlsx", ".xlsm"}
+            else "filename-metadata-only",
+        }
+        for row in unique_rows
+    ]
+    write_csv(
+        destination / "INDEX.csv",
+        public_rows,
+        [
+            "workbook_id",
+            "classification",
+            "category",
+            "extension",
+            "bytes",
+            "source_occurrences",
+            "sheet_count",
+            "formula_cells",
+            "has_vba",
+            "audit_stage",
+            "audit_status",
+            "static_coverage",
         ],
     )
     write_csv(
