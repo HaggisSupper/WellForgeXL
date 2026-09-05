@@ -472,7 +472,9 @@ fn validate_concept_path(value: &str) -> Result<()> {
 
 fn fts_query(value: &str) -> String {
     value
-        .split(|character: char| !character.is_alphanumeric() && character != '_' && character != '-')
+        .split(|character: char| {
+            !character.is_alphanumeric() && character != '_' && character != '-'
+        })
         .filter(|token| !token.is_empty())
         .take(20)
         .map(|token| format!("\"{}\"", token.replace('"', "\"\"")))
@@ -528,7 +530,10 @@ fn concept_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<ConceptRecord> 
     concept_from_row_offset(row, 0)
 }
 
-fn concept_from_row_offset(row: &rusqlite::Row<'_>, offset: usize) -> rusqlite::Result<ConceptRecord> {
+fn concept_from_row_offset(
+    row: &rusqlite::Row<'_>,
+    offset: usize,
+) -> rusqlite::Result<ConceptRecord> {
     let frontmatter_text: String = row.get(offset + 6)?;
     let frontmatter = serde_json::from_str(&frontmatter_text).map_err(|error| {
         rusqlite::Error::FromSqlConversionFailure(
