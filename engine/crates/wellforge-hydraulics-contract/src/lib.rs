@@ -9,10 +9,12 @@ mod result;
 mod validation;
 
 pub use request::{
-    FlowLoop, HydraulicsAnalysisRequest, HydraulicsOperatingPoint, Nozzle, RheologyModel,
-    RheologyParameters, StandardProfile, TubularSection,
+    ComputeBackend, FlowCorrelation, FlowLoop, HydraulicsAnalysisRequest, HydraulicsOperatingPoint,
+    HydraulicsSolverOptions, Nozzle, RheologyModel, RheologyParameters, StandardProfile,
+    ThermalAssumption, TubularSection,
 };
 pub use result::{
-    AnalysisStatus, HydraulicsAnalysisResult, HydraulicsSolverEvidence, SectionPressureLoss,
+    AnalysisStatus, FlowRegime, HydraulicsAnalysisResult, HydraulicsSolverEvidence,
+    SectionPressureLoss,
 };
 pub use validation::{ContractError, validate_request};

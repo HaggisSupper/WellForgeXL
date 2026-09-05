@@ -8,7 +8,7 @@ Public Sub WF_CalcHydraulics()
     WF_RunHydraulicsRustEngine
 End Sub
 
-Private Sub WF_CalcHydraulicsLegacy()
+Private Sub WF_CalcHydraulicsWorksheetModel()
     Dim wsIn As Worksheet, wsCalc As Worksheet, wsResults As Worksheet, wsSummary As Worksheet
     Dim wsFlow As Worksheet, wsNozzle As Worksheet, wsPressure As Worksheet, wsGraphs As Worksheet, wsCharts As Worksheet
     Dim calcData(1 To 8, 1 To 10) As Variant, flowData(1 To 8, 1 To 14) As Variant

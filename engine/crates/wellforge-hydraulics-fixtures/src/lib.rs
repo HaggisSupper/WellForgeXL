@@ -2,8 +2,9 @@
 
 use uuid::Uuid;
 use wellforge_hydraulics_contract::{
-    HydraulicsAnalysisRequest, HydraulicsOperatingPoint, Nozzle, RheologyModel, RheologyParameters,
-    StandardProfile, TubularSection,
+    ComputeBackend, FlowCorrelation, HydraulicsAnalysisRequest, HydraulicsOperatingPoint,
+    HydraulicsSolverOptions, Nozzle, RheologyModel, RheologyParameters, StandardProfile,
+    ThermalAssumption, TubularSection,
 };
 use wellforge_witsml::{SourceObjectRef, WitsmlObjectType};
 
@@ -26,6 +27,9 @@ pub fn canonical_bingham_case() -> HydraulicsAnalysisRequest {
         name: "5in DP in 9-7/8in hole".to_string(),
         top_md_m: 0.0,
         bottom_md_m: 3000.0,
+        top_tvd_m: None,
+        bottom_tvd_m: None,
+        active_flow_loop: None,
         string_od_m: 0.1270,
         string_id_m: 0.1086,
         hole_id_m: 0.2508,
@@ -53,12 +57,17 @@ pub fn canonical_bingham_case() -> HydraulicsAnalysisRequest {
             plastic_viscosity_pa_s: Some(0.020),
             consistency_k_pa_s_n: None,
             flow_behavior_index: None,
+            high_shear_flow_index: None,
         },
+        solver: None,
         sections: vec![section],
         operating: HydraulicsOperatingPoint {
             mud_density_kg_m3: 1200.0,
             flow_rate_m3_s: 0.030,
             surface_temperature_k: 300.0,
+            nozzle_discharge_coefficient: None,
+            surface_backpressure_pa: None,
+            ecd_reference_tvd_m: None,
             nozzles: vec![
                 Nozzle {
                     diameter_m: 12.0 / 32.0 * 0.0254,
@@ -72,4 +81,29 @@ pub fn canonical_bingham_case() -> HydraulicsAnalysisRequest {
             ],
         },
     }
+}
+
+/// Build the generalized SI-native case used to exercise the current correlation lane.
+#[must_use]
+pub fn generalized_yield_power_law_case() -> HydraulicsAnalysisRequest {
+    let mut request = canonical_bingham_case();
+    request.contract_version = "0.2.0".to_string();
+    request.rheology = RheologyParameters {
+        model: RheologyModel::HerschelBulkley,
+        dynamic_viscosity_pa_s: None,
+        yield_stress_pa: Some(5.0),
+        plastic_viscosity_pa_s: None,
+        consistency_k_pa_s_n: Some(0.012),
+        flow_behavior_index: Some(0.70),
+        high_shear_flow_index: Some(0.70),
+    };
+    request.solver = Some(HydraulicsSolverOptions {
+        flow_correlation: FlowCorrelation::GeneralizedYieldPowerLaw,
+        compute_backend: ComputeBackend::ParallelCpu,
+        thermal_assumption: ThermalAssumption::ConstantProperties,
+    });
+    request.operating.nozzle_discharge_coefficient = Some(0.95);
+    request.operating.surface_backpressure_pa = Some(0.0);
+    request.operating.ecd_reference_tvd_m = Some(3000.0);
+    request
 }

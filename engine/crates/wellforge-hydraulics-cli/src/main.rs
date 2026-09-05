@@ -5,12 +5,14 @@ use std::{fs, path::PathBuf};
 use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand};
 use schemars::schema_for;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use wellforge_hydraulics_contract::{
     AnalysisStatus, HydraulicsAnalysisRequest, HydraulicsAnalysisResult, validate_request,
 };
-use wellforge_hydraulics_core::solve_hydraulics;
+use wellforge_hydraulics_core::{solve_hydraulics, solve_hydraulics_batch};
+
+const MAX_BATCH_ANALYSES: usize = 128;
 
 #[derive(Parser)]
 #[command(
@@ -30,8 +32,20 @@ enum Command {
         #[arg(long)]
         input: PathBuf,
     },
+    /// Validate a bounded batch of requests without running analysis.
+    ValidateBatch {
+        #[arg(long)]
+        input: PathBuf,
+    },
     /// Run the steady-state pass and emit the result contract.
     Run {
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Run a bounded request batch and emit results in request order.
+    RunBatch {
         #[arg(long)]
         input: PathBuf,
         #[arg(long)]
@@ -43,6 +57,13 @@ enum Command {
         input: PathBuf,
         #[arg(long)]
         request_hash: String,
+    },
+    /// Verify a result batch against its normalized request batch.
+    VerifyBatch {
+        #[arg(long)]
+        request: PathBuf,
+        #[arg(long)]
+        result: PathBuf,
     },
     /// Write deterministic request and result JSON Schemas.
     Schema {
@@ -58,6 +79,18 @@ enum Command {
     },
     /// Verify local engine health and embedded build metadata.
     Doctor,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct HydraulicsRequestBatch {
+    requests: Vec<HydraulicsAnalysisRequest>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct HydraulicsResultBatch {
+    results: Vec<HydraulicsAnalysisResult>,
 }
 
 fn hash(bytes: &[u8]) -> String {
@@ -89,21 +122,98 @@ fn read_request(path: &PathBuf) -> Result<HydraulicsAnalysisRequest> {
     Ok(request)
 }
 
-fn verify_result(path: &PathBuf, request_hash: &str) -> Result<()> {
+fn read_request_batch(path: &PathBuf) -> Result<HydraulicsRequestBatch> {
     let bytes = fs::read(path).with_context(|| format!("cannot read {}", path.display()))?;
-    let result: HydraulicsAnalysisResult =
-        serde_json::from_slice(&bytes).context("result JSON does not match the strict contract")?;
+    let batch: HydraulicsRequestBatch = serde_json::from_slice(&bytes)
+        .context("batch request JSON does not match the strict contract")?;
+    if batch.requests.is_empty() || batch.requests.len() > MAX_BATCH_ANALYSES {
+        emit_json_error(
+            "WF-HYD-BATCH-001",
+            format!("batch requests must contain between 1 and {MAX_BATCH_ANALYSES} analyses"),
+        );
+        bail!("invalid batch size: {}", batch.requests.len());
+    }
+    for (index, request) in batch.requests.iter().enumerate() {
+        if let Err(errors) = validate_request(request) {
+            emit_json_error(
+                "WF-HYD-BATCH-002",
+                errors
+                    .iter()
+                    .map(|error| format!("requests[{index}] {}: {}", error.code, error.message))
+                    .collect::<Vec<_>>()
+                    .join("; "),
+            );
+            bail!(
+                "batch request {index} failed validation with {} error(s)",
+                errors.len()
+            );
+        }
+    }
+    Ok(batch)
+}
+
+fn normalized_request_hash(request: &HydraulicsAnalysisRequest) -> Result<String> {
+    Ok(hash(&serde_json::to_vec(request)?))
+}
+
+fn attach_hashes(
+    request: &HydraulicsAnalysisRequest,
+    result: &mut HydraulicsAnalysisResult,
+) -> Result<()> {
+    result.evidence.request_hash = normalized_request_hash(request)?;
+    result.evidence.result_hash = result_payload_hash(result)?;
+    Ok(())
+}
+
+fn verify_result_value(result: &HydraulicsAnalysisResult, request_hash: &str) -> Result<()> {
     if result.evidence.request_hash != request_hash {
         bail!("result request hash does not match the validated request");
     }
-    let expected_hash = result_payload_hash(&result)?;
+    let expected_hash = result_payload_hash(result)?;
     if result.evidence.result_hash != expected_hash {
         bail!("result hash mismatch");
     }
     if matches!(result.status, AnalysisStatus::Failed) {
         bail!("hydraulics result is failed");
     }
+    Ok(())
+}
+
+fn verify_result(path: &PathBuf, request_hash: &str) -> Result<()> {
+    let bytes = fs::read(path).with_context(|| format!("cannot read {}", path.display()))?;
+    let result: HydraulicsAnalysisResult =
+        serde_json::from_slice(&bytes).context("result JSON does not match the strict contract")?;
+    verify_result_value(&result, request_hash)?;
     println!("{{\"status\":\"valid\"}}");
+    Ok(())
+}
+
+fn verify_batch(request_path: &PathBuf, result_path: &PathBuf) -> Result<()> {
+    let request_batch = read_request_batch(request_path)?;
+    let result_bytes =
+        fs::read(result_path).with_context(|| format!("cannot read {}", result_path.display()))?;
+    let result_batch: HydraulicsResultBatch = serde_json::from_slice(&result_bytes)
+        .context("batch result JSON does not match the strict contract")?;
+    if result_batch.results.len() != request_batch.requests.len() {
+        bail!("batch request and result counts do not match");
+    }
+    for (index, (request, result)) in request_batch
+        .requests
+        .iter()
+        .zip(&result_batch.results)
+        .enumerate()
+    {
+        if result.analysis_id != request.analysis_id {
+            bail!("batch result {index} analysis ID mismatch");
+        }
+        let request_hash = normalized_request_hash(request)?;
+        verify_result_value(result, &request_hash)
+            .with_context(|| format!("batch result {index} failed verification"))?;
+    }
+    println!(
+        "{{\"status\":\"valid\",\"analyses\":{}}}",
+        result_batch.results.len()
+    );
     Ok(())
 }
 
@@ -129,19 +239,30 @@ fn execute() -> Result<()> {
     match cli.command {
         Command::Validate { input } => {
             let request = read_request(&input)?;
-            let request_bytes = serde_json::to_vec(&request)?;
             println!(
                 "{{\"status\":\"valid\",\"request_hash\":\"{}\"}}",
-                hash(&request_bytes)
+                normalized_request_hash(&request)?
+            );
+        }
+        Command::ValidateBatch { input } => {
+            let batch = read_request_batch(&input)?;
+            let request_hashes = batch
+                .requests
+                .iter()
+                .map(normalized_request_hash)
+                .collect::<Result<Vec<_>>>()?;
+            println!(
+                "{}",
+                serde_json::json!({
+                    "status": "valid",
+                    "request_hashes": request_hashes,
+                })
             );
         }
         Command::Run { input, output } => {
             let request = read_request(&input)?;
-            let request_bytes = serde_json::to_vec(&request)?;
             let mut result = solve_hydraulics(&request).context("hydraulics solver failed")?;
-            result.evidence.request_hash = hash(&request_bytes);
-            let payload_hash = result_payload_hash(&result)?;
-            result.evidence.result_hash = payload_hash;
+            attach_hashes(&request, &mut result)?;
             let bytes = serde_json::to_vec_pretty(&result)?;
             fs::write(&output, &bytes)
                 .with_context(|| format!("cannot write {}", output.display()))?;
@@ -150,10 +271,26 @@ fn execute() -> Result<()> {
                 result.sections.len()
             );
         }
+        Command::RunBatch { input, output } => {
+            let batch = read_request_batch(&input)?;
+            let mut results = solve_hydraulics_batch(&batch.requests)
+                .context("hydraulics batch solver failed")?;
+            for (request, result) in batch.requests.iter().zip(&mut results) {
+                attach_hashes(request, result)?;
+            }
+            let result_batch = HydraulicsResultBatch { results };
+            fs::write(&output, serde_json::to_vec_pretty(&result_batch)?)
+                .with_context(|| format!("cannot write {}", output.display()))?;
+            println!(
+                "{{\"status\":\"ok\",\"analyses\":{}}}",
+                result_batch.results.len()
+            );
+        }
         Command::VerifyResult {
             input,
             request_hash,
         } => verify_result(&input, &request_hash)?,
+        Command::VerifyBatch { request, result } => verify_batch(&request, &result)?,
         Command::Schema { request, result } => {
             let request_schema = schema_for!(HydraulicsAnalysisRequest);
             let result_schema = schema_for!(HydraulicsAnalysisResult);

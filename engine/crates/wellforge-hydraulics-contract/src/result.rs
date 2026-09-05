@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::request::FlowLoop;
+use crate::request::{ComputeBackend, FlowCorrelation, FlowLoop, ThermalAssumption};
 
 /// Overall analysis status.
 #[derive(Clone, Copy, Debug, Deserialize, Eq, JsonSchema, PartialEq, Serialize)]
@@ -16,6 +16,19 @@ pub enum AnalysisStatus {
     Warning,
     /// One or more checks failed.
     Failed,
+}
+
+/// Hydraulic flow regime reported by the selected correlation.
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, JsonSchema, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum FlowRegime {
+    /// Viscous forces govern the correlation.
+    #[default]
+    Laminar,
+    /// The correlation blends laminar and turbulent responses.
+    Transitional,
+    /// Inertial forces govern the correlation.
+    Turbulent,
 }
 
 /// Per-section pressure loss and regime indication.
@@ -32,6 +45,9 @@ pub struct SectionPressureLoss {
     pub reynolds_number: f64,
     /// Fanning friction factor.
     pub fanning_friction_factor: f64,
+    /// Flow regime determined by the selected correlation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub flow_regime: Option<FlowRegime>,
     /// Section pressure loss in pascals.
     pub pressure_loss_pa: f64,
 }
@@ -50,6 +66,15 @@ pub struct HydraulicsSolverEvidence {
     pub profile_standard: String,
     /// Reported edition identifier.
     pub profile_edition: String,
+    /// Correlation used to compute friction losses.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub flow_correlation: Option<FlowCorrelation>,
+    /// Compute backend requested for independent section evaluations.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub compute_backend: Option<ComputeBackend>,
+    /// Temperature treatment used while evaluating fluid properties.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thermal_assumption: Option<ThermalAssumption>,
 }
 
 /// Top-level hydraulics analysis result.
@@ -72,7 +97,19 @@ pub struct HydraulicsAnalysisResult {
     pub total_flow_area_m2: f64,
     /// Equivalent circulating density at total depth in kilograms per cubic metre.
     pub equivalent_circulating_density_kg_m3: f64,
-    /// Per-section losses (pipe entries first, annulus entries second).
+    /// TVD used as the ECD hydrostatic reference in metres.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_vertical_depth_m: Option<f64>,
+    /// Applied annulus surface backpressure in pascals.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub surface_backpressure_pa: Option<f64>,
+    /// Nozzle discharge coefficient used in the bit pressure calculation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nozzle_discharge_coefficient: Option<f64>,
+    /// Pipe, bit, annulus and surface-backpressure sum in pascals.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub circulating_system_pressure_pa: Option<f64>,
+    /// Per-section losses in request order, with pipe then annulus for each section.
     pub sections: Vec<SectionPressureLoss>,
     /// Solver evidence.
     pub evidence: HydraulicsSolverEvidence,

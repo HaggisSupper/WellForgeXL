@@ -5,6 +5,49 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use wellforge_witsml::SourceObjectRef;
 
+/// Pressure-loss correlation used for each hydraulic flow passage.
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, JsonSchema, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum FlowCorrelation {
+    /// Compatibility path using apparent viscosity and smooth-pipe Darcy-Weisbach screening.
+    #[default]
+    DarcyWeisbachScreening,
+    /// Geometry-aware generalized yield-power-law correlation with continuous regime blending.
+    GeneralizedYieldPowerLaw,
+}
+
+/// Compute backend used for independent section evaluations.
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, JsonSchema, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ComputeBackend {
+    /// Deterministic scalar CPU evaluation.
+    #[default]
+    SerialCpu,
+    /// Deterministic multicore CPU evaluation with output restored to input order.
+    ParallelCpu,
+}
+
+/// Temperature treatment used while evaluating fluid properties.
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, JsonSchema, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ThermalAssumption {
+    /// Density and rheology remain fixed at the supplied reference temperature.
+    #[default]
+    ConstantProperties,
+}
+
+/// Numerical controls for a hydraulics analysis.
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, JsonSchema, PartialEq, Serialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct HydraulicsSolverOptions {
+    /// Correlation used to evaluate wall friction.
+    pub flow_correlation: FlowCorrelation,
+    /// Backend used to evaluate independent sections.
+    pub compute_backend: ComputeBackend,
+    /// Temperature treatment used by the pressure solver.
+    pub thermal_assumption: ThermalAssumption,
+}
+
 /// Rheology model family selectable within a given `StandardProfile`.
 ///
 /// Reference basis: `Hydraulics Models\` and API RP 13D 7th Ed.
@@ -47,6 +90,9 @@ pub struct RheologyParameters {
     pub consistency_k_pa_s_n: Option<f64>,
     /// Power-law flow behaviour index n (Power law, Herschel-Bulkley).
     pub flow_behavior_index: Option<f64>,
+    /// Independently fitted high-shear flow index for the turbulent correlation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub high_shear_flow_index: Option<f64>,
 }
 
 /// One string/annular tubular section.
@@ -61,6 +107,15 @@ pub struct TubularSection {
     pub top_md_m: f64,
     /// Bottom MD in metres.
     pub bottom_md_m: f64,
+    /// Top true vertical depth in metres; MD is used when omitted for compatibility.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub top_tvd_m: Option<f64>,
+    /// Bottom true vertical depth in metres; MD is used when omitted for compatibility.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bottom_tvd_m: Option<f64>,
+    /// Flow loop represented by this path segment; omission evaluates and aggregates both loops.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub active_flow_loop: Option<FlowLoop>,
     /// String outside diameter in metres.
     pub string_od_m: f64,
     /// String inside diameter in metres.
@@ -87,6 +142,15 @@ pub struct HydraulicsOperatingPoint {
     pub flow_rate_m3_s: f64,
     /// Surface temperature in kelvin.
     pub surface_temperature_k: f64,
+    /// Nozzle discharge coefficient, dimensionless.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nozzle_discharge_coefficient: Option<f64>,
+    /// Applied annulus surface backpressure in pascals.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub surface_backpressure_pa: Option<f64>,
+    /// True vertical depth used to convert annular dynamic pressure to ECD, in metres.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ecd_reference_tvd_m: Option<f64>,
     /// Bit nozzles.
     pub nozzles: Vec<Nozzle>,
 }
@@ -115,6 +179,9 @@ pub struct HydraulicsAnalysisRequest {
     pub sources: Vec<SourceObjectRef>,
     /// Rheology parameters.
     pub rheology: RheologyParameters,
+    /// Numerical correlation and compute backend. Omission preserves the original solver behavior.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub solver: Option<HydraulicsSolverOptions>,
     /// Ordered tubular sections from surface to bit.
     pub sections: Vec<TubularSection>,
     /// Operating point.

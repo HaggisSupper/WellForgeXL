@@ -8,7 +8,7 @@ Public Sub WF_CalcTorqueDrag()
     WF_RunTorqueDragRustEngine
 End Sub
 
-Private Sub WF_CalcTorqueDragLegacy()
+Private Sub WF_CalcTorqueDragWorksheetModel()
     Dim wsIn As Worksheet, wsSurvey As Worksheet, wsCalc As Worksheet, wsResults As Worksheet
     Dim wsSummary As Worksheet, wsGraphs As Worksheet, wsAll As Worksheet, wsOps As Worksheet
     Dim countRows As Long, r As Long, opIndex As Long, colIndex As Long

@@ -9,9 +9,9 @@ Private Const WF_HYD_G As Double = 9.80665
 Public Sub WF_RunHydraulicsRustEngine()
     Dim executablePath As String, hashPath As String, runPath As String
     Dim requestPath As String, resultPath As String, expectedHash As String
-    Dim candidateResults As Collection, result As Object, baseResult As Object, selectedResult As Object
+    Dim candidateRequests As Collection, candidateResults As Collection, result As Object, baseResult As Object, selectedResult As Object, batchRequest As Object
     Dim nozzleIndex As Long, bestIndex As Long, bestScore As Double, score As Double
-    Dim nozzleDiameter As Double, surfaceLimit As Double, flowPathLoss As Double
+    Dim nozzleDiameter As Double, surfaceLimit As Double, surfaceBackpressure As Double, flowPathLoss As Double
     Dim snapshots As Collection, failureNumber As Long, failureDescription As String
     Dim calcData(1 To 8, 1 To 10) As Variant, flowData(1 To 8, 1 To 14) As Variant
     Dim pressureData(1 To 8, 1 To 10) As Variant, graphData(1 To 8, 1 To 4) As Variant
@@ -21,8 +21,9 @@ Public Sub WF_RunHydraulicsRustEngine()
     On Error GoTo Failed
 
     Set snapshots = WF_HydCaptureSnapshots()
-    Set candidateResults = New Collection
+    Set candidateRequests = New Collection
     surfaceLimit = WF_Num("Inputs", "B6")
+    surfaceBackpressure = WF_Num("Inputs", "B17", 0#)
     If surfaceLimit <= 0# Then Err.Raise vbObjectError + 8910, "WF_RunHydraulicsRustEngine", "Pressure limit must be positive"
 
     executablePath = ThisWorkbook.Path & Application.PathSeparator & "wellforge-hydraulics.exe"
@@ -34,15 +35,19 @@ Public Sub WF_RunHydraulicsRustEngine()
         Err.Raise vbObjectError + 8912, "WF_RunHydraulicsRustEngine", "ENGINE HASH MISMATCH"
 
     runPath = WF_RustFreshRunDirectory("WellForgeHydraulics", WF_HYD_ANALYSIS_UUID)
-    requestPath = runPath & Application.PathSeparator & "request.json"
-    resultPath = runPath & Application.PathSeparator & "result.json"
+    requestPath = runPath & Application.PathSeparator & "batch-request.json"
+    resultPath = runPath & Application.PathSeparator & "batch-result.json"
     For nozzleIndex = 1 To 5
         nozzleDiameter = WF_Num("Calc", "L" & CStr(nozzleIndex + 5), WF_Num("Inputs", "B12"))
         If nozzleDiameter <= 0# Then Err.Raise vbObjectError + 8913, "WF_RunHydraulicsRustEngine", "Invalid nozzle candidate"
-        Set result = WF_HydRunCandidate(executablePath, requestPath, resultPath, nozzleDiameter)
-        candidateResults.Add result
+        candidateRequests.Add WF_BuildHydraulicsRequest(nozzleDiameter)
+    Next nozzleIndex
+    Set batchRequest = CreateObject("Scripting.Dictionary"): batchRequest.Add "requests", candidateRequests
+    Set candidateResults = WF_HydRunBatch(executablePath, requestPath, resultPath, batchRequest)
+    For nozzleIndex = 1 To candidateResults.Count
+        Set result = candidateResults.Item(nozzleIndex)
         flowPathLoss = WF_HydSelectedFlowPathLoss(result)
-        score = Abs(surfaceLimit - flowPathLoss - WF_RustNumber(result.Item("bit_pressure_loss_pa"))) / surfaceLimit
+        score = Abs(surfaceLimit - flowPathLoss - WF_RustNumber(result.Item("bit_pressure_loss_pa")) - surfaceBackpressure) / surfaceLimit
         If score < bestScore Or nozzleIndex = 1 Then bestScore = score: bestIndex = nozzleIndex
     Next nozzleIndex
     Set baseResult = candidateResults.Item(1)
@@ -57,7 +62,7 @@ Public Sub WF_RunHydraulicsRustEngine()
         .Range("B7").Value2 = WF_Num("Calc", "L" & CStr(bestIndex + 5), WF_Num("Inputs", "B12")) * WF_UnitFactor("Diameter")
         .Range("C7").Value2 = WF_UnitLabel("Diameter")
         WF_StatusCell .Range("E7"), "PASS"
-        .Range("B8").Value2 = (WF_HydSelectedFlowPathLoss(selectedResult) + WF_RustNumber(selectedResult.Item("bit_pressure_loss_pa"))) * WF_UnitFactor("Pressure")
+        .Range("B8").Value2 = (WF_HydSelectedFlowPathLoss(selectedResult) + WF_RustNumber(selectedResult.Item("bit_pressure_loss_pa")) + surfaceBackpressure) * WF_UnitFactor("Pressure")
         .Range("C8").Value2 = WF_UnitLabel("Pressure")
         .Range("D8").Value2 = surfaceLimit * WF_UnitFactor("Pressure")
         WF_StatusCell .Range("E8"), IIf(.Range("B8").Value2 <= .Range("D8").Value2, "PASS", "REVIEW")
@@ -82,35 +87,47 @@ Failed:
     Err.Raise failureNumber, "WF_RunHydraulicsRustEngine", failureDescription
 End Sub
 
-Private Function WF_HydRunCandidate(ByVal executablePath As String, ByVal requestPath As String, ByVal resultPath As String, ByVal nozzleDiameter As Double) As Object
-    Dim request As Object, validation As Object, verification As Object, result As Object
-    Dim requestHash As String, outputText As String, errorText As String, exitCode As Long
-    Set request = WF_BuildHydraulicsRequest(nozzleDiameter)
-    AtomicWriteUtf8 requestPath, JsonStringify(request, 0)
-    exitCode = WF_RustExecBounded(WF_RustQuote(executablePath) & " validate --input " & WF_RustQuote(requestPath), WF_HYD_TIMEOUT_SECONDS, outputText, errorText)
-    If exitCode <> 0 Then Err.Raise vbObjectError + 8914, "WF_HydRunCandidate", "INVALID REQUEST: " & Trim$(errorText)
-    Set validation = JsonParse(Trim$(outputText))
-    requestHash = CStr(validation.Item("request_hash"))
-    If Not WF_RustIsSha256(requestHash) Then Err.Raise vbObjectError + 8915, "WF_HydRunCandidate", "INVALID REQUEST HASH"
-    exitCode = WF_RustExecBounded(WF_RustQuote(executablePath) & " run --input " & WF_RustQuote(requestPath) & " --output " & WF_RustQuote(resultPath), WF_HYD_TIMEOUT_SECONDS, outputText, errorText)
-    If exitCode <> 0 Or Len(Dir$(resultPath, vbNormal)) = 0 Then Err.Raise vbObjectError + 8916, "WF_HydRunCandidate", "ANALYSIS FAILED: " & Trim$(errorText)
-    exitCode = WF_RustExecBounded(WF_RustQuote(executablePath) & " verify-result --input " & WF_RustQuote(resultPath) & " --request-hash " & WF_RustQuote(requestHash), WF_HYD_TIMEOUT_SECONDS, outputText, errorText)
-    If exitCode <> 0 Then Err.Raise vbObjectError + 8917, "WF_HydRunCandidate", "INVALID RESULT: " & Trim$(errorText)
+Private Function WF_HydRunBatch(ByVal executablePath As String, ByVal requestPath As String, ByVal resultPath As String, ByVal requestBatch As Object) As Collection
+    Dim validation As Object, verification As Object, resultBatch As Object, result As Object
+    Dim requestHashes As Collection, results As Collection, requests As Collection
+    Dim outputText As String, errorText As String, exitCode As Long, i As Long
+    AtomicWriteUtf8 requestPath, JsonStringify(requestBatch, 0)
+    exitCode = WF_RustExecBounded(WF_RustQuote(executablePath) & " validate-batch --input " & WF_RustQuote(requestPath), WF_HYD_TIMEOUT_SECONDS, outputText, errorText)
+    If exitCode <> 0 Then Err.Raise vbObjectError + 8914, "WF_HydRunBatch", "INVALID REQUEST BATCH: " & Trim$(errorText)
+    Set validation = JsonParse(Trim$(outputText)): Set requestHashes = validation.Item("request_hashes"): Set requests = requestBatch.Item("requests")
+    If requestHashes.Count <> requests.Count Then Err.Raise vbObjectError + 8915, "WF_HydRunBatch", "REQUEST HASH COUNT MISMATCH"
+    For i = 1 To requestHashes.Count
+        If Not WF_RustIsSha256(CStr(requestHashes.Item(i))) Then Err.Raise vbObjectError + 8915, "WF_HydRunBatch", "INVALID REQUEST HASH"
+    Next i
+    exitCode = WF_RustExecBounded(WF_RustQuote(executablePath) & " run-batch --input " & WF_RustQuote(requestPath) & " --output " & WF_RustQuote(resultPath), WF_HYD_TIMEOUT_SECONDS, outputText, errorText)
+    If exitCode <> 0 Or Len(Dir$(resultPath, vbNormal)) = 0 Then Err.Raise vbObjectError + 8916, "WF_HydRunBatch", "BATCH ANALYSIS FAILED: " & Trim$(errorText)
+    exitCode = WF_RustExecBounded(WF_RustQuote(executablePath) & " verify-batch --request " & WF_RustQuote(requestPath) & " --result " & WF_RustQuote(resultPath), WF_HYD_TIMEOUT_SECONDS, outputText, errorText)
+    If exitCode <> 0 Then Err.Raise vbObjectError + 8917, "WF_HydRunBatch", "INVALID RESULT BATCH: " & Trim$(errorText)
     Set verification = JsonParse(Trim$(outputText))
-    If LCase$(CStr(verification.Item("status"))) <> "valid" Then Err.Raise vbObjectError + 8918, "WF_HydRunCandidate", "INVALID RESULT STATUS"
-    Set result = JsonParse(ReadUtf8File(resultPath))
-    If CStr(result.Item("analysis_id")) <> WF_HYD_ANALYSIS_UUID Then Err.Raise vbObjectError + 8919, "WF_HydRunCandidate", "ANALYSIS ID MISMATCH"
-    If LCase$(CStr(result.Item("status"))) = "failed" Then Err.Raise vbObjectError + 8920, "WF_HydRunCandidate", "ENGINE RESULT FAILED"
-    Set WF_HydRunCandidate = result
+    If LCase$(CStr(verification.Item("status"))) <> "valid" Then Err.Raise vbObjectError + 8918, "WF_HydRunBatch", "INVALID RESULT STATUS"
+    Set resultBatch = JsonParse(ReadUtf8File(resultPath)): Set results = resultBatch.Item("results")
+    If results.Count <> requests.Count Then Err.Raise vbObjectError + 8919, "WF_HydRunBatch", "RESULT COUNT MISMATCH"
+    For i = 1 To results.Count
+        Set result = results.Item(i)
+        If CStr(result.Item("analysis_id")) <> WF_HYD_ANALYSIS_UUID Then Err.Raise vbObjectError + 8919, "WF_HydRunBatch", "ANALYSIS ID MISMATCH"
+        If LCase$(CStr(result.Item("status"))) = "failed" Then Err.Raise vbObjectError + 8920, "WF_HydRunBatch", "ENGINE RESULT FAILED"
+    Next i
+    Set WF_HydRunBatch = results
 End Function
 
 Private Function WF_BuildHydraulicsRequest(ByVal nozzleDiameter As Double) As Object
-    Dim request As Object, profile As Object, source As Object, rheology As Object, operating As Object, sources As Collection
+    Dim request As Object, profile As Object, source As Object, rheology As Object, solver As Object, operating As Object, sources As Collection
     Dim sections As Collection, nozzles As Collection, section As Object, nozzle As Object
     Dim i As Long, topDepth As Double, sectionLength As Double, flowDiameter As Double, hydraulicDiameter As Double, flowType As String
     Dim stringOd As Double, stringId As Double, holeId As Double, nozzleCount As Long
+    Dim contractVersion As String, flowCorrelation As String, computeBackend As String, thermalAssumption As String, rheologyModel As String
+    flowCorrelation = LCase$(Trim$(WF_Str("Inputs", "B18", "")))
+    computeBackend = LCase$(Trim$(WF_Str("Inputs", "B19", "serial_cpu")))
+    thermalAssumption = LCase$(Trim$(WF_Str("Inputs", "B20", "constant_properties")))
+    rheologyModel = LCase$(Trim$(WF_Str("Fluid Model", "G6", "power_law")))
+    If Len(flowCorrelation) = 0 Then contractVersion = "0.1.0" Else contractVersion = "0.2.0"
     Set request = CreateObject("Scripting.Dictionary")
-    request.Add "contract_version", "0.1.0": request.Add "analysis_id", WF_HYD_ANALYSIS_UUID
+    request.Add "contract_version", contractVersion: request.Add "analysis_id", WF_HYD_ANALYSIS_UUID
     Set profile = CreateObject("Scripting.Dictionary")
     profile.Add "standard", "API RP 13D": profile.Add "edition", "7th Edition, 2017 (reaffirmed 2023)"
     request.Add "profile", profile
@@ -119,9 +136,36 @@ Private Function WF_BuildHydraulicsRequest(ByVal nozzleDiameter As Double) As Ob
     source.Add "content_hash", "sha256:" & String$(64, "0"): source.Add "citation_name", "WellForge hydraulics workbook": source.Add "source_system", "WellForgeXL"
     Set sources = New Collection: sources.Add source: request.Add "sources", sources
     Set rheology = CreateObject("Scripting.Dictionary")
-    rheology.Add "model", "newtonian": rheology.Add "dynamic_viscosity_pa_s", WF_ToSI(WF_Num("Inputs", "B10"), WF_Str("Inputs", "C10", "Pa*s"))
-    rheology.Add "yield_stress_pa", Empty: rheology.Add "plastic_viscosity_pa_s", Empty: rheology.Add "consistency_k_pa_s_n", Empty: rheology.Add "flow_behavior_index", Empty
+    rheology.Add "model", rheologyModel
+    Select Case rheologyModel
+        Case "newtonian"
+            rheology.Add "dynamic_viscosity_pa_s", WF_ToSI(WF_Num("Fluid Model", "B7"), WF_Str("Fluid Model", "C7", "Pa*s"))
+            rheology.Add "yield_stress_pa", Empty: rheology.Add "plastic_viscosity_pa_s", Empty
+            rheology.Add "consistency_k_pa_s_n", Empty: rheology.Add "flow_behavior_index", Empty
+        Case "power_law"
+            rheology.Add "dynamic_viscosity_pa_s", Empty: rheology.Add "yield_stress_pa", Empty: rheology.Add "plastic_viscosity_pa_s", Empty
+            rheology.Add "consistency_k_pa_s_n", WF_Num("Fluid Model", "B9"): rheology.Add "flow_behavior_index", WF_Num("Fluid Model", "B8")
+            If contractVersion = "0.2.0" Then rheology.Add "high_shear_flow_index", WF_Num("Fluid Model", "B14")
+        Case "bingham"
+            rheology.Add "dynamic_viscosity_pa_s", Empty
+            rheology.Add "yield_stress_pa", WF_ToSI(WF_Num("Fluid Model", "B10"), WF_Str("Fluid Model", "C10", "Pa"))
+            rheology.Add "plastic_viscosity_pa_s", WF_ToSI(WF_Num("Fluid Model", "B11"), WF_Str("Fluid Model", "C11", "Pa*s"))
+            rheology.Add "consistency_k_pa_s_n", Empty: rheology.Add "flow_behavior_index", Empty
+        Case "herschel_bulkley"
+            rheology.Add "dynamic_viscosity_pa_s", Empty
+            rheology.Add "yield_stress_pa", WF_ToSI(WF_Num("Fluid Model", "B10"), WF_Str("Fluid Model", "C10", "Pa"))
+            rheology.Add "plastic_viscosity_pa_s", Empty
+            rheology.Add "consistency_k_pa_s_n", WF_Num("Fluid Model", "B9"): rheology.Add "flow_behavior_index", WF_Num("Fluid Model", "B8")
+            If contractVersion = "0.2.0" Then rheology.Add "high_shear_flow_index", WF_Num("Fluid Model", "B14")
+        Case Else
+            Err.Raise vbObjectError + 8924, "WF_BuildHydraulicsRequest", "Unsupported constitutive model: " & rheologyModel
+    End Select
     request.Add "rheology", rheology
+    If contractVersion = "0.2.0" Then
+        Set solver = CreateObject("Scripting.Dictionary")
+        solver.Add "flow_correlation", flowCorrelation: solver.Add "compute_backend", computeBackend: solver.Add "thermal_assumption", thermalAssumption
+        request.Add "solver", solver
+    End If
     Set sections = New Collection
     For i = 1 To 8
         sectionLength = WF_Num("Inputs", "E" & CStr(i + 5))
@@ -134,6 +178,7 @@ Private Function WF_BuildHydraulicsRequest(ByVal nozzleDiameter As Double) As Ob
         section.Add "name", WF_Str("Inputs", "D" & CStr(i + 5), "Flow section " & CStr(i))
         section.Add "top_md_m", topDepth: topDepth = topDepth + sectionLength
         section.Add "bottom_md_m", topDepth
+        If contractVersion = "0.2.0" Then section.Add "active_flow_loop", flowType
         If flowType = "annulus" Then
             stringOd = flowDiameter - hydraulicDiameter: stringId = stringOd * 0.8: holeId = flowDiameter
         Else
@@ -148,7 +193,12 @@ Private Function WF_BuildHydraulicsRequest(ByVal nozzleDiameter As Double) As Ob
     Set operating = CreateObject("Scripting.Dictionary")
     operating.Add "mud_density_kg_m3", WF_ToSI(WF_Num("Inputs", "B9"), WF_Str("Inputs", "C9", "kg/m3"))
     operating.Add "flow_rate_m3_s", WF_ToSI(WF_Num("Inputs", "B8"), WF_Str("Inputs", "C8", "m3/s"))
-    operating.Add "surface_temperature_k", 300#
+    operating.Add "surface_temperature_k", WF_ToSI(WF_Num("Fluid Model", "B12"), WF_Str("Fluid Model", "C12", "K"))
+    If contractVersion = "0.2.0" Then
+        operating.Add "nozzle_discharge_coefficient", WF_Num("Inputs", "B13")
+        operating.Add "surface_backpressure_pa", WF_Num("Inputs", "B17", 0#)
+        operating.Add "ecd_reference_tvd_m", WF_Num("Inputs", "B16")
+    End If
     Set nozzles = New Collection
     nozzleCount = CLng(WF_Num("Inputs", "B11"))
     If nozzleCount < 1 Then Err.Raise vbObjectError + 8923, "WF_BuildHydraulicsRequest", "Nozzle count must be positive"
@@ -181,12 +231,27 @@ Private Function WF_HydCandidateVelocity(ByVal result As Object) As Double
     Next i
 End Function
 
+Private Function WF_HydRegimeLabel(ByVal section As Object, ByVal reynoldsNumber As Double) As String
+    Dim regime As String
+    If section.Exists("flow_regime") Then
+        regime = LCase$(CStr(section.Item("flow_regime")))
+        Select Case regime
+            Case "laminar": WF_HydRegimeLabel = "LAMINAR"
+            Case "transitional": WF_HydRegimeLabel = "TRANSITION"
+            Case "turbulent": WF_HydRegimeLabel = "TURBULENT"
+            Case Else: Err.Raise vbObjectError + 8925, "WF_HydRegimeLabel", "Unsupported Rust flow regime: " & regime
+        End Select
+        Exit Function
+    End If
+    WF_HydRegimeLabel = IIf(reynoldsNumber < 2100#, "LAMINAR", IIf(reynoldsNumber < 4000#, "TRANSITION", "TURBULENT"))
+End Function
+
 Private Sub WF_HydStageOutputs(ByVal baseResult As Object, ByVal candidateResults As Collection, ByVal bestIndex As Long, ByRef calcData() As Variant, ByRef flowData() As Variant, ByRef pressureData() As Variant, ByRef graphData() As Variant, ByRef pressureRoadmap() As Variant, ByRef ecdRoadmap() As Variant, ByRef velocityRoadmap() As Variant, ByRef nozzleCalc() As Variant, ByRef nozzleData() As Variant, ByRef nozzleChart() As Variant)
     Dim sections As Collection, section As Object, i As Long, j As Long, rowIndex As Long, sectionLength As Double, depth As Double, cumulative As Double
     Dim flowType As String, flowDiameter As Double, hydraulicDiameter As Double, area As Double, velocity As Double, re As Double, friction As Double, loss As Double, ecd As Double
-    Dim surfaceLimit As Double, rho As Double, pressureFactor As Double, densityFactor As Double, lengthFactor As Double, diameterFactor As Double, areaFactor As Double, speedFactor As Double
+    Dim surfaceLimit As Double, surfaceBackpressure As Double, ecdReferenceTvd As Double, rho As Double, pressureFactor As Double, densityFactor As Double, lengthFactor As Double, diameterFactor As Double, areaFactor As Double, speedFactor As Double
     Dim result As Object, bitDrop As Double, spp As Double, score As Double, rankValue As Long, nozzleDiameter As Double, totalArea As Double
-    surfaceLimit = WF_Num("Inputs", "B6"): rho = WF_ToSI(WF_Num("Inputs", "B9"), WF_Str("Inputs", "C9", "kg/m3"))
+    surfaceLimit = WF_Num("Inputs", "B6"): surfaceBackpressure = WF_Num("Inputs", "B17", 0#): ecdReferenceTvd = WF_Num("Inputs", "B16", 1#): rho = WF_ToSI(WF_Num("Inputs", "B9"), WF_Str("Inputs", "C9", "kg/m3"))
     lengthFactor = WF_UnitFactor("Length"): diameterFactor = WF_UnitFactor("Diameter"): areaFactor = WF_UnitFactor("Area"): speedFactor = WF_UnitFactor("Speed"): pressureFactor = WF_UnitFactor("Pressure"): densityFactor = WF_UnitFactor("Density")
     Set sections = baseResult.Item("sections")
     For i = 1 To 8
@@ -196,9 +261,9 @@ Private Sub WF_HydStageOutputs(ByVal baseResult As Object, ByVal candidateResult
         sectionLength = WF_Num("Inputs", "E" & CStr(i + 5)): flowDiameter = WF_Num("Inputs", "F" & CStr(i + 5)): hydraulicDiameter = WF_Num("Inputs", "H" & CStr(i + 5))
         If flowType = "annulus" Then area = WF_HYD_PI / 4# * (flowDiameter ^ 2 - (flowDiameter - hydraulicDiameter) ^ 2) Else area = WF_HYD_PI / 4# * hydraulicDiameter ^ 2
         velocity = WF_RustNumber(section.Item("bulk_velocity_m_s")): re = WF_RustNumber(section.Item("reynolds_number")): friction = WF_RustNumber(section.Item("fanning_friction_factor")): loss = WF_RustNumber(section.Item("pressure_loss_pa"))
-        cumulative = cumulative + loss: depth = depth + sectionLength: If flowType = "annulus" Then ecd = rho + loss / (WF_HYD_G * sectionLength) Else ecd = rho
+        cumulative = cumulative + loss: depth = depth + sectionLength: If flowType = "annulus" Then ecd = rho + (loss + surfaceBackpressure) / (WF_HYD_G * ecdReferenceTvd) Else ecd = rho
         calcData(i, 1) = WF_Str("Inputs", "D" & CStr(i + 5), "Flow section " & CStr(i)): calcData(i, 2) = sectionLength: calcData(i, 3) = hydraulicDiameter: calcData(i, 4) = velocity: calcData(i, 5) = re: calcData(i, 6) = friction: calcData(i, 7) = loss: calcData(i, 8) = cumulative: calcData(i, 9) = cumulative / surfaceLimit: calcData(i, 10) = IIf(cumulative <= surfaceLimit, "PASS", "REVIEW")
-        flowData(i, 1) = WF_Str("Inputs", "I" & CStr(i + 5)): flowData(i, 2) = calcData(i, 1): flowData(i, 3) = flowType: flowData(i, 4) = sectionLength * lengthFactor: flowData(i, 5) = hydraulicDiameter * diameterFactor: flowData(i, 6) = area * areaFactor: flowData(i, 7) = velocity * speedFactor: flowData(i, 8) = re: flowData(i, 9) = IIf(re < 2100#, "LAMINAR", IIf(re < 4000#, "TRANSITION", "TURBULENT")): flowData(i, 10) = friction: flowData(i, 11) = loss * pressureFactor: flowData(i, 12) = cumulative * pressureFactor: flowData(i, 13) = cumulative / surfaceLimit: flowData(i, 14) = calcData(i, 10)
+        flowData(i, 1) = WF_Str("Inputs", "I" & CStr(i + 5)): flowData(i, 2) = calcData(i, 1): flowData(i, 3) = flowType: flowData(i, 4) = sectionLength * lengthFactor: flowData(i, 5) = hydraulicDiameter * diameterFactor: flowData(i, 6) = area * areaFactor: flowData(i, 7) = velocity * speedFactor: flowData(i, 8) = re: flowData(i, 9) = WF_HydRegimeLabel(section, re): flowData(i, 10) = friction: flowData(i, 11) = loss * pressureFactor: flowData(i, 12) = cumulative * pressureFactor: flowData(i, 13) = cumulative / surfaceLimit: flowData(i, 14) = calcData(i, 10)
         pressureData(i, 1) = calcData(i, 1): pressureData(i, 2) = depth * lengthFactor: pressureData(i, 3) = velocity * speedFactor: pressureData(i, 4) = loss * pressureFactor: pressureData(i, 5) = cumulative * pressureFactor: pressureData(i, 6) = rho * WF_HYD_G * depth * pressureFactor: pressureData(i, 7) = (rho * WF_HYD_G * depth + cumulative) * pressureFactor: pressureData(i, 8) = ecd * densityFactor: pressureData(i, 9) = cumulative / surfaceLimit: pressureData(i, 10) = calcData(i, 10)
         graphData(i, 1) = calcData(i, 1): graphData(i, 2) = loss * pressureFactor: graphData(i, 3) = cumulative * pressureFactor: graphData(i, 4) = ecd * densityFactor
         pressureRoadmap(i, 1) = depth * lengthFactor: pressureRoadmap(i, 2) = loss * pressureFactor: pressureRoadmap(i, 3) = cumulative * pressureFactor: pressureRoadmap(i, 4) = rho * WF_HYD_G * depth * pressureFactor: pressureRoadmap(i, 5) = (rho * WF_HYD_G * depth + cumulative) * pressureFactor
@@ -206,8 +271,8 @@ Private Sub WF_HydStageOutputs(ByVal baseResult As Object, ByVal candidateResult
         velocityRoadmap(i, 1) = depth * lengthFactor: velocityRoadmap(i, 2) = velocity * speedFactor: velocityRoadmap(i, 3) = WF_Num("Inputs", "B15", 0.5) * speedFactor
     Next i
     For i = 1 To 5
-        Set result = candidateResults.Item(i): nozzleDiameter = WF_Num("Calc", "L" & CStr(i + 5), WF_Num("Inputs", "B12")): totalArea = WF_RustNumber(result.Item("total_flow_area_m2")): bitDrop = WF_RustNumber(result.Item("bit_pressure_loss_pa")): spp = cumulative + bitDrop: score = Abs(spp - surfaceLimit) / surfaceLimit: rankValue = 1
-        For j = 1 To 5: If Abs((WF_HydSelectedFlowPathLoss(candidateResults.Item(j)) + WF_RustNumber(candidateResults.Item(j).Item("bit_pressure_loss_pa"))) - surfaceLimit) < Abs(spp - surfaceLimit) Then rankValue = rankValue + 1
+        Set result = candidateResults.Item(i): nozzleDiameter = WF_Num("Calc", "L" & CStr(i + 5), WF_Num("Inputs", "B12")): totalArea = WF_RustNumber(result.Item("total_flow_area_m2")): bitDrop = WF_RustNumber(result.Item("bit_pressure_loss_pa")): spp = cumulative + bitDrop + surfaceBackpressure: score = Abs(spp - surfaceLimit) / surfaceLimit: rankValue = 1
+        For j = 1 To 5: If Abs((WF_HydSelectedFlowPathLoss(candidateResults.Item(j)) + WF_RustNumber(candidateResults.Item(j).Item("bit_pressure_loss_pa")) + surfaceBackpressure) - surfaceLimit) < Abs(spp - surfaceLimit) Then rankValue = rankValue + 1
         Next j
         nozzleCalc(i, 1) = nozzleDiameter: nozzleCalc(i, 2) = totalArea: nozzleCalc(i, 3) = WF_ToSI(WF_Num("Inputs", "B8"), WF_Str("Inputs", "C8", "m3/s")) / totalArea: nozzleCalc(i, 4) = bitDrop: nozzleCalc(i, 5) = spp: nozzleCalc(i, 6) = score
         nozzleData(i, 1) = WF_Str("Calc", "R" & CStr(i + 5), "Candidate " & CStr(i)): nozzleData(i, 2) = nozzleDiameter * diameterFactor: nozzleData(i, 3) = WF_Num("Inputs", "B11"): nozzleData(i, 4) = totalArea * areaFactor: nozzleData(i, 5) = nozzleCalc(i, 3) * speedFactor: nozzleData(i, 6) = bitDrop * pressureFactor: nozzleData(i, 7) = cumulative * pressureFactor: nozzleData(i, 8) = spp * pressureFactor: nozzleData(i, 9) = (surfaceLimit - spp) * pressureFactor: nozzleData(i, 10) = bitDrop * WF_ToSI(WF_Num("Inputs", "B8"), WF_Str("Inputs", "C8", "m3/s")): nozzleData(i, 11) = nozzleData(i, 10) / (WF_HYD_PI / 4# * 0.216 ^ 2): nozzleData(i, 12) = rankValue

@@ -48,7 +48,8 @@ test('registry declares reversible units with dimensions', () => {
   for (const dimension of [
     'unitless', 'length', 'diameter', 'area', 'volume', 'flowRate', 'density',
     'force', 'pressure', 'torque', 'stress', 'angle', 'speed', 'angularGradient',
-    'viscosity', 'frequency', 'rotationalSpeed', 'date', 'temperature',
+    'viscosity', 'rheologyConsistency', 'compressibility', 'frequency',
+    'rotationalSpeed', 'date', 'temperature',
   ]) {
     assert.equal(Object.values(UNIT_REGISTRY).some((unit) => unit.dimension === dimension), true, dimension);
   }

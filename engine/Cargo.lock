@@ -2451,7 +2451,10 @@ dependencies = [
 name = "wellforge-hydraulics-core"
 version = "0.1.0"
 dependencies = [
+ "rayon",
+ "serde_json",
  "thiserror 2.0.20",
+ "uuid",
  "wellforge-hydraulics-contract",
  "wellforge-hydraulics-fixtures",
 ]

@@ -271,7 +271,8 @@ End Function
 
 Public Function WF_ToSI(ByVal Value As Double, ByVal UnitName As String) As Double
     Select Case LCase$(Trim$(UnitName))
-        Case "m", "rad", "rad/m", "pa", "n", "n-m", "n*m", "kg/m3", "m3/s", "m/s", "hz", "1": WF_ToSI = Value
+        Case "m", "rad", "rad/m", "pa", "n", "n-m", "n*m", "kg/m3", "m3/s", "m/s", "hz", "1", _
+             "pa*s", "pa-s", "pa*s^n", "pa-s^n", "k", "1/pa": WF_ToSI = Value
         Case "ft": WF_ToSI = Value * 0.3048
         Case "in": WF_ToSI = Value * 0.0254
         Case "mm": WF_ToSI = Value * 0.001
