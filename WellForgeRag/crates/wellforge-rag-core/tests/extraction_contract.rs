@@ -13,11 +13,7 @@ fn extracts_structured_text_and_drilling_formats_without_row_to_prose_expansion(
     let root = tempdir().unwrap();
 
     let json_path = root.path().join("sample.json");
-    fs::write(
-        &json_path,
-        r#"{"pressure_psi":1234.5,"state":"drilling"}"#,
-    )
-    .unwrap();
+    fs::write(&json_path, r#"{"pressure_psi":1234.5,"state":"drilling"}"#).unwrap();
     let json = extract_path(&json_path).unwrap();
     assert_eq!(json.family, ArtifactFamily::StructuredData);
     assert_eq!(json.status, ExtractionStatus::Extracted);
@@ -37,7 +33,11 @@ fn extracts_structured_text_and_drilling_formats_without_row_to_prose_expansion(
     .unwrap();
     let xml = extract_path(&xml_path).unwrap();
     assert_eq!(xml.family, ArtifactFamily::StructuredData);
-    assert!(xml.text_sections.iter().any(|section| section.text.contains("trajectory")));
+    assert!(
+        xml.text_sections
+            .iter()
+            .any(|section| section.text.contains("trajectory"))
+    );
 
     let las_path = root.path().join("well.las");
     fs::write(
@@ -49,7 +49,11 @@ fn extracts_structured_text_and_drilling_formats_without_row_to_prose_expansion(
     assert_eq!(las.family, ArtifactFamily::DrillingData);
     assert_eq!(las.metadata["curve_count"].as_u64(), Some(2));
     assert_eq!(las.metadata["data_rows"].as_u64(), Some(2));
-    assert!(las.text_sections.iter().any(|section| section.text.contains("GR")));
+    assert!(
+        las.text_sections
+            .iter()
+            .any(|section| section.text.contains("GR"))
+    );
 }
 
 #[test]
@@ -64,8 +68,8 @@ fn profiles_parquet_arrow_and_sqlite_without_materializing_every_row_as_text() {
     let batch = RecordBatch::try_new(schema.clone(), vec![values]).unwrap();
 
     let parquet_path = root.path().join("samples.parquet");
-    let mut parquet = ArrowWriter::try_new(File::create(&parquet_path).unwrap(), schema.clone(), None)
-        .unwrap();
+    let mut parquet =
+        ArrowWriter::try_new(File::create(&parquet_path).unwrap(), schema.clone(), None).unwrap();
     parquet.write(&batch).unwrap();
     parquet.close().unwrap();
     let parquet = extract_path(&parquet_path).unwrap();
@@ -94,7 +98,12 @@ fn profiles_parquet_arrow_and_sqlite_without_materializing_every_row_as_text() {
     drop(database);
     let sqlite = extract_path(&sqlite_path).unwrap();
     assert_eq!(sqlite.family, ArtifactFamily::Database);
-    assert!(sqlite.profiles.iter().any(|profile| profile.name == "surveys"));
+    assert!(
+        sqlite
+            .profiles
+            .iter()
+            .any(|profile| profile.name == "surveys")
+    );
 }
 
 #[test]
