@@ -1,5 +1,11 @@
 # WellForge Rust/VBA Engineering Workbook Suite — 2026-08-29 v7
 
+## Four standalone Rust engines — 2026-09-04
+
+- Added a shared pinned Rust 1.98.0 Windows builder for `wellforge-bha.exe`, `wellforge-trajectory.exe`, `wellforge-torque-drag.exe`, and `wellforge-hydraulics.exe`.
+- Added SHA-256 sidecars for the torque-drag and hydraulics executables and included all four engines in release archives and the Windows installer.
+- Kept workbook authority explicit: BHA, directional, hydraulics and torque-drag dispatch to Rust; API 7G remains the VBA calculation lane pending a separate migration.
+
 ## Full release hardening — 2026-08-30
 
 ### PR #3 current-head acceptance hardening — 2026-08-31
@@ -60,7 +66,7 @@
 - Preserved BHA toolface units in JSON exchange and implemented overlaid WOB rose curves using the PolarPlotter-style radar/XY combination with transparent traces.
 - Added a Windows VBA build self-test that exercises SI, Imperial and Custom displays, verifies depth-chart geometry, rejects residual worksheet formulas, and pauses with the full log path on success or failure.
 - Standardized visible numeric precision to two decimal places and retained one shared mock case wherever inputs repeat across workbooks.
-- Added a WELLPLAN/Innova-informed torque-and-drag `Engineering Dashboard` with six operating modes, observed/mock hookload and torque, tension/torsional ratings, buckling limits, inclination, well context, friction sensitivity, and a selected-depth numerical reader.
+- Added a industry-software-informed torque-and-drag `Engineering Dashboard` with six operating modes, observed/mock hookload and torque, tension/torsional ratings, buckling limits, inclination, well context, friction sensitivity, and a selected-depth numerical reader.
 - Added `Observed Data` with explicit mock provenance; production users must replace it with validated EDR or rig measurements.
 - Added low/base/high hydraulic `Flow Cases` and a synchronized `Hydraulics Dashboard` for pressure, ECD, annular velocity, transport limits, and nozzle optimization.
 - Added persisted `Chart Settings` to all five workbooks and a Windows visualization self-test that rejects missing dashboard series.
@@ -76,3 +82,9 @@
 - VBA source passed deterministic structural lint.
 
 The final `.xlsm` compilation is performed by desktop Excel on Windows through `tools/Build-WellForgeVbaSuite.cmd`.
+
+## Four Rust workbook authorities - 2026-09-04
+
+- Hydraulics now dispatches from Excel through `wellforge-hydraulics.exe`, verifying five nozzle candidates before staging flow-path, pressure-profile, nozzle and dashboard outputs.
+- Torque-drag now dispatches through `wellforge-torque-drag.exe` for pickup, slack-off, backreaming, sliding, rotating-off-bottom and drilling states before aggregating workbook views.
+- Both clients verify colocated executable sidecars, request hashes and result hashes, and restore snapshots when presentation commit fails.

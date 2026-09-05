@@ -92,7 +92,7 @@ async function normalizeRelationshipIds(zip) {
   }
 }
 
-// PolarPlotter2010 uses a single combo chart: radar for the polar grid and
+// The legacy polar-plot add-in uses a single combo chart: radar for the polar grid and
 // XY scatter for the actual data. artifact-tool exports those layers as two
 // overlapping charts, so merge their OOXML plot areas after authoring.
 async function mergePolarPlotterChart(zip) {

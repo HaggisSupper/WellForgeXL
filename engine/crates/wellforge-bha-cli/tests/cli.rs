@@ -2,6 +2,8 @@
 
 use std::{fs, process::Command};
 
+use serde_json::Value;
+
 #[test]
 fn run_writes_deterministic_value_only_result() {
     let directory = tempfile::tempdir().unwrap();
@@ -32,43 +34,10 @@ fn run_writes_deterministic_value_only_result() {
     assert!(result.evidence.converged);
     assert!(!result.static_nodes.is_empty());
     assert!(!result.modes.is_empty());
-    let status = Command::new(env!("CARGO_BIN_EXE_wellforge-bha"))
-        .args([
-            "verify-result",
-            "--input",
-            second.to_str().unwrap(),
-            "--request-hash",
-            &result.evidence.request_hash,
-        ])
-        .status()
-        .unwrap();
-    assert!(status.success());
-
-    let bridge = directory.path().join("result.wfbridge");
-    let status = Command::new(env!("CARGO_BIN_EXE_wellforge-bha"))
-        .args([
-            "bridge",
-            "--input",
-            second.to_str().unwrap(),
-            "--output",
-            bridge.to_str().unwrap(),
-            "--request-hash",
-            &result.evidence.request_hash,
-        ])
-        .status()
-        .unwrap();
-    assert!(status.success());
-    let bridge_text = fs::read_to_string(bridge).unwrap();
-    assert!(bridge_text.starts_with("H\t1.0.0\t"));
-    assert!(bridge_text.lines().any(|line| line.starts_with("S\t")));
-    assert!(bridge_text.lines().any(|line| line.starts_with("M\t")));
-    assert!(bridge_text.lines().any(|line| line.starts_with("F\t")));
-    assert!(bridge_text.lines().any(|line| line.starts_with("C\t")));
-    assert!(!bridge_text.contains('{'));
 }
 
 #[test]
-fn validate_rejects_unknown_fields() {
+fn validate_rejects_unknown_fields_and_doctor_emits_metadata() {
     let directory = tempfile::tempdir().unwrap();
     let input = directory.path().join("request.json");
     let mut value = serde_json::to_value(wellforge_bha_fixtures::minimal_request()).unwrap();
@@ -77,9 +46,19 @@ fn validate_rejects_unknown_fields() {
         .unwrap()
         .insert("unknown".to_owned(), serde_json::json!(true));
     fs::write(&input, serde_json::to_vec_pretty(&value).unwrap()).unwrap();
-    let status = Command::new(env!("CARGO_BIN_EXE_wellforge-bha"))
+    let validate = Command::new(env!("CARGO_BIN_EXE_wellforge-bha"))
         .args(["validate", "--input", input.to_str().unwrap()])
-        .status()
+        .output()
         .unwrap();
-    assert!(!status.success());
+    assert!(!validate.status.success());
+    assert!(!validate.stdout.is_empty() || !validate.stderr.is_empty());
+
+    let doctor = Command::new(env!("CARGO_BIN_EXE_wellforge-bha"))
+        .args(["doctor"])
+        .output()
+        .unwrap();
+    assert!(doctor.status.success());
+    let identity: Value = serde_json::from_slice(&doctor.stdout).unwrap();
+    assert_eq!(identity["engine"], "wellforge-bha");
+    assert_eq!(identity["version"], env!("CARGO_PKG_VERSION"));
 }

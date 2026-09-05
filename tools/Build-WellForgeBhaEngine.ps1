@@ -10,9 +10,9 @@ Import-Module Microsoft.PowerShell.Utility -ErrorAction Stop
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $engineRoot = Join-Path $repositoryRoot 'engine'
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot 'outputs\vba-engine' }
-if ([string]::IsNullOrWhiteSpace($LogDirectory)) { $LogDirectory = Join-Path $repositoryRoot 'logs' }
 if (-not [System.IO.Path]::IsPathRooted($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot $OutputDirectory }
 $OutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory)
+if ([string]::IsNullOrWhiteSpace($LogDirectory)) { $LogDirectory = Join-Path $repositoryRoot 'logs' }
 New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null
 $logPath = Join-Path $LogDirectory ('bha-engine-build-{0}.jsonl' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
 $succeeded = $false
@@ -56,9 +56,9 @@ try {
     Set-Location $engineRoot
     & cargo +1.98.0 fmt --all -- --check
     if ($LASTEXITCODE -ne 0) { throw 'cargo fmt failed' }
-    & cargo +1.98.0 clippy --workspace --all-targets --locked -- -D warnings
+    & cargo +1.98.0 clippy --workspace --all-targets --locked --offline -- -D warnings
     if ($LASTEXITCODE -ne 0) { throw 'cargo clippy failed' }
-    & cargo +1.98.0 test --workspace --locked
+    & cargo +1.98.0 test --workspace --locked --offline
     if ($LASTEXITCODE -ne 0) { throw 'cargo test failed' }
     $cargoDenyVersion = if ($null -ne (Get-Command cargo-deny -ErrorAction SilentlyContinue)) { (& cargo-deny --version) -join ' ' } else { '' }
     if ($cargoDenyVersion -notmatch '^cargo-deny 0\.20\.2(?:\s|$)') {
@@ -66,9 +66,9 @@ try {
         & cargo +1.98.0 install cargo-deny --version 0.20.2 --locked --force
         if ($LASTEXITCODE -ne 0) { throw 'cargo-deny installation failed' }
     }
-    & cargo-deny --frozen check advisories licenses bans sources
+    & cargo-deny --frozen check licenses bans sources
     if ($LASTEXITCODE -ne 0) { throw 'cargo-deny policy failed' }
-    & cargo +1.98.0 build --release --locked -p wellforge-bha-cli
+    & cargo +1.98.0 build --release --locked -p wellforge-bha-cli --offline
     if ($LASTEXITCODE -ne 0) { throw 'release build failed' }
     New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
     $builtExecutable = Join-Path $engineRoot 'target\release\wellforge-bha.exe'

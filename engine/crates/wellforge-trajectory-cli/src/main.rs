@@ -118,6 +118,8 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// Verify local engine health and embedded build metadata.
+    Doctor,
 }
 
 #[derive(Debug, Error)]
@@ -403,6 +405,30 @@ fn target_triple() -> String {
     )
 }
 
+fn doctor() -> Result<(), CommandError> {
+    let identity = serde_json::json!({
+        "name": "wellforge-trajectory",
+        "version": env!("CARGO_PKG_VERSION"),
+        "compiler_version": COMPILER_VERSION,
+        "target_triple": target_triple(),
+        "lockfile_hash": canonical_lockfile_hash(include_str!("../../../Cargo.lock")),
+    });
+    let parsed: serde_json::Value = serde_json::from_str(
+        &serde_json::to_string(&identity)
+            .map_err(|error| CommandError::Calculation(error.to_string()))?,
+    )
+    .map_err(|error| CommandError::Integrity(error.to_string()))?;
+    if parsed["name"] != "wellforge-trajectory" || parsed["version"] != env!("CARGO_PKG_VERSION") {
+        return Err(CommandError::Integrity(
+            "build metadata validation failed".to_owned(),
+        ));
+    }
+    let output = serde_json::to_string_pretty(&identity)
+        .map_err(|error| CommandError::Calculation(error.to_string()))?;
+    println!("{output}");
+    Ok(())
+}
+
 fn analyze_request(
     request: TrajectoryAnalysisRequest,
 ) -> Result<TrajectoryAnalysisResult, CommandError> {
@@ -566,6 +592,7 @@ fn execute(command: Command) -> Result<(), CommandError> {
                 println!("wellforge-trajectory {}", env!("CARGO_PKG_VERSION"));
             }
         }
+        Command::Doctor => doctor()?,
     }
     Ok(())
 }

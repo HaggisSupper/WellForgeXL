@@ -117,8 +117,8 @@ End Sub
 Private Sub WF_DispatchModel(ByVal model As String)
     Select Case model
         Case "API7G": WF_CalcAPI7G
-        Case "HYDRAULICS": WF_CalcHydraulics
-        Case "TORQUE_DRAG": WF_CalcTorqueDrag
+        Case "HYDRAULICS": WF_RunHydraulicsRustEngine
+        Case "TORQUE_DRAG": WF_RunTorqueDragRustEngine
         Case "BHA": WF_RunBhaRustEngine
         Case "DIRECTIONAL": WF_RunTrajectoryRustEngine
         Case Else: Err.Raise vbObjectError + 8200, "WF_DispatchModel", "Unable to identify workbook analysis type"
@@ -271,7 +271,8 @@ End Function
 
 Public Function WF_ToSI(ByVal Value As Double, ByVal UnitName As String) As Double
     Select Case LCase$(Trim$(UnitName))
-        Case "m", "rad", "rad/m", "pa", "n", "n-m", "n*m", "kg/m3", "m3/s", "m/s", "hz", "1": WF_ToSI = Value
+        Case "m", "rad", "rad/m", "pa", "n", "n-m", "n*m", "kg/m3", "m3/s", "m/s", "hz", "1", _
+             "pa*s", "pa-s", "pa*s^n", "pa-s^n", "k", "1/pa": WF_ToSI = Value
         Case "ft": WF_ToSI = Value * 0.3048
         Case "in": WF_ToSI = Value * 0.0254
         Case "mm": WF_ToSI = Value * 0.001

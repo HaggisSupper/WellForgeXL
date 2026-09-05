@@ -27,9 +27,12 @@ All engines reuse the locked numerical stack where applicable: `nalgebra` for sp
 ### 3. Hydraulics
 
 - The request names the governing standard profile and edition. The initial public baseline is API RP 13D, 7th Edition (2017, reaffirmed 2023); a later published edition is a new validated profile, not an automatic label change.
+- Contract `0.2.0` selects neutral, physics-named pressure correlations and deterministic serial or multicore CPU execution while retaining byte-stable `0.1.0` compatibility behavior. The workbook defaults to serial screening until external generalized-correlation parity and workload benchmarks pass.
+- Nozzle sweeps use a verified batch CLI envelope; homogeneous candidates reuse one prepared section-flow state while retaining per-candidate request and result hashes.
 - Rheology fitting and evaluation for the models allowed by the selected profile, with temperature/pressure applicability metadata.
 - Pipe and annulus regimes, effective hydraulic geometry, friction loss, hydrostatic pressure, ECD, velocity/transport indicators, bit/nozzle losses, TFA and pump operating envelopes.
 - Results identify the standard/profile clauses implemented, excluded or requiring licensed validation data. “API compliant” is not reported until the selected edition’s acceptance matrix is complete and approved.
+- Counter-current wellbore temperature exchange is a separate coupled thermal lane; its staging, conservation gates and acceleration policy are defined in `docs/HYDRAULICS_RUST_MIGRATION.md`.
 
 ### 4. Torque and drag — soft string
 

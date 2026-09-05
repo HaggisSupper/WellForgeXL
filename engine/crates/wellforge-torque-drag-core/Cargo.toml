@@ -1,0 +1,16 @@
+[package]
+name = "wellforge-torque-drag-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+wellforge-torque-drag-contract = { path = "../wellforge-torque-drag-contract", version = "0.1.0" }
+
+[dev-dependencies]
+wellforge-torque-drag-fixtures = { path = "../wellforge-torque-drag-fixtures", version = "0.1.0" }
+
+[lints]
+workspace = true

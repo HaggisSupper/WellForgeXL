@@ -1,0 +1,28 @@
+[package]
+name = "wellforge-app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+build = "build.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+time = { version = "0.3.45", features = ["formatting"] }
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+wellforge-core = { path = "../crates/core" }
+wellforge-survey = { path = "../crates/survey" }
+wellforge-ac = { path = "../crates/ac" }
+wellforge-3d = { path = "../crates/three_d" }
+wellforge-formats = { path = "../crates/formats" }
+wellforge-storage = { path = "../crates/db" }
+
+[dev-dependencies]
+serde_json.workspace = true
+tempfile = "3"

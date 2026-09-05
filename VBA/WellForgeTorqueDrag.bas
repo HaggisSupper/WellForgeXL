@@ -5,6 +5,10 @@ Private Const TD_PI As Double = 3.14159265358979
 Private Const TD_G As Double = 9.80665
 
 Public Sub WF_CalcTorqueDrag()
+    WF_RunTorqueDragRustEngine
+End Sub
+
+Private Sub WF_CalcTorqueDragWorksheetModel()
     Dim wsIn As Worksheet, wsSurvey As Worksheet, wsCalc As Worksheet, wsResults As Worksheet
     Dim wsSummary As Worksheet, wsGraphs As Worksheet, wsAll As Worksheet, wsOps As Worksheet
     Dim countRows As Long, r As Long, opIndex As Long, colIndex As Long
@@ -177,7 +181,7 @@ Public Sub WF_CalcTorqueDrag()
     WF_WriteTDIndustryDashboard calcData, resultData, allData, countRows, lengthFactor, forceFactor, torqueFactor, angleFactor
 End Sub
 
-Private Sub WF_WriteTDIndustryDashboard(ByRef calcData() As Variant, ByRef resultData() As Variant, ByRef allData() As Variant, ByVal rowCount As Long, ByVal lengthFactor As Double, ByVal forceFactor As Double, ByVal torqueFactor As Double, ByVal angleFactor As Double)
+Public Sub WF_WriteTDIndustryDashboard(ByRef calcData() As Variant, ByRef resultData() As Variant, ByRef allData() As Variant, ByVal rowCount As Long, ByVal lengthFactor As Double, ByVal forceFactor As Double, ByVal torqueFactor As Double, ByVal angleFactor As Double)
     Dim ws As Worksheet, wsObserved As Worksheet, wsSettings As Worksheet
     Dim axialData() As Variant, torqueData() As Variant, inclinationData() As Variant, frictionData() As Variant
     Dim r As Long, sourceRow As Long, nearestRow As Long, selectedMd As Double
@@ -290,7 +294,7 @@ Private Function WF_ContiguousRows(ByVal ws As Worksheet, ByVal firstRow As Long
     Next r
 End Function
 
-Private Function WF_TDAllHeaders() As Variant
+Public Function WF_TDAllHeaders() As Variant
     Dim output(1 To 1, 1 To 12) As Variant
     output(1, 1) = "MD " & WF_UnitLabel("Length"): output(1, 2) = "Inc " & WF_UnitLabel("Angle"): output(1, 3) = "Azi " & WF_UnitLabel("Angle")
     output(1, 4) = "TVD screen " & WF_UnitLabel("Length"): output(1, 5) = "PUW axial " & WF_UnitLabel("Force"): output(1, 6) = "SOW axial " & WF_UnitLabel("Force")
@@ -299,7 +303,7 @@ Private Function WF_TDAllHeaders() As Variant
     WF_TDAllHeaders = output
 End Function
 
-Private Sub WF_WriteTDGraphs(ByVal ws As Worksheet, ByRef results() As Variant, ByVal rowCount As Long)
+Public Sub WF_WriteTDGraphs(ByVal ws As Worksheet, ByRef results() As Variant, ByVal rowCount As Long)
     Dim firstBlock() As Variant, torqueBlock() As Variant, bucklingBlock() As Variant, r As Long
     ReDim firstBlock(1 To rowCount, 1 To 4): ReDim torqueBlock(1 To rowCount, 1 To 2): ReDim bucklingBlock(1 To rowCount, 1 To 4)
     ws.Range("A4:F505").ClearContents: ws.Range("A41:D540").ClearContents
@@ -313,36 +317,36 @@ Private Sub WF_WriteTDGraphs(ByVal ws As Worksheet, ByRef results() As Variant, 
     ws.Range("A41").Resize(rowCount, 4).Value2 = bucklingBlock
 End Sub
 
-Private Function WF_TDForceHelper(ByRef source() As Variant, ByVal rowCount As Long) As Variant
+Public Function WF_TDForceHelper(ByRef source() As Variant, ByVal rowCount As Long) As Variant
     Dim output() As Variant, r As Long: ReDim output(1 To rowCount, 1 To 4)
     For r = 1 To rowCount: output(r, 1) = source(r, 1): output(r, 2) = source(r, 2): output(r, 3) = source(r, 4): output(r, 4) = source(r, 5): Next r
     WF_TDForceHelper = output
 End Function
 
-Private Function WF_TDTorqueHelper(ByRef source() As Variant, ByVal rowCount As Long) As Variant
+Public Function WF_TDTorqueHelper(ByRef source() As Variant, ByVal rowCount As Long) As Variant
     Dim output() As Variant, r As Long: ReDim output(1 To rowCount, 1 To 2)
     For r = 1 To rowCount: output(r, 1) = source(r, 1): output(r, 2) = source(r, 3): Next r
     WF_TDTorqueHelper = output
 End Function
 
-Private Function WF_TDOverviewHelper(ByRef source() As Variant, ByVal rowCount As Long) As Variant
+Public Function WF_TDOverviewHelper(ByRef source() As Variant, ByVal rowCount As Long) As Variant
     Dim output() As Variant, r As Long: ReDim output(1 To rowCount, 1 To 5)
     For r = 1 To rowCount: output(r, 1) = source(r, 1): output(r, 2) = source(r, 2): output(r, 3) = source(r, 1): output(r, 4) = source(r, 3): output(r, 5) = source(r, 6): Next r
     WF_TDOverviewHelper = output
 End Function
 
-Private Function WF_Row2(ByVal a As Variant, ByVal b As Variant) As Variant
+Public Function WF_Row2(ByVal a As Variant, ByVal b As Variant) As Variant
     Dim output(1 To 1, 1 To 2) As Variant: output(1, 1) = a: output(1, 2) = b: WF_Row2 = output
 End Function
 
-Private Function WF_Row3(ByVal a As Variant, ByVal b As Variant, ByVal c As Variant) As Variant
+Public Function WF_Row3(ByVal a As Variant, ByVal b As Variant, ByVal c As Variant) As Variant
     Dim output(1 To 1, 1 To 3) As Variant: output(1, 1) = a: output(1, 2) = b: output(1, 3) = c: WF_Row3 = output
 End Function
 
-Private Function WF_Row4(ByVal a As Variant, ByVal b As Variant, ByVal c As Variant, ByVal d As Variant) As Variant
+Public Function WF_Row4(ByVal a As Variant, ByVal b As Variant, ByVal c As Variant, ByVal d As Variant) As Variant
     Dim output(1 To 1, 1 To 4) As Variant: output(1, 1) = a: output(1, 2) = b: output(1, 3) = c: output(1, 4) = d: WF_Row4 = output
 End Function
 
-Private Function WF_Row5(ByVal a As Variant, ByVal b As Variant, ByVal c As Variant, ByVal d As Variant, ByVal e As Variant) As Variant
+Public Function WF_Row5(ByVal a As Variant, ByVal b As Variant, ByVal c As Variant, ByVal d As Variant, ByVal e As Variant) As Variant
     Dim output(1 To 1, 1 To 5) As Variant: output(1, 1) = a: output(1, 2) = b: output(1, 3) = c: output(1, 4) = d: output(1, 5) = e: WF_Row5 = output
 End Function

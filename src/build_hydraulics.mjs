@@ -13,8 +13,11 @@ export function buildHydraulicsWorkbook() {
   const FluidModel=sheets['Fluid Model']; const FlowPath=sheets['Flow Path']; const NozzleCases=sheets['Nozzle Cases']; const PressureProfile=sheets['Pressure Profile']; const HydraulicsCharts=sheets['Hydraulics Charts'];
   const baseNozzle = MOCK_CASE.pumpNozzle.nozzles.find(({ id }) => id === MOCK_CASE.pumpNozzle.baseNozzleId);
   sectionHeader(Inputs, 'A3:H3', 'SI operating inputs and full tube-section flow path');
-  Inputs.getRange('A5:B15').values = [['Rig preset',MOCK_CASE.rig.preset],['Surface pressure limit Pa',MOCK_CASE.hydraulics.surfacePressureLimitPa],['Pump efficiency',MOCK_CASE.rig.pumpEfficiency],['Flow rate m3/s',MOCK_CASE.hydraulics.flowRateM3S],['Mud density kg/m3',MOCK_CASE.fluid.densityKgM3],['Apparent viscosity Pa-s',MOCK_CASE.fluid.apparentViscosityPaS],['Bit nozzles count',MOCK_CASE.pumpNozzle.nozzleCount],['Base nozzle diameter m',baseNozzle.diameterM],['Nozzle Cd',MOCK_CASE.pumpNozzle.dischargeCoefficient],['Max ECD screen kg/m3',MOCK_CASE.rig.ecdScreenDensityKgM3],['Minimum annular velocity screen m/s',0.50]];
-  inputTableStyle(Inputs, 'B5:B15');
+  Inputs.getRange('A5:B20').values = [['Rig preset',MOCK_CASE.rig.preset],['Surface pressure limit Pa',MOCK_CASE.hydraulics.surfacePressureLimitPa],['Pump efficiency',MOCK_CASE.rig.pumpEfficiency],['Flow rate m3/s',MOCK_CASE.hydraulics.flowRateM3S],['Mud density kg/m3',MOCK_CASE.fluid.densityKgM3],['Apparent viscosity Pa-s',MOCK_CASE.fluid.apparentViscosityPaS],['Bit nozzles count',MOCK_CASE.pumpNozzle.nozzleCount],['Base nozzle diameter m',baseNozzle.diameterM],['Nozzle Cd',MOCK_CASE.pumpNozzle.dischargeCoefficient],['Max ECD screen kg/m3',MOCK_CASE.rig.ecdScreenDensityKgM3],['Minimum annular velocity screen m/s',0.50],['ECD reference TVD m',MOCK_CASE.holeSections.at(-1).bottomMdM],['Surface backpressure Pa',0],['Pressure correlation','darcy_weisbach_screening'],['Compute backend','serial_cpu'],['Thermal assumption','constant_properties']];
+  inputTableStyle(Inputs, 'B5:B20');
+  Inputs.getRange('B18').dataValidation={rule:{type:'list',values:['generalized_yield_power_law','darcy_weisbach_screening']}};
+  Inputs.getRange('B19').dataValidation={rule:{type:'list',values:['parallel_cpu','serial_cpu']}};
+  Inputs.getRange('B20').dataValidation={rule:{type:'list',values:['constant_properties']}};
   Inputs.getRange('D5:H5').values = [['Tube section', 'Length m', 'Flow ID m', 'Annular / pipe', 'Hydraulic diameter m']];
   Inputs.getRange('D6:H13').values = MOCK_CASE.hydraulics.flowPath.map((section) => [section.name, section.lengthM, section.flowIdM, section.flowType, section.hydraulicDiameterM]);
   Inputs.getRange('I5:I13').values = [['Exchange record ID'], ...MOCK_CASE.hydraulics.flowPath.map(({ id }) => [id])];
@@ -61,12 +64,19 @@ export function buildHydraulicsWorkbook() {
 
   sectionHeader(FluidModel,'A3:H3','Fluid and rheology model — SI canonical inputs');
   FluidModel.getRange('A5:D5').values=[['Property','Value','SI unit','Role']];
-  FluidModel.getRange('A6:D13').values=[
-    ['Mud density',MOCK_CASE.fluid.densityKgM3,'kg/m3','Hydrostatic and inertia'],['Apparent viscosity',MOCK_CASE.fluid.apparentViscosityPaS,'Pa-s','Newtonian screen'],['Flow behaviour index',0.72,'fraction','Power-law exponent'],['Consistency index',0.32,'Pa-s^n','Power-law consistency'],
-    ['Yield point',8.5,'Pa','Herschel-Bulkley screen'],['Plastic viscosity',0.024,'Pa-s','Bingham screen'],['Temperature',333.15,'K','Reference condition'],['Compressibility',0.00000000045,'1/Pa','Screening input'],
+  FluidModel.getRange('A6:D14').values=[
+    ['Mud density',MOCK_CASE.fluid.densityKgM3,'kg/m3','Hydrostatic and inertia'],['Dynamic viscosity',MOCK_CASE.fluid.apparentViscosityPaS,'Pa*s','Newtonian model'],['Flow behaviour index',0.72,'1','Yield-power-law exponent'],['Consistency coefficient',0.32,'Pa*s^n','Yield-power-law consistency'],
+    ['Yield stress',8.5,'Pa','Bingham and Herschel-Bulkley'],['Plastic viscosity',0.024,'Pa*s','Bingham model'],['Surface temperature',333.15,'K','Hydraulics reference condition'],['Compressibility',0.00000000045,'1/Pa','Reserved thermal coupling input'],['High-shear flow index',0.72,'1','Independent turbulent fit'],
   ];
-  tableHeader(FluidModel,'A5:D5'); inputTableStyle(FluidModel,'B6:B13');
-  FluidModel.getRange('F5:H5').values=[['Model','Selected','Applicability']]; FluidModel.getRange('F6:H8').values=[['Newtonian','No','Initial screening'],['Power law','Yes','Section pressure loss'],['Bingham plastic','No','Cross-check']]; tableHeader(FluidModel,'F5:H5'); inputTableStyle(FluidModel,'G6:G8');
+  FluidModel.getRange('B6:B7').formulas=[['=Inputs!B9'],['=Inputs!B10']];
+  tableHeader(FluidModel,'A5:D5'); inputTableStyle(FluidModel,'B6:B14');
+  FluidModel.getRange('F5:H5').values=[['Control','Value','Purpose']];
+  FluidModel.getRange('F6:H6').values=[['Constitutive model','power_law','Rust contract enum']];
+  inputTableStyle(FluidModel,'G6');
+  FluidModel.getRange('G6').dataValidation={rule:{type:'list',values:['newtonian','power_law','bingham','herschel_bulkley']}};
+  FluidModel.getRange('F8:H8').values=[['Model','Required SI parameters','Use']];
+  FluidModel.getRange('F9:H12').values=[['newtonian','dynamic viscosity','Linear viscous fluid'],['power_law','consistency, flow index, high-shear index','Shear-dependent fluid'],['bingham','yield stress, plastic viscosity','Linear post-yield fluid'],['herschel_bulkley','yield stress, consistency, flow index, high-shear index','General yield-power-law fluid']];
+  tableHeader(FluidModel,'F5:H5'); tableHeader(FluidModel,'F8:H8');
 
   sectionHeader(FlowPath,'A3:N3','Complete hydraulic flow path and regime results');
   FlowPath.getRange('A5:N5').values=[['Record ID','Section','Type','Length m','Hydraulic dia. m','Area m2','Velocity m/s','Reynolds','Regime','Friction factor','Loss Pa','Cumulative Pa','% limit','Status']];

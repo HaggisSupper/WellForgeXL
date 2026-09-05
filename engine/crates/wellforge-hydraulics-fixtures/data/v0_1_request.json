@@ -1,0 +1,47 @@
+{
+  "contract_version": "0.1.0",
+  "analysis_id": "35b15a48-47c1-4d31-a92e-7c5b8f200702",
+  "profile": {
+    "standard": "API RP 13D",
+    "edition": "7th Edition, 2017 (reaffirmed 2023)"
+  },
+  "sources": [
+    {
+      "uuid": "35b15a48-47c1-4d31-a92e-7c5b8f200703",
+      "uri": null,
+      "object_type": "tubular",
+      "content_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "citation_name": "canonical_bingham_case",
+      "source_system": "wellforge-hydraulics-fixtures"
+    }
+  ],
+  "rheology": {
+    "model": "bingham",
+    "dynamic_viscosity_pa_s": null,
+    "yield_stress_pa": 5.0,
+    "plastic_viscosity_pa_s": 0.02,
+    "consistency_k_pa_s_n": null,
+    "flow_behavior_index": null
+  },
+  "sections": [
+    {
+      "id": "35b15a48-47c1-4d31-a92e-7c5b8f200701",
+      "name": "5in DP in 9-7/8in hole",
+      "top_md_m": 0.0,
+      "bottom_md_m": 3000.0,
+      "string_od_m": 0.127,
+      "string_id_m": 0.1086,
+      "hole_id_m": 0.2508
+    }
+  ],
+  "operating": {
+    "mud_density_kg_m3": 1200.0,
+    "flow_rate_m3_s": 0.03,
+    "surface_temperature_k": 300.0,
+    "nozzles": [
+      { "diameter_m": 0.009525 },
+      { "diameter_m": 0.009525 },
+      { "diameter_m": 0.009525 }
+    ]
+  }
+}

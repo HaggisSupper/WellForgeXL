@@ -77,7 +77,7 @@ test('every writable destination is a literal input and every mapped formula des
 test('the shared inputs and surfaced decisions have declarative destinations', () => {
   const expected = {
     api7g: ['/analyses/api7g/sections/*/length', '/analyses/api7g/controls/surfaceTorque', '/analyses/api7g/results/*/combinedUtilisation', '/analyses/api7g/summary/status'],
-    hydraulics: ['/operatingPoint/flowRate', '/analyses/hydraulics/flowPath/*/hydraulicDiameter', '/pumpNozzle/nozzles/*/diameter', '/analyses/hydraulics/summary/recommendedNozzleDiameter'],
+    hydraulics: ['/operatingPoint/flowRate', '/analyses/hydraulics/rheology/model', '/analyses/hydraulics/rheology/highShearFlowIndex', '/analyses/hydraulics/flowPath/*/hydraulicDiameter', '/pumpNozzle/nozzles/*/diameter', '/analyses/hydraulics/summary/recommendedNozzleDiameter'],
     torqueDrag: ['/operatingPoint/wob', '/trajectory/survey/*/md', '/analyses/torqueDrag/results/*/rotateTorque', '/analyses/torqueDrag/summary/governingDepth'],
     bha: ['/operatingPoint/rotarySpeed', '/bhaComponents/*/supportFactor', '/analyses/bha/results/*/bendingStress', '/analyses/bha/summary/vibrationScreening'],
     directional: ['/metadata/well', '/trajectory/plan/*/md', '/trajectory/survey/*/azimuth', '/trajectory/targets/*/verticalTolerance', '/trajectory/slideIntervals/*/commandedToolface', '/trajectory/formationTops/*/actualPickMd', '/analyses/directional/summary/decision'],

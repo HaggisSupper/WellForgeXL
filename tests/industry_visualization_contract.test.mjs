@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { FileBlob, SpreadsheetFile } from '@oai/artifact-tool';
 
-const root = path.resolve(new URL('..', import.meta.url).pathname);
+const root = fileURLToPath(new URL('..', import.meta.url));
 
 async function loadWorkbook(name) {
   const file = await FileBlob.load(path.join(root, 'outputs', name));

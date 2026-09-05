@@ -55,6 +55,14 @@ test('BHA bridge completeness requires value-backed FRF and Campbell records', a
   assert.match(validator, /campbellCount\s*<\s*1/);
 });
 
+test('BHA bridge parser rejects malformed mode and mode-shape record numbers before numeric coercion', async () => {
+  const source = await read('VBA/WellForgeBhaEngine.bas');
+  const validator = source.slice(source.indexOf('Private Sub WF_ValidateBhaBridge'));
+  assert.match(validator, /If\s+Not\s+IsNumeric\(fields\(1\)\)\s+Then\s+Err\.Raise/);
+  assert.match(validator, /INVALID MODE RECORD NUMBER/);
+  assert.match(validator, /INVALID MODE SHAPE RECORD NUMBER/);
+});
+
 test('refresh companion describes value-only VBA and Rust calculation authority accurately', async () => {
   const source = await read('OfficeScripts/WellForgeWorkbookRefresh.ts');
   assert.doesNotMatch(source, /engineering results[^\n]*remain Excel formulas/i);

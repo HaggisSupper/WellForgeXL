@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import { FileBlob, SpreadsheetFile } from '@oai/artifact-tool';
+import { fileURLToPath } from 'node:url';
 
-const root = new URL('..', import.meta.url);
+const root = fileURLToPath(new URL('..', import.meta.url));
 const cases = [
   ['API_7G_Drill_String_Strength_and_Torque_SI.xlsx', 'Results', 'B6'],
   ['Steady_State_Hydraulics_and_Nozzle_Optimization_SI.xlsx', 'Results', 'B6'],
@@ -13,7 +15,7 @@ const cases = [
 
 test('result displays convert SI calculations using Unit Map formulas', async () => {
   for (const [name, sheetName, cell] of cases) {
-    const file = await FileBlob.load(new URL(`outputs/${name}`, root).pathname);
+    const file = await FileBlob.load(path.join(root, 'outputs', name));
     const wb = await SpreadsheetFile.importXlsx(file);
     const formula = wb.worksheets.getItem(sheetName).getRange(cell).formulas[0][0];
     assert.match(formula, /'Unit Map'!/, `${name} ${sheetName}!${cell} does not use Unit Map`);
@@ -21,7 +23,7 @@ test('result displays convert SI calculations using Unit Map formulas', async ()
 });
 
 test('directional workbook keeps raw-input conversion, canonical SI, and display conversion separate', async () => {
-  const file = await FileBlob.load(new URL('outputs/Directional_Drilling_Wellplan_and_Survey_SI.xlsx', root).pathname);
+  const file = await FileBlob.load(path.join(root, 'outputs', 'Directional_Drilling_Wellplan_and_Survey_SI.xlsx'));
   const wb = await SpreadsheetFile.importXlsx(file);
   const rawToCanonical = wb.worksheets.getItem('Calc').getRange('C7').formulas[0][0];
   const displayFormula = wb.worksheets.getItem('Summary').getRange('B6').formulas[0][0];
@@ -56,7 +58,7 @@ test('every calculated view derives its UOM label and displayed value from Unit 
   const cache = new Map();
   for (const [name, sheetName, labelCell, valueCell, unitRow] of cases) {
     if (!cache.has(name)) {
-      const file = await FileBlob.load(new URL(`outputs/${name}`, root).pathname);
+      const file = await FileBlob.load(path.join(root, 'outputs', name));
       cache.set(name, await SpreadsheetFile.importXlsx(file));
     }
     const sheet = cache.get(name).worksheets.getItem(sheetName);
@@ -73,7 +75,7 @@ test('every calculated view derives its UOM label and displayed value from Unit 
   ];
   for (const [name, sheetName, labelCell, unitRow] of headerOnlyCases) {
     if (!cache.has(name)) {
-      const file = await FileBlob.load(new URL(`outputs/${name}`, root).pathname);
+      const file = await FileBlob.load(path.join(root, 'outputs', name));
       cache.set(name, await SpreadsheetFile.importXlsx(file));
     }
     const formula = cache.get(name).worksheets.getItem(sheetName).getRange(labelCell).formulas[0][0];

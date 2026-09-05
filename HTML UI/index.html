@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="WellForge engine validation and wellbore visualisation UI" />
+    <title>WellForge | Engine cockpit</title>
+    <link rel="stylesheet" href="tokens.css" />
+    <link rel="stylesheet" href="vendor/tabulator_midnight.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">WF</div>
+          <div>
+            <p class="eyebrow">ENGINE COCKPIT</p>
+            <h1>WellForge</h1>
+          </div>
+        </div>
+        <div class="topbar-meta">
+          <button class="launcher-button" id="launcher-toggle" type="button" aria-haspopup="dialog" aria-controls="app-launcher"><span class="launcher-grid-icon" aria-hidden="true"></span> Apps</button>
+          <span class="case-pill"><span class="status-dot"></span><span id="case-name">Loading fixture…</span></span>
+          <button class="quiet-button" id="reload-data" type="button">Reload data</button>
+        </div>
+      </header>
+
+      <div class="launcher-backdrop" id="app-launcher" role="dialog" aria-modal="true" aria-labelledby="launcher-title" hidden>
+        <section class="launcher panel">
+          <div class="launcher-heading"><div><p class="eyebrow">WELLFORGE APPS</p><h2 id="launcher-title">Choose a workspace</h2><p class="muted">Jump into an engine surface or inspect the exchange contract.</p></div><button class="launcher-close" id="launcher-close" type="button" aria-label="Close app launcher"><span class="launcher-close-icon" aria-hidden="true"></span></button></div>
+          <label class="launcher-search"><span class="sr-only">Search apps</span><span class="launcher-search-icon" aria-hidden="true"></span><input id="launcher-search" type="search" placeholder="Search apps…" autocomplete="off" /></label>
+          <div class="launcher-grid" id="launcher-grid">
+            <button class="launcher-card" type="button" data-launch-view="overview" data-launch-label="Overview"><span class="launcher-icon lime" aria-hidden="true"></span><span><strong>Overview</strong><small>Case health and readiness</small></span><kbd>O</kbd></button>
+            <button class="launcher-card" type="button" data-launch-view="trajectory" data-launch-label="Trajectory"><span class="launcher-icon teal" aria-hidden="true"></span><span><strong>Trajectory</strong><small>Plan, survey, targets</small></span><kbd>T</kbd></button>
+            <button class="launcher-card" type="button" data-launch-view="bha" data-launch-label="BHA schematic"><span class="launcher-icon blue" aria-hidden="true"></span><span><strong>BHA schematic</strong><small>Assembly geometry</small></span><kbd>B</kbd></button>
+            <button class="launcher-card" type="button" data-launch-view="hydraulics" data-launch-label="Hydraulics"><span class="launcher-icon amber" aria-hidden="true"></span><span><strong>Hydraulics</strong><small>Flow path and pressure</small></span><kbd>H</kbd></button>
+            <button class="launcher-card" type="button" data-launch-view="torque" data-launch-label="Torque &amp; drag"><span class="launcher-icon orange" aria-hidden="true"></span><span><strong>Torque &amp; drag</strong><small>Force-depth workbench</small></span><kbd>D</kbd></button>
+            <button class="launcher-card" type="button" data-launch-view="data" data-launch-label="Exchange data"><span class="launcher-icon violet" aria-hidden="true"></span><span><strong>Exchange data</strong><small>Inspect the JSON payload</small></span><kbd>X</kbd></button>
+          </div>
+          <div class="launcher-footer"><span><kbd>Ctrl</kbd><span>+</span><kbd>K</kbd> to open anytime</span><span>Esc to close</span></div>
+        </section>
+      </div>
+
+      <main class="workspace">
+        <aside class="project-rail" aria-label="Project navigator">
+          <p class="eyebrow">PROJECT VIEW</p>
+          <h3>Engine graph</h3>
+          <label class="rail-search"><span class="sr-only">Filter views</span><input id="view-filter" type="search" placeholder="Filter views…" /></label>
+          <div class="rail-section"><p class="rail-heading">VIEWS</p><button type="button" class="rail-link is-active" data-rail-view="overview"><span class="rail-swatch lime"></span>Overview</button><button type="button" class="rail-link" data-rail-view="trajectory"><span class="rail-swatch teal"></span>Trajectory</button><button type="button" class="rail-link" data-rail-view="bha"><span class="rail-swatch blue"></span>BHA schematic</button><button type="button" class="rail-link" data-rail-view="hydraulics"><span class="rail-swatch amber"></span>Hydraulics</button><button type="button" class="rail-link" data-rail-view="torque"><span class="rail-swatch orange"></span>Torque &amp; drag</button><button type="button" class="rail-link" data-rail-view="data"><span class="rail-swatch violet"></span>Exchange data</button></div>
+          <div class="rail-info"><p class="rail-heading">CASE INFO</p><div class="rail-field"><span>Well</span><strong id="rail-well">—</strong></div><div class="rail-field"><span>Contract</span><strong id="rail-contract">—</strong></div><div class="rail-field"><span>Source</span><strong>shared JSON</strong></div></div>
+          <div class="rail-legend"><p class="rail-heading">LEGEND</p><div><i class="rail-swatch lime"></i>input geometry</div><div><i class="rail-swatch teal"></i>engine output</div><div><i class="rail-swatch orange"></i>screen / limit</div></div>
+        </aside>
+        <section class="hero panel">
+          <div>
+            <p class="eyebrow">LOCAL ENGINE TEST UI</p>
+            <h2>See the wellbore as the engines see it.</h2>
+            <p class="hero-copy">A portable, dependency-free view of trajectory, BHA geometry, hydraulics, and torque &amp; drag fixtures. Every plot is rendered from the shared JSON exchange case.</p>
+          </div>
+          <div class="hero-badge">
+            <span class="badge-label">Data contract</span>
+            <strong id="schema-version">—</strong>
+            <span class="badge-sub">deterministic fixture</span>
+          </div>
+        </section>
+
+        <nav class="tabs" aria-label="Engine views" role="tablist">
+          <button class="tab is-active" id="tab-overview" role="tab" aria-selected="true" aria-controls="panel-overview" data-view="overview">Overview</button>
+          <button class="tab" id="tab-trajectory" role="tab" aria-selected="false" aria-controls="panel-trajectory" data-view="trajectory">Trajectory</button>
+          <button class="tab" id="tab-bha" role="tab" aria-selected="false" aria-controls="panel-bha" data-view="bha">BHA schematic</button>
+          <button class="tab" id="tab-hydraulics" role="tab" aria-selected="false" aria-controls="panel-hydraulics" data-view="hydraulics">Hydraulics</button>
+          <button class="tab" id="tab-torque" role="tab" aria-selected="false" aria-controls="panel-torque" data-view="torque">Torque &amp; drag</button>
+          <button class="tab" id="tab-data" role="tab" aria-selected="false" aria-controls="panel-data" data-view="data">Exchange data</button>
+        </nav>
+
+        <section class="view is-visible" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview">
+          <div class="kpi-grid" id="overview-kpis"></div>
+          <div class="grid-two">
+            <article class="panel chart-card">
+              <div class="card-heading"><div><p class="eyebrow">WELLBORE PATH</p><h3>Plan vs survey</h3></div><span class="legend-note"><i class="legend-line plan"></i>Plan <i class="legend-line survey"></i>Survey</span></div>
+              <div class="chart-wrap chart-wrap-tall"><svg id="overview-trajectory" role="img" aria-label="Plan and survey trajectory scatterplot"></svg></div>
+            </article>
+            <article class="panel chart-card">
+              <div class="card-heading"><div><p class="eyebrow">LIMIT SCREEN</p><h3>Operating point</h3></div><span class="muted">fixture inputs</span></div>
+              <div class="bullet-stack" id="overview-bullets"></div>
+              <div class="callout"><span class="callout-icon">i</span><span>Results remain marked <strong>not calculated</strong> until the local engine writes a result payload.</span></div>
+            </article>
+          </div>
+          <article class="panel engine-table-card">
+            <div class="card-heading"><div><p class="eyebrow">ENGINE REGISTRY</p><h3>Calculation readiness</h3></div><span class="muted">five views · one case</span></div>
+            <div class="engine-table" id="engine-table"></div>
+          </article>
+        </section>
+
+        <section class="view" id="panel-trajectory" role="tabpanel" aria-labelledby="tab-trajectory" data-panel="trajectory" hidden>
+          <div class="view-heading"><div><p class="eyebrow">TRAJECTORY ENGINE</p><h2>Path, residuals, and targets</h2></div><span class="status-chip warning" id="trajectory-status">fixture</span></div>
+          <div class="grid-two trajectory-layout">
+            <article class="panel chart-card"><div class="card-heading"><div><h3>Measured depth scatter</h3><p class="muted">Horizontal displacement vs measured depth</p></div></div><div class="chart-wrap chart-wrap-tall"><svg id="trajectory-chart" role="img" aria-label="Trajectory scatterplot"></svg></div></article>
+            <article class="panel"><div class="card-heading"><div><h3>Targets &amp; slides</h3><p class="muted">Coverage and response checks</p></div></div><div id="trajectory-insights" class="insight-list"></div></article>
+          </div>
+          <article class="panel data-table-card"><div class="card-heading"><div><h3>Survey stations</h3><p class="muted">Source rows from the shared exchange case</p></div><span id="survey-count" class="muted"></span></div><div id="survey-table" class="table-scroll"></div></article>
+        </section>
+
+        <section class="view" id="panel-bha" role="tabpanel" aria-labelledby="tab-bha" data-panel="bha" hidden>
+          <div class="view-heading"><div><p class="eyebrow">BHA ENGINE</p><h2>Bottom-hole assembly schematic</h2></div><span class="status-chip warning">fixture geometry</span></div>
+          <div class="grid-two bha-layout">
+            <article class="panel schematic-card"><div class="card-heading"><div><h3>Component stack</h3><p class="muted">Not to scale in diameter; proportional in length</p></div><span class="legend-note"><i class="legend-box steel"></i>steel <i class="legend-box tool"></i>tool</span></div><div class="schematic-wrap"><svg id="bha-schematic" role="img" aria-label="BHA component schematic"></svg></div></article>
+            <article class="panel"><div class="card-heading"><div><h3>Assembly inventory</h3><p class="muted">Ordered from bit upward</p></div></div><div id="bha-list" class="component-list"></div></article>
+          </div>
+        </section>
+
+        <section class="view" id="panel-hydraulics" role="tabpanel" aria-labelledby="tab-hydraulics" data-panel="hydraulics" hidden>
+          <div class="view-heading"><div><p class="eyebrow">HYDRAULICS ENGINE</p><h2>Flow path and pressure budget</h2></div><span class="status-chip warning">not calculated</span></div>
+          <div class="kpi-grid" id="hydraulics-kpis"></div>
+          <div class="grid-two">
+            <article class="panel chart-card"><div class="card-heading"><div><h3>Flow path profile</h3><p class="muted">Segment length, shown from surface to bit</p></div></div><div class="chart-wrap chart-wrap-tall"><svg id="flow-chart" role="img" aria-label="Hydraulics flow path chart"></svg></div></article>
+            <article class="panel"><div class="card-heading"><div><h3>Nozzle sweep</h3><p class="muted">Candidate diameters at the shared flow rate</p></div></div><div id="nozzle-table" class="table-scroll"></div></article>
+          </div>
+        </section>
+
+        <section class="view" id="panel-torque" role="tabpanel" aria-labelledby="tab-torque" data-panel="torque" hidden>
+          <div class="view-heading"><div><p class="eyebrow">TORQUE &amp; DRAG ENGINE</p><h2>Scatterplot workbench</h2></div><span class="status-chip info">pattern ready</span></div>
+          <div class="grid-two">
+            <article class="panel chart-card"><div class="card-heading"><div><h3>Force vs measured depth</h3><p class="muted">Reversed depth axis follows the workbook chart convention</p></div><span class="legend-note"><i class="legend-line axial"></i>Axial <i class="legend-line drag"></i>Drag <i class="legend-line limit"></i>Limit</span></div><div class="chart-wrap chart-wrap-tall"><svg id="torque-chart" role="img" aria-label="Torque and drag force scatterplot"></svg></div></article>
+            <article class="panel"><div class="card-heading"><div><h3>Utilisation bullets</h3><p class="muted">Actual, target, and hard limit</p></div></div><div id="torque-bullets" class="bullet-stack"></div><div class="method-card"><p class="eyebrow">EXTRACTED CHART METHOD</p><p>Use paired x/y ranges for each series, keep measured depth on the y-axis, reverse the depth scale, and add a constant threshold series for the limit. The same data contract drives the SVG and workbook charts.</p></div></article>
+          </div>
+          <article class="panel data-table-card"><div class="card-heading"><div><h3>Engine input snapshot</h3><p class="muted">No calculated result is implied by this preview</p></div></div><div id="torque-inputs" class="input-grid"></div></article>
+        </section>
+
+        <section class="view" id="panel-data" role="tabpanel" aria-labelledby="tab-data" data-panel="data" hidden>
+          <div class="view-heading"><div><p class="eyebrow">EXCHANGE PAYLOAD</p><h2>Inspect the JSON contract</h2></div><button class="quiet-button" id="download-json" type="button">Download case JSON</button></div>
+          <article class="panel code-card"><div class="code-toolbar"><span id="json-summary" class="muted"></span><button class="quiet-button" id="copy-json" type="button">Copy visible JSON</button></div><pre id="json-preview" tabindex="0"></pre></article>
+        </section>
+      </main>
+      <footer class="footer"><span>WellForge local HTML UI</span><span id="last-refresh">—</span></footer>
+    </div>
+    <script src="vendor/tabulator.min.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

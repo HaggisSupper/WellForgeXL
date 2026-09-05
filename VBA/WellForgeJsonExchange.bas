@@ -42,7 +42,8 @@ Private Const UNIT_TABLE_3 As String = _
     "rad/m|angularGradient|1|0;deg/100ft|angularGradient|0.0005729577951308232|0;" & _
     "deg/30m|angularGradient|0.0005817764173314432|0;"
 Private Const UNIT_TABLE_4 As String = _
-    "Pa*s|viscosity|1|0;cP|viscosity|0.001|0;Hz|frequency|1|0;" & _
+    "Pa*s|viscosity|1|0;Pa*s^n|rheologyConsistency|1|0;1/Pa|compressibility|1|0;" & _
+    "cP|viscosity|0.001|0;Hz|frequency|1|0;" & _
     "rad/s|rotationalSpeed|1|0;rpm|rotationalSpeed|0.10471975511965977|0;" & _
     "d|date|86400|0;K|temperature|1|0;C|temperature|1|273.15;" & _
     "F|temperature|0.5555555555555556|255.3722222222222"

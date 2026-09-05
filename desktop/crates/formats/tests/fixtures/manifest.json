@@ -1,0 +1,11 @@
+{
+  "fixtures": [
+    {"name": "minimal-project", "purpose": "project caption and ordered surveys", "synthetic": true},
+    {"name": "bha-order", "purpose": "ordered assembly components", "synthetic": true},
+    {"name": "unknown-node-order", "purpose": "unknown node encounter order", "synthetic": true},
+    {"name": "caption-scope", "purpose": "only a direct root caption is projected", "synthetic": true},
+    {"name": "invalid-survey-values", "purpose": "invalid and non-finite survey numeric diagnostics", "synthetic": true},
+    {"name": "malformed", "purpose": "malformed XML rejection", "synthetic": true},
+    {"name": "wrong-root", "purpose": "root validation", "synthetic": true}
+  ]
+}

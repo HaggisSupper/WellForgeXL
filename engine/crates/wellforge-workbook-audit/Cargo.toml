@@ -1,0 +1,20 @@
+[package]
+name = "wellforge-workbook-audit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Static workbook formula and structure inventory for WellForge research"
+
+[dependencies]
+anyhow.workspace = true
+calamine.workspace = true
+clap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+same-file.workspace = true
+tempfile.workspace = true
+
+[lints]
+workspace = true

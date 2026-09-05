@@ -10,7 +10,9 @@ import * as mockCaseModule from '../src/shared_mock_case.mjs';
 
 test('all engineering workbooks use the shared mock operating case for repeated values', () => {
   const api = buildApi7gWorkbook().worksheets.getItem('Inputs');
-  const hydraulics = buildHydraulicsWorkbook().worksheets.getItem('Inputs');
+  const hydraulicsWorkbook = buildHydraulicsWorkbook();
+  const hydraulics = hydraulicsWorkbook.worksheets.getItem('Inputs');
+  const fluidModel = hydraulicsWorkbook.worksheets.getItem('Fluid Model');
   const torqueDrag = buildTorqueDragWorkbook().worksheets.getItem('Inputs');
   const bha = buildBhaWorkbook().worksheets.getItem('Inputs');
 
@@ -28,6 +30,13 @@ test('all engineering workbooks use the shared mock operating case for repeated 
   assert.equal(hydraulics.getRange('E9:F9').values[0].join(','), `${MOCK_CASE.tubular.drillPipe.lengthM},${MOCK_CASE.tubular.drillPipe.idM}`);
   assert.equal(hydraulics.getRange('B7').values[0][0], MOCK_CASE.rig.pumpEfficiency);
   assert.equal(hydraulics.getRange('B11').values[0][0], MOCK_CASE.pumpNozzle.nozzleCount);
+  assert.equal(hydraulics.getRange('B13').values[0][0], MOCK_CASE.pumpNozzle.dischargeCoefficient);
+  assert.equal(hydraulics.getRange('B16').values[0][0], MOCK_CASE.holeSections.at(-1).bottomMdM);
+  assert.deepEqual(hydraulics.getRange('B18:B20').values.flat(), ['darcy_weisbach_screening', 'serial_cpu', 'constant_properties']);
+  assert.equal(fluidModel.getRange('B6').values[0][0], MOCK_CASE.fluid.densityKgM3);
+  assert.equal(fluidModel.getRange('B12').values[0][0], 333.15);
+  assert.equal(fluidModel.getRange('B14').values[0][0], 0.72);
+  assert.equal(fluidModel.getRange('G6').values[0][0], 'power_law');
   assert.equal(hydraulics.getRange('E6:H13').values[0][0], MOCK_CASE.hydraulics.flowPath[0].lengthM);
   assert.equal(hydraulics.getRange('E6:H13').values[7][1], MOCK_CASE.hydraulics.flowPath[7].flowIdM);
   assert.equal(api.getRange('F6:H11').values[0][0], MOCK_CASE.api7g.sections[0].axialLoadN);

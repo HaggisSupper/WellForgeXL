@@ -10,6 +10,7 @@ use std::{
 use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand};
 use schemars::schema_for;
+use serde::Serialize;
 use sha2::{Digest, Sha256};
 use wellforge_bha_contract::{
     AnalysisStatus, BhaAnalysisRequest, BhaAnalysisResult, SolverEvidence, validate_request,
@@ -82,6 +83,8 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// Verify local engine health and embedded build metadata.
+    Doctor,
 }
 
 fn hash(bytes: &[u8]) -> String {
@@ -100,12 +103,33 @@ fn read_request(path: &Path) -> Result<BhaAnalysisRequest> {
     let request: BhaAnalysisRequest = serde_json::from_slice(&bytes)
         .context("request JSON does not match the strict contract")?;
     if let Err(errors) = validate_request(&request) {
-        for error in &errors {
-            eprintln!("{}: {}", error.code, error.message);
-        }
+        emit_json_error(
+            "WF-BHA-REQ-001",
+            errors
+                .iter()
+                .map(|error| format!("{}: {}", error.code, error.message))
+                .collect::<Vec<_>>()
+                .join("; "),
+        );
         bail!("request validation failed with {} error(s)", errors.len());
     }
     Ok(request)
+}
+
+fn doctor() -> Result<()> {
+    let version = serde_json::json!({
+        "engine": "wellforge-bha",
+        "version": env!("CARGO_PKG_VERSION"),
+        "compiler": "rustc 1.98.0 (pinned)",
+        "target": format!("{}-{}", std::env::consts::ARCH, std::env::consts::OS),
+        "dependency_lock_hash": hash(include_bytes!("../../../Cargo.lock")),
+    });
+    let parsed: serde_json::Value = serde_json::from_str(&serde_json::to_string(&version)?)?;
+    if parsed["engine"] != "wellforge-bha" || parsed["version"] != env!("CARGO_PKG_VERSION") {
+        bail!("build metadata validation failed");
+    }
+    println!("{}", serde_json::to_string_pretty(&version)?);
+    Ok(())
 }
 
 fn run_analysis(request: BhaAnalysisRequest) -> Result<BhaAnalysisResult> {
@@ -330,6 +354,7 @@ fn execute() -> Result<()> {
                 println!("wellforge-bha {}", env!("CARGO_PKG_VERSION"));
             }
         }
+        Command::Doctor => doctor()?,
     }
     Ok(())
 }
@@ -339,4 +364,22 @@ fn main() {
         eprintln!("ERROR: {error:#}");
         std::process::exit(2);
     }
+}
+#[derive(Serialize)]
+struct CliError<'a> {
+    error: &'a str,
+    code: &'a str,
+    message: String,
+}
+
+fn emit_json_error(code: &'static str, message: impl Into<String>) {
+    let payload = CliError {
+        error: "request_validation_failure",
+        code,
+        message: message.into(),
+    };
+    println!(
+        "{}",
+        serde_json::to_string(&payload).expect("serializing cli error")
+    );
 }

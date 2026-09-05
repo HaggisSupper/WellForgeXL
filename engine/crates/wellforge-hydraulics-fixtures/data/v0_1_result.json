@@ -1,0 +1,36 @@
+{
+  "contract_version": "0.1.0",
+  "analysis_id": "35b15a48-47c1-4d31-a92e-7c5b8f200702",
+  "status": "ok",
+  "total_pipe_pressure_loss_pa": 5459590.7397887865,
+  "total_annulus_pressure_loss_pa": 586960.4581942968,
+  "bit_pressure_loss_pa": 13093758.89520084,
+  "total_flow_area_m2": 0.00021376721774425686,
+  "equivalent_circulating_density_kg_m3": 1219.9511031865895,
+  "sections": [
+    {
+      "section_id": "35b15a48-47c1-4d31-a92e-7c5b8f200701",
+      "flow_loop": "pipe",
+      "bulk_velocity_m_s": 3.2387074690820454,
+      "reynolds_number": 10305.048678051315,
+      "fanning_friction_factor": 0.007850801044805254,
+      "pressure_loss_pa": 5459590.7397887865
+    },
+    {
+      "section_id": "35b15a48-47c1-4d31-a92e-7c5b8f200701",
+      "flow_loop": "annulus",
+      "bulk_velocity_m_s": 0.8166740858788547,
+      "reynolds_number": 1057.354308977753,
+      "fanning_friction_factor": 0.01513210838046213,
+      "pressure_loss_pa": 586960.4581942968
+    }
+  ],
+  "evidence": {
+    "engine_version": "0.1.0",
+    "request_hash": "e9e573d303d6989faebf1b164e3688998afe42b2f23f392cc6f020ddcec88cb5",
+    "result_hash": "96a734d3aa142f4710f1b5e4618b809d479c4d1b0b5b508e63b19471dab60e97",
+    "profile_standard": "API RP 13D",
+    "profile_edition": "7th Edition, 2017 (reaffirmed 2023)"
+  },
+  "warnings": []
+}

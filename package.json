@@ -1,12 +1,22 @@
 {
-  "name": "wellforgexl-verification",
+  "name": "wellforgexl",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "verify:release": "node tools/verify-node.mjs --release"
+    "verify:release": "node tools/verify-node.mjs --release",
+    "mcp:doc": "node tools/doc-rag-mcp/server.mjs",
+    "doc:run": "node tools/doc-rag-mcp/runner.mjs",
+    "doc:classify": "node tools/doc-rag-mcp/classify.mjs",
+    "doc:batch": "node tools/doc-rag-mcp/batch.mjs",
+    "doc:inventory": "node tools/doc-rag-mcp/inventory.mjs",
+    "doc:validate": "node tools/doc-rag-mcp/validate-routing.mjs",
+    "doc:extract-primary": "node tools/doc-rag-mcp/extract-primary.mjs"
   },
   "dependencies": {
-    "jszip": "3.10.1"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "fast-glob": "^3.3.3",
+    "jszip": "3.10.1",
+    "undici": "^7.16.0"
   }
 }

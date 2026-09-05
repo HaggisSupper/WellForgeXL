@@ -46,6 +46,8 @@
   "deg/100ft": { "dimension": "angularGradient", "toSiMultiplier": 0.0005729577951308232, "toSiOffset": 0 },
   "deg/30m": { "dimension": "angularGradient", "toSiMultiplier": 0.0005817764173314432, "toSiOffset": 0 },
   "Pa*s": { "dimension": "viscosity", "toSiMultiplier": 1, "toSiOffset": 0 },
+  "Pa*s^n": { "dimension": "rheologyConsistency", "toSiMultiplier": 1, "toSiOffset": 0 },
+  "1/Pa": { "dimension": "compressibility", "toSiMultiplier": 1, "toSiOffset": 0 },
   "cP": { "dimension": "viscosity", "toSiMultiplier": 0.001, "toSiOffset": 0 },
   "Hz": { "dimension": "frequency", "toSiMultiplier": 1, "toSiOffset": 0 },
   "rad/s": { "dimension": "rotationalSpeed", "toSiMultiplier": 1, "toSiOffset": 0 },

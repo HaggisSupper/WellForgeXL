@@ -5,6 +5,10 @@ Private Const HYD_PI As Double = 3.14159265358979
 Private Const HYD_G As Double = 9.80665
 
 Public Sub WF_CalcHydraulics()
+    WF_RunHydraulicsRustEngine
+End Sub
+
+Private Sub WF_CalcHydraulicsWorksheetModel()
     Dim wsIn As Worksheet, wsCalc As Worksheet, wsResults As Worksheet, wsSummary As Worksheet
     Dim wsFlow As Worksheet, wsNozzle As Worksheet, wsPressure As Worksheet, wsGraphs As Worksheet, wsCharts As Worksheet
     Dim calcData(1 To 8, 1 To 10) As Variant, flowData(1 To 8, 1 To 14) As Variant
@@ -237,7 +241,7 @@ Public Sub WF_CalcHydraulics()
     WF_WriteHydraulicsDashboard pressureData, nozzleChart, lengthFactor, pressureFactor, densityFactor, speedFactor, surfaceLimit, rho, ecdScreen, minimumVelocity
 End Sub
 
-Private Sub WF_WriteHydraulicsDashboard(ByRef pressureData() As Variant, ByRef nozzleChart() As Variant, ByVal lengthFactor As Double, ByVal pressureFactor As Double, ByVal densityFactor As Double, ByVal speedFactor As Double, ByVal surfaceLimit As Double, ByVal rho As Double, ByVal ecdScreen As Double, ByVal minimumVelocity As Double)
+Public Sub WF_WriteHydraulicsDashboard(ByRef pressureData() As Variant, ByRef nozzleChart() As Variant, ByVal lengthFactor As Double, ByVal pressureFactor As Double, ByVal densityFactor As Double, ByVal speedFactor As Double, ByVal surfaceLimit As Double, ByVal rho As Double, ByVal ecdScreen As Double, ByVal minimumVelocity As Double)
     Dim ws As Worksheet, wsSettings As Worksheet
     Dim pressureFamily(1 To 8, 1 To 6) As Variant, ecdFamily(1 To 8, 1 To 6) As Variant, velocityFamily(1 To 8, 1 To 5) As Variant
     Dim r As Long, nearest As Long, selectedMd As Double, lowMultiplier As Double, highMultiplier As Double
@@ -323,14 +327,14 @@ Private Function WF_HydRow6(ByVal a As Variant, ByVal b As Variant, ByVal c As V
     Dim output(1 To 1, 1 To 6) As Variant: output(1, 1) = a: output(1, 2) = b: output(1, 3) = c: output(1, 4) = d: output(1, 5) = e: output(1, 6) = f: WF_HydRow6 = output
 End Function
 
-Private Function WF_FirstColumns(ByRef source() As Variant, ByVal rowCount As Long, ByVal columnCount As Long) As Variant
+Public Function WF_FirstColumns(ByRef source() As Variant, ByVal rowCount As Long, ByVal columnCount As Long) As Variant
     Dim result() As Variant, r As Long, c As Long
     ReDim result(1 To rowCount, 1 To columnCount)
     For r = 1 To rowCount: For c = 1 To columnCount: result(r, c) = source(r, c): Next c: Next r
     WF_FirstColumns = result
 End Function
 
-Private Function WF_WaterfallData(ByRef calcData() As Variant, ByVal pressureFactor As Double) As Variant
+Public Function WF_WaterfallData(ByRef calcData() As Variant, ByVal pressureFactor As Double) As Variant
     Dim result(1 To 8, 1 To 3) As Variant, r As Long
     For r = 1 To 8
         result(r, 1) = calcData(r, 1)
@@ -340,7 +344,7 @@ Private Function WF_WaterfallData(ByRef calcData() As Variant, ByVal pressureFac
     WF_WaterfallData = result
 End Function
 
-Private Function WF_NozzleGraphData(ByRef nozzleCalc() As Variant, ByVal diameterFactor As Double, ByVal pressureFactor As Double, ByVal surfaceLimit As Double) As Variant
+Public Function WF_NozzleGraphData(ByRef nozzleCalc() As Variant, ByVal diameterFactor As Double, ByVal pressureFactor As Double, ByVal surfaceLimit As Double) As Variant
     Dim result(1 To 5, 1 To 4) As Variant, r As Long
     For r = 1 To 5
         result(r, 1) = CDbl(nozzleCalc(r, 1)) * diameterFactor

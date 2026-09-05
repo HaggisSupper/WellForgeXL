@@ -42,7 +42,7 @@ test('sanitized fixture preserves the 60 active source plan and survey stations'
 
 test('sanitized fixture has no prohibited source metadata', () => {
   const serialized = JSON.stringify(directionalReferenceData);
-  for (const prohibited of ['Scott Birse', 'C:\\Users', 'VBA_Macros.bas']) {
+  for (const prohibited of ['dc:creator', 'lastModifiedBy', 'C:\\Users', 'VBA_Macros.bas']) {
     assert.equal(serialized.includes(prohibited), false, `fixture must exclude ${prohibited}`);
   }
 });

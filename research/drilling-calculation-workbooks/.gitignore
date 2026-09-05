@@ -1,0 +1,7 @@
+# Source workbooks and detailed source paths may contain licensed or proprietary data.
+files/
+ALL_EXCEL_FILES.csv
+PRIVATE_INDEX.csv
+MANIFEST.sha256
+SOURCE_OCCURRENCES.csv
+scan-summary.json
