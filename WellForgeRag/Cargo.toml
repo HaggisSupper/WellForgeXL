@@ -28,4 +28,5 @@ tempfile = "3.27.0"
 thiserror = "2.0.20"
 toml = "0.9.7"
 uuid = { version = "1.26.0", features = ["v4", "serde"] }
+wait-timeout = "0.2.1"
 yaml_serde = "0.10.7"
