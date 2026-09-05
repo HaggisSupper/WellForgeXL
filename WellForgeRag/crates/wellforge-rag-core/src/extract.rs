@@ -487,8 +487,7 @@ fn extract_sqlite(path: &Path) -> Result<ExtractionEnvelope> {
         .collect::<std::result::Result<Vec<_>, _>>()?;
     drop(objects);
 
-    let mut result =
-        ExtractionEnvelope::extracted(ArtifactFamily::Database, "rust-sqlite-schema");
+    let mut result = ExtractionEnvelope::extracted(ArtifactFamily::Database, "rust-sqlite-schema");
     for (name, kind) in object_rows {
         let quoted = name.replace('"', "\"\"");
         let pragma = format!("PRAGMA table_info(\"{quoted}\")");
