@@ -31,7 +31,10 @@ pub struct RagService {
 impl RagService {
     pub fn open(config: RagConfig) -> Result<Self> {
         fs::create_dir_all(&config.storage.okf).with_context(|| {
-            format!("cannot create OKF directory {}", config.storage.okf.display())
+            format!(
+                "cannot create OKF directory {}",
+                config.storage.okf.display()
+            )
         })?;
         fs::create_dir_all(&config.storage.lancedb).with_context(|| {
             format!(
@@ -56,8 +59,9 @@ impl RagService {
     }
 
     pub fn ingest_path(&self, path: impl AsRef<Path>) -> Result<IngestReport> {
-        let canonical = fs::canonicalize(path.as_ref())
-            .with_context(|| format!("cannot resolve ingestion path {}", path.as_ref().display()))?;
+        let canonical = fs::canonicalize(path.as_ref()).with_context(|| {
+            format!("cannot resolve ingestion path {}", path.as_ref().display())
+        })?;
         self.enforce_ingestion_roots(&canonical)?;
         let metadata = fs::metadata(&canonical)?;
         if !metadata.is_file() {
@@ -237,11 +241,7 @@ impl RagService {
             push_yaml_string(&mut text, "type", &concept.concept_type)?;
             push_yaml_string(&mut text, "title", &concept.title)?;
             push_yaml_string(&mut text, "domain", &concept.domain)?;
-            push_yaml_string(
-                &mut text,
-                "provenance_state",
-                &concept.provenance_state,
-            )?;
+            push_yaml_string(&mut text, "provenance_state", &concept.provenance_state)?;
             push_yaml_string(&mut text, "trust_state", &concept.trust_state)?;
             push_yaml_string(&mut text, "lifecycle_state", &concept.lifecycle_state)?;
             if let Some(confidence) = concept.source_confidence {
@@ -380,12 +380,10 @@ fn estimate_tokens(value: &str) -> u64 {
 
 fn extraction_title(path: &Path, extraction: &ExtractionEnvelope) -> String {
     for section in &extraction.text_sections {
-        if let Some(title) = section
-            .text
-            .lines()
-            .map(str::trim)
-            .find_map(|line| line.strip_prefix("# ").filter(|title| !title.trim().is_empty()))
-        {
+        if let Some(title) = section.text.lines().map(str::trim).find_map(|line| {
+            line.strip_prefix("# ")
+                .filter(|title| !title.trim().is_empty())
+        }) {
             return title.trim().to_owned();
         }
     }
@@ -443,12 +441,37 @@ fn infer_domain(extraction: &ExtractionEnvelope) -> String {
         .collect::<Vec<_>>()
         .join(" ");
     for (domain, terms) in [
-        ("well-control", &["kick", "maasp", "kill weight", "leak off", "fit/lot"][..]),
-        ("hydraulics", &["ecd", "pressure loss", "rheology", "nozzle", "surge", "swab"]),
-        ("directional", &["trajectory", "dogleg", "toolface", "inclination", "azimuth"]),
-        ("torque-drag-bha", &["torque", "drag", "buckling", "bha", "campbell", "frf"]),
-        ("drilling-performance", &["mse", "rop", "d-exponent", "rig state", "wob"]),
-        ("production", &["production", "choke", "separator", "orifice"]),
+        (
+            "well-control",
+            &["kick", "maasp", "kill weight", "leak off", "fit/lot"][..],
+        ),
+        (
+            "hydraulics",
+            &[
+                "ecd",
+                "pressure loss",
+                "rheology",
+                "nozzle",
+                "surge",
+                "swab",
+            ],
+        ),
+        (
+            "directional",
+            &["trajectory", "dogleg", "toolface", "inclination", "azimuth"],
+        ),
+        (
+            "torque-drag-bha",
+            &["torque", "drag", "buckling", "bha", "campbell", "frf"],
+        ),
+        (
+            "drilling-performance",
+            &["mse", "rop", "d-exponent", "rig state", "wob"],
+        ),
+        (
+            "production",
+            &["production", "choke", "separator", "orifice"],
+        ),
     ] {
         if terms.iter().any(|term| sample.contains(term)) {
             return domain.to_owned();
