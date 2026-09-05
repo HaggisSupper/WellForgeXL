@@ -1,27 +1,30 @@
 # Production, completions, and workover workbook research
 
-This directory is the public metadata layer for a second static workbook corpus adjacent to the drilling-only collection. Raw Drive workbooks, source paths, customer/vendor identifiers, and complete VBA/formula source are not committed.
+This directory is the public metadata layer for a second static workbook corpus adjacent to the drilling-only collection. Raw Drive workbooks, source paths, customer/vendor identifiers, and full VBA/formula source are **not committed**.
 
-## Scope
+## Scope and verified extraction
 
-The initial tranche contains **19 unique legacy engineering workbooks** selected because static evidence indicates calculation content for production, completions, workover, well control, cementing, tubular mechanics, hydraulics, motors, or thermal support. SHA-256 deduplication found no duplicates in this tranche.
+The first curated tranche contains **19 unique legacy engineering workbooks** after SHA-256 deduplication. The exact Rust `wellforge-workbook-audit` executable was built in GitHub Actions (run `33996605263`) and used locally against the private source bytes.
 
-## Static extraction outcome
+- 17 workbooks were read by the canonical Rust/Calamine path.
+- 2 BIFF-encrypted workbooks were rejected by the canonical reader and remain static-limited evidence.
+- 93 readable worksheets were inventoried.
+- 2,052 formula records were recovered. This is a **lower bound** for legacy BIFF because shared/array formula records are not fully reconstructed.
+- 1,551 structural formula-family rows were identified from the recovered formulas.
+- 981 defined names were recovered.
+- 10 workbooks contain VBA storage; 42 modules and 142 procedures were statically inventoried without execution.
 
-- 93 readable worksheets
-- 2,650 readable BIFF formula records
-- 1,302 structural formula families
-- 981 defined names
-- 10 workbooks with VBA storage
-- 42 statically recovered VBA modules
-- 142 statically identified procedures
-- 2 BIFF-encrypted workbooks whose worksheet formulas/names are excluded from the numeric totals
-- zero parser failures in the selected tranche
+No workbook, macro, external link, Excel event, or recalculation was executed.
 
-No workbook, macro, formula, external link, or Excel event was executed.
+## Public artifacts
+
+- `INDEX.csv` — path-free workbook IDs, SHA-256 identities, aggregate structural counts and capability labels.
+- `TOPIC_INVENTORY.csv` — workbook-count evidence by adjacent-domain topic.
+- `CAPABILITY_INVENTORY.csv` — implementation-candidate versus cross-domain parity disposition.
+- `MERGED_CAPABILITY_INVENTORY.csv` — capability-level comparison with the existing drilling corpus.
+- `VBA_SUMMARY.csv` — path-free VBA aggregate counts only.
+- `ANALYSIS.md` — engineering interpretation and limitations.
 
 ## Evidence policy
 
-These files are research and parity evidence, not implementation authority. A calculation is accepted into a Rust engine only after an independent standard, primary literature source, closed-form case, or first-principles acceptance suite supports the model.
-
-`INDEX.csv` contains path-free workbook identities and aggregate static metrics. `CAPABILITY_INVENTORY.csv` summarizes capability evidence. `VBA_SUMMARY.csv` contains only aggregate macro counts. `MERGED_CAPABILITY_INVENTORY.csv` combines this adjacent corpus with the earlier drilling inventory at capability level.
+Workbook results are research, parity, and adversarial evidence, **not implementation authority**. A capability enters a released Rust engine only after an independent standard, primary-literature source, closed-form case, or first-principles acceptance suite supports the model.
