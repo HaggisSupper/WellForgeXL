@@ -70,7 +70,8 @@ impl SqliteStore {
                         input.display_name,
                         input.mime_type,
                         input.family,
-                        i64::try_from(input.size_bytes).context("artifact size exceeds SQLite range")?,
+                        i64::try_from(input.size_bytes)
+                            .context("artifact size exceeds SQLite range")?,
                         input.modified_at.map(|value| value.to_rfc3339()),
                         input.extraction_backend,
                         now,
