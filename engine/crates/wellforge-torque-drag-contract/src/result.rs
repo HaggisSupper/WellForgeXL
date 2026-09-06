@@ -16,6 +16,103 @@ pub enum AnalysisStatus {
     Failed,
 }
 
+/// Reason a soft-string station or interval requires stiff-string refinement.
+#[derive(Clone, Copy, Debug, Deserialize, Eq, JsonSchema, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StiffIntervalReason {
+    /// Soft-string normal load meets or exceeds the configured severity threshold.
+    NormalLoad,
+    /// Sinusoidal buckling margin meets or falls below the configured threshold.
+    SinusoidalBuckling,
+    /// Helical buckling margin meets or falls below the configured threshold.
+    HelicalBuckling,
+}
+
+/// Deterministic severe interval selected from the accepted soft-string result.
+#[derive(Clone, Debug, Deserialize, JsonSchema, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct StiffIntervalCandidate {
+    /// Stable UUIDv5 derived from analysis identity and interval bounds.
+    pub id: Uuid,
+    /// Buffered interval start measured depth in metres.
+    pub start_md_m: f64,
+    /// Buffered interval end measured depth in metres.
+    pub end_md_m: f64,
+    /// Stable ordered reasons that caused selection.
+    pub reasons: Vec<StiffIntervalReason>,
+}
+
+/// Stiff-string equilibrium convergence state.
+#[derive(Clone, Copy, Debug, Deserialize, Eq, JsonSchema, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StiffConvergence {
+    /// The bounded contact equilibrium reached its residual tolerance.
+    Converged,
+    /// The solver exhausted its iteration bound without satisfying tolerance.
+    NotConverged,
+}
+
+/// One nodal state from a bounded stiff-string interval refinement.
+#[derive(Clone, Debug, Deserialize, JsonSchema, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct StiffNodeResult {
+    /// Measured depth in metres.
+    pub md_m: f64,
+    /// Local transverse string-center displacement in metres.
+    pub displacement_m: f64,
+    /// Signed remaining radial clearance in metres; negative indicates penetration before penalty correction.
+    pub radial_clearance_m: f64,
+    /// Unilateral borehole contact reaction magnitude in newtons.
+    pub contact_force_n: f64,
+    /// Local bending moment magnitude in newton-metres.
+    pub bending_moment_nm: f64,
+    /// Extreme-fibre bending stress in pascals.
+    pub bending_stress_pa: f64,
+}
+
+/// One bounded stiff-string interval result linked to its soft-string candidate.
+#[derive(Clone, Debug, Deserialize, JsonSchema, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct StiffIntervalResult {
+    /// Parent severe-interval identity.
+    pub interval_id: Uuid,
+    /// Refined interval start measured depth in metres.
+    pub start_md_m: f64,
+    /// Refined interval end measured depth in metres.
+    pub end_md_m: f64,
+    /// Reasons inherited from the soft-string severity classifier.
+    pub reasons: Vec<StiffIntervalReason>,
+    /// Solver convergence state.
+    pub convergence: StiffConvergence,
+    /// Normalized final equilibrium residual.
+    pub residual_norm: f64,
+    /// Number of contact-equilibrium iterations executed.
+    pub iterations: usize,
+    /// Peak nodal contact force in newtons.
+    pub peak_contact_force_n: f64,
+    /// Peak absolute bending stress in pascals.
+    pub peak_bending_stress_pa: f64,
+    /// Ordered nodal states through the refined interval.
+    pub nodes: Vec<StiffNodeResult>,
+}
+
+/// Optional collection of bounded stiff-string interval refinements.
+#[derive(Clone, Debug, Deserialize, JsonSchema, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct StiffStringResult {
+    /// Refined severe intervals in ascending measured-depth order.
+    pub intervals: Vec<StiffIntervalResult>,
+}
+
+/// Derives a deterministic severe-interval UUID from analysis identity and exact IEEE-754 MD bounds.
+#[must_use]
+pub fn derive_stiff_interval_id(analysis_id: Uuid, start_md_m: f64, end_md_m: f64) -> Uuid {
+    let mut name = [0_u8; 16];
+    name[..8].copy_from_slice(&start_md_m.to_bits().to_be_bytes());
+    name[8..].copy_from_slice(&end_md_m.to_bits().to_be_bytes());
+    Uuid::new_v5(&analysis_id, &name)
+}
+
 /// Per-station soft-string result in canonical SI.
 #[derive(Clone, Debug, Deserialize, JsonSchema, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -99,6 +196,9 @@ pub struct TnDAnalysisResult {
     pub buckling: Vec<BucklingScreen>,
     /// API 7G governing check.
     pub api7g: ApiSevenGCheck,
+    /// Optional bounded stiff-string refinement. Absent preserves the soft-only result surface.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stiff_string: Option<StiffStringResult>,
     /// Solver evidence.
     pub evidence: TnDSolverEvidence,
     /// Non-fatal warnings.
