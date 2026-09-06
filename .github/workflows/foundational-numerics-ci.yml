@@ -6,6 +6,8 @@ on:
       - feat/foundational-numerics
   pull_request:
     paths:
+      - 'engine/crates/wellforge-contract-governance/**'
+      - 'engine/crates/wellforge-contract-registry/**'
       - 'engine/crates/wellforge-numerics/**'
       - 'engine/crates/wellforge-numerics-acceptance/**'
       - 'engine/crates/wellforge-bha-static/**'
@@ -40,6 +42,7 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: >-
           cargo clippy
+          -p wellforge-contract-governance
           -p wellforge-numerics
           -p wellforge-numerics-acceptance
           -p wellforge-bha-static
@@ -47,6 +50,7 @@ jobs:
           --all-targets -- -D warnings
       - run: >-
           cargo test
+          -p wellforge-contract-governance
           -p wellforge-numerics
           -p wellforge-numerics-acceptance
           -p wellforge-bha-static
