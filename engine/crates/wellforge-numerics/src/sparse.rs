@@ -80,10 +80,8 @@ impl SparseLinearSystem {
             return Err(SparseError::NonFinite);
         }
 
-        let pattern: Vec<(usize, usize)> = entries
-            .iter()
-            .map(|entry| (entry.row, entry.col))
-            .collect();
+        let pattern: Vec<(usize, usize)> =
+            entries.iter().map(|entry| (entry.row, entry.col)).collect();
         let pairs: Vec<Pair<usize, usize>> = pattern
             .iter()
             .map(|&(row, col)| Pair { row, col })
@@ -131,19 +129,14 @@ impl SparseLinearSystem {
         }
 
         let values: Vec<f64> = entries.iter().map(|entry| entry.value).collect();
-        let matrix = SparseColMat::new_from_argsort(
-            self.symbolic_matrix.clone(),
-            &self.argsort,
-            &values,
-        )
-        .map_err(|_| SparseError::Factorization)?;
+        let matrix =
+            SparseColMat::new_from_argsort(self.symbolic_matrix.clone(), &self.argsort, &values)
+                .map_err(|_| SparseError::Factorization)?;
         let lu = Lu::try_new_with_symbolic(self.symbolic_lu.clone(), matrix.as_ref())
             .map_err(|_| SparseError::Factorization)?;
         let rhs_col = Col::<f64>::from_fn(self.dimension, |row| rhs[row]);
         let solution_col = lu.solve(&rhs_col);
-        let solution: Vec<f64> = (0..self.dimension)
-            .map(|row| solution_col[row])
-            .collect();
+        let solution: Vec<f64> = (0..self.dimension).map(|row| solution_col[row]).collect();
         if solution.iter().any(|value| !value.is_finite()) {
             return Err(SparseError::Singular);
         }
@@ -155,7 +148,11 @@ impl SparseLinearSystem {
         for (value, rhs_value) in residual.iter_mut().zip(rhs) {
             *value -= rhs_value;
         }
-        let residual_l2 = residual.iter().map(|value| value * value).sum::<f64>().sqrt();
+        let residual_l2 = residual
+            .iter()
+            .map(|value| value * value)
+            .sum::<f64>()
+            .sqrt();
         let rhs_l2 = rhs.iter().map(|value| value * value).sum::<f64>().sqrt();
         let residual_norm = residual_l2 / rhs_l2.max(1.0);
 
