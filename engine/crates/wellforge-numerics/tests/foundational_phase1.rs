@@ -39,10 +39,15 @@ fn damped_newton_solves_small_bounded_system() {
 fn parcel_queue_conserves_volume_through_displacement() {
     let mut queue = ParcelQueue::new(10.0).expect("positive path capacity");
     queue.fill("mud_a", 10.0).expect("initial fill");
-    let exited = queue.inject("pill", 3.0).expect("conservative displacement");
+    let exited = queue
+        .inject("pill", 3.0)
+        .expect("conservative displacement");
     assert!((queue.total_volume() - 10.0).abs() < 1.0e-12);
     assert!((exited.iter().map(|parcel| parcel.volume).sum::<f64>() - 3.0).abs() < 1.0e-12);
-    assert_eq!(queue.parcels().last().expect("injected parcel").label, "pill");
+    assert_eq!(
+        queue.parcels().last().expect("injected parcel").label,
+        "pill"
+    );
 }
 
 #[test]
