@@ -10,8 +10,9 @@ fn assert_exact(value: f64, expected: f64) {
 fn partition_merges_geometry_boundaries_without_zero_length_intervals() {
     let hole = [0.0, 100.0, 200.0];
     let string = [0.0, 50.0, 50.0, 150.0, 200.0];
+    let boundary_sets: [&[f64]; 2] = [hole.as_slice(), string.as_slice()];
 
-    let intervals = partition_boundaries(&[&hole, &string]).expect("valid geometry boundaries");
+    let intervals = partition_boundaries(&boundary_sets).expect("valid geometry boundaries");
 
     assert_eq!(intervals.len(), 4);
     let expected = [(0.0, 50.0), (50.0, 100.0), (100.0, 150.0), (150.0, 200.0)];
