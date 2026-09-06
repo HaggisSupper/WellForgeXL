@@ -140,12 +140,7 @@ pub fn solve_modes(
         .eigenvalues
         .iter()
         .copied()
-        .zip(
-            eigen
-                .eigenvectors
-                .column_iter()
-                .map(|column| column.into_owned()),
-        )
+        .zip(eigen.eigenvectors.column_iter().map(nalgebra::Matrix::into_owned))
         .filter(|(value, _)| *value > 1.0e-9)
         .collect();
     pairs.sort_by(|left, right| left.0.total_cmp(&right.0));
