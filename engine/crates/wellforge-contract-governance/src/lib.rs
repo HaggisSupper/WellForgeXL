@@ -4,6 +4,10 @@
 //! deterministic JSON normalization, and schema fingerprints. Calculation-domain crates retain
 //! ownership of their request/result schemas and physics.
 
+mod registry;
+
+pub use registry::{ContractDescriptor, ContractRegistry, RegistryError};
+
 use semver::Version;
 use serde_json::{Map, Value};
 use sha2::{Digest, Sha256};
