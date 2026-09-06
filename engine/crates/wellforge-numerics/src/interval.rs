@@ -21,7 +21,7 @@ pub enum IntervalError {
 }
 
 fn canonical_zero(value: f64) -> f64 {
-    if value.to_bits() & 0x7fff_ffff_ffff_ffff == 0 {
+    if value.to_bits().trailing_zeros() >= 63 {
         0.0
     } else {
         value
