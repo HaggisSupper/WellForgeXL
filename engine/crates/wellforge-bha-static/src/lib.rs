@@ -211,8 +211,8 @@ pub fn solve_static(
     let mass = m_full.view((2, 2), (reduced, reduced)).into_owned();
     let rhs_values = &f_full[2..];
     let entries = sparse_entries(&stiffness);
-    let system = SparseLinearSystem::new(reduced, &entries)
-        .map_err(|_| StaticSolveError::LinearSolve)?;
+    let system =
+        SparseLinearSystem::new(reduced, &entries).map_err(|_| StaticSolveError::LinearSolve)?;
     let solved = system
         .factor_and_solve(&entries, rhs_values)
         .map_err(|_| StaticSolveError::LinearSolve)?;
