@@ -83,13 +83,11 @@ impl LeastSquaresProblem<f64, U3, U3> for ThreeVariableRoot {
 }
 
 fn production_root_solve() -> bool {
-    solve_bracketed(1.0, 2.0, |x| x * x * x - 5.0, RootOptions::default()).is_ok_and(
-        |solution| {
-            (solution.root - 5.0_f64.cbrt()).abs() < 1.0e-10
-                && solution.diagnostics.converged()
-                && solution.residual.abs() <= 1.0e-10
-        },
-    )
+    solve_bracketed(1.0, 2.0, |x| x * x * x - 5.0, RootOptions::default()).is_ok_and(|solution| {
+        (solution.root - 5.0_f64.cbrt()).abs() < 1.0e-10
+            && solution.diagnostics.converged()
+            && solution.residual.abs() <= 1.0e-10
+    })
 }
 
 fn production_volume_round_trip() -> bool {
@@ -125,11 +123,7 @@ fn production_monotone_interpolation() -> bool {
     MonotoneCurve::new(&[(0.0, 1.0), (2.0, 5.0), (5.0, 7.0)]).is_ok_and(|curve| {
         [(1.0, 1.0, 5.0), (3.5, 5.0, 7.0)]
             .into_iter()
-            .all(|(x, lower, upper)| {
-                curve
-                    .evaluate(x)
-                    .is_ok_and(|y| y >= lower && y <= upper)
-            })
+            .all(|(x, lower, upper)| curve.evaluate(x).is_ok_and(|y| y >= lower && y <= upper))
     })
 }
 
