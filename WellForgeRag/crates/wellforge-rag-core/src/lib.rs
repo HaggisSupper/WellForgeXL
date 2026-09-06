@@ -17,7 +17,9 @@ pub use extract::{
 };
 pub use model::{
     ArtifactInput, ArtifactRecord, ChunkInput, ChunkRecord, CitationInput, ConceptInput,
-    ConceptRecord, CorpusStats, IngestReport, OkfExportReport, SearchHit,
+    ConceptRecord, CorpusStats, InferredCausalityActor, InferredCausalityClaimLevel,
+    InferredCausalityInput, InferredCausalityOutcome, InferredCausalityRecord, IngestReport,
+    OkfExportReport, SearchHit,
 };
 pub use service::RagService;
 pub use store::SqliteStore;
