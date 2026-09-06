@@ -8,6 +8,7 @@ mod complementarity;
 mod interpolation;
 mod interval;
 mod root;
+mod sparse;
 mod volume;
 
 pub use circular::{CircularAccumulator, CircularError, CircularSummary};
@@ -15,6 +16,7 @@ pub use complementarity::{fischer_burmeister, fischer_burmeister_gradient};
 pub use interpolation::{InterpolationError, MonotoneCurve};
 pub use interval::{Interval, IntervalError, partition_boundaries};
 pub use root::{RootError, RootOptions, RootSolution, solve_bracketed, solve_safeguarded_newton};
+pub use sparse::{SparseEntry, SparseError, SparseLinearSystem, SparseSolution};
 pub use volume::{VolumeCoordinate, VolumeError, VolumeSegment};
 
 /// Terminal state reported by an iterative numerical primitive.
