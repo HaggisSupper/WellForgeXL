@@ -143,6 +143,67 @@ pub fn validate_request(request: &TnDAnalysisRequest) -> Result<(), Vec<Contract
         }
     }
 
+    let mut hole_ids = HashSet::new();
+    for (i, hole) in request.hole.iter().enumerate() {
+        if hole.id.is_nil()
+            || !hole.top_md_m.is_finite()
+            || !hole.bottom_md_m.is_finite()
+            || !hole.diameter_m.is_finite()
+            || hole.top_md_m < 0.0
+            || hole.bottom_md_m <= hole.top_md_m
+            || hole.diameter_m <= 0.0
+            || !hole_ids.insert(hole.id)
+        {
+            errors.push(ContractError::new(
+                "WF-TND-REQ-050",
+                format!(
+                    "hole[{i}] must have a unique non-nil id, finite increasing MD bounds, and positive finite diameter"
+                ),
+            ));
+        }
+    }
+    for (i, pair) in request.hole.windows(2).enumerate() {
+        if pair[1].top_md_m < pair[0].bottom_md_m {
+            errors.push(ContractError::new(
+                "WF-TND-REQ-051",
+                format!("hole sections {i} and {} overlap or are out of order", i + 1),
+            ));
+            break;
+        }
+    }
+
+    let solver = request.solver;
+    if !solver.severity_normal_load_n_m.is_finite() || solver.severity_normal_load_n_m <= 0.0 {
+        errors.push(ContractError::new(
+            "WF-TND-REQ-052",
+            "solver.severity_normal_load_n_m must be positive and finite",
+        ));
+    }
+    if !solver.severity_buckling_margin_n.is_finite() || solver.severity_buckling_margin_n < 0.0 {
+        errors.push(ContractError::new(
+            "WF-TND-REQ-053",
+            "solver.severity_buckling_margin_n must be finite and non-negative",
+        ));
+    }
+    if !solver.transition_buffer_m.is_finite() || solver.transition_buffer_m < 0.0 {
+        errors.push(ContractError::new(
+            "WF-TND-REQ-054",
+            "solver.transition_buffer_m must be finite and non-negative",
+        ));
+    }
+    if !solver.max_element_length_m.is_finite() || solver.max_element_length_m <= 0.0 {
+        errors.push(ContractError::new(
+            "WF-TND-REQ-055",
+            "solver.max_element_length_m must be positive and finite",
+        ));
+    }
+    if !solver.contact_penalty_n_m.is_finite() || solver.contact_penalty_n_m <= 0.0 {
+        errors.push(ContractError::new(
+            "WF-TND-REQ-056",
+            "solver.contact_penalty_n_m must be positive and finite",
+        ));
+    }
+
     let op = &request.operating;
     if op.mud_density_kg_m3 <= 0.0 {
         errors.push(ContractError::new(
