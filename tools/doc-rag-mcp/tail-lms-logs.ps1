@@ -33,7 +33,7 @@ function Show-LogLines {
     $content | ForEach-Object {
         if ([string]::IsNullOrWhiteSpace($_)) { return }
         if ($Filter -and $_ -notmatch $Filter) { return }
-        
+
         # Color-code by level
         if ($_ -match '\[error\]') {
             Write-Host $_ -ForegroundColor Red
@@ -55,13 +55,13 @@ if ($Follow) {
     Write-Host ""
     Write-Host "[lms-tail] Following live... (Ctrl+C to stop)" -ForegroundColor Cyan
     Write-Host ""
-    
+
     $lastPosition = (Get-Item $logPath).Length
-    
+
     while ($true) {
         Start-Sleep -Milliseconds 500
         $currentLength = (Get-Item $logPath).Length
-        
+
         if ($currentLength -gt $lastPosition) {
             $stream = [System.IO.File]::Open($logPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
             $stream.Seek($lastPosition, [System.IO.SeekOrigin]::Begin) > $null
@@ -69,7 +69,7 @@ if ($Follow) {
             $newLines = @($reader.ReadToEnd() -split "`n" | Where-Object { $_ })
             $reader.Close()
             $stream.Close()
-            
+
             Show-LogLines $newLines
             $lastPosition = $currentLength
         }
