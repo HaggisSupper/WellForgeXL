@@ -141,16 +141,12 @@ where
         });
     }
 
-    let mut last_root = lower.midpoint(upper);
-    let mut last_residual = residual(last_root);
     for iteration in 1..=options.max_iterations {
         let midpoint = lower.midpoint(upper);
         let f_mid = residual(midpoint);
         if !f_mid.is_finite() {
             return Err(RootError::InvalidInput);
         }
-        last_root = midpoint;
-        last_residual = f_mid;
         if f_mid.abs() <= tolerance {
             return Ok(RootSolution {
                 root: midpoint,
@@ -165,23 +161,14 @@ where
                 ),
             });
         }
-        if f_lower.is_sign_negative() != f_mid.is_sign_negative() {
-            upper = midpoint;
-        } else {
+        if f_lower.is_sign_negative() == f_mid.is_sign_negative() {
             lower = midpoint;
             f_lower = f_mid;
+        } else {
+            upper = midpoint;
         }
     }
 
-    let _ = diagnostics(
-        ConvergenceState::NotConverged,
-        options.max_iterations,
-        initial_residual,
-        last_residual.abs(),
-        options,
-        false,
-    );
-    let _ = last_root;
     Err(RootError::NotConverged)
 }
 
@@ -243,11 +230,11 @@ where
     }
 
     for iteration in 1..=options.max_iterations {
-        if f_lower.is_sign_negative() != f_x.is_sign_negative() {
-            upper = x;
-        } else {
+        if f_lower.is_sign_negative() == f_x.is_sign_negative() {
             lower = x;
             f_lower = f_x;
+        } else {
+            upper = x;
         }
 
         let slope = derivative(x);
