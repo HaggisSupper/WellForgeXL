@@ -118,6 +118,45 @@ impl ContractVersionPolicy {
     }
 }
 
+fn parse_registered(value: &str) -> Result<Version, GovernanceError> {
+    Version::parse(value).map_err(|_| GovernanceError::InvalidSemanticVersion)
+}
+
+/// Validates that `value` exactly matches one registered semantic version.
+///
+/// # Errors
+/// Returns a governance error for malformed or unsupported versions.
+pub fn validate_exact(value: &str, canonical: &str) -> Result<Version, GovernanceError> {
+    ContractVersionPolicy::new(parse_registered(canonical)?, CompatibilityPolicy::Exact)
+        .validate_str(value)
+}
+
+/// Validates that `value` shares the registered major semantic version.
+///
+/// # Errors
+/// Returns a governance error for malformed or unsupported versions.
+pub fn validate_same_major(value: &str, canonical: &str) -> Result<Version, GovernanceError> {
+    ContractVersionPolicy::new(parse_registered(canonical)?, CompatibilityPolicy::SameMajor)
+        .validate_str(value)
+}
+
+/// Validates that `value` belongs to an explicit registered semantic-version set.
+///
+/// # Errors
+/// Returns a governance error for malformed or unsupported versions.
+pub fn validate_explicit(value: &str, allowed: &[&str]) -> Result<Version, GovernanceError> {
+    let versions = allowed
+        .iter()
+        .map(|registered| parse_registered(registered))
+        .collect::<Result<Vec<_>, _>>()?;
+    let canonical = versions
+        .last()
+        .cloned()
+        .ok_or(GovernanceError::UnsupportedVersion)?;
+    ContractVersionPolicy::new(canonical, CompatibilityPolicy::ExplicitSet(versions))
+        .validate_str(value)
+}
+
 /// Stable SHA-256 fingerprint of a normalized canonical schema.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct SchemaFingerprint([u8; 32]);
