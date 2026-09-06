@@ -26,6 +26,10 @@ pub enum VolumeError {
     OutOfRange,
 }
 
+fn same_value(left: f64, right: f64) -> bool {
+    left.to_bits() == right.to_bits()
+}
+
 /// Deterministic mapping between a piecewise spatial coordinate and cumulative volume.
 #[derive(Clone, Debug, PartialEq)]
 pub struct VolumeCoordinate {
@@ -55,7 +59,9 @@ impl VolumeCoordinate {
             if segment.interval.end <= segment.interval.start || segment.area < 0.0 {
                 return Err(VolumeError::InvalidSegment);
             }
-            if index > 0 && segment.interval.start != segments[index - 1].interval.end {
+            if index > 0
+                && !same_value(segment.interval.start, segments[index - 1].interval.end)
+            {
                 return Err(VolumeError::Discontinuous);
             }
             cumulative_start.push(cumulative);
@@ -91,7 +97,7 @@ impl VolumeCoordinate {
         if position < first || position > last {
             return Err(VolumeError::OutOfRange);
         }
-        if position == last {
+        if same_value(position, last) {
             return Ok(self.total_volume);
         }
         for (index, segment) in self.segments.iter().enumerate() {
@@ -122,14 +128,14 @@ impl VolumeCoordinate {
             let start_volume = self.cumulative_start[index];
             let segment_volume = (segment.interval.end - segment.interval.start) * segment.area;
             let end_volume = start_volume + segment_volume;
-            if volume == start_volume {
+            if same_value(volume, start_volume) {
                 return Ok(segment.interval.start);
             }
             if segment.area > 0.0 && volume > start_volume && volume <= end_volume {
                 return Ok(segment.interval.start + (volume - start_volume) / segment.area);
             }
         }
-        if volume == self.total_volume {
+        if same_value(volume, self.total_volume) {
             return Ok(self.segments[self.segments.len() - 1].interval.end);
         }
         Err(VolumeError::OutOfRange)
