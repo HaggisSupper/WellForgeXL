@@ -166,7 +166,10 @@ pub fn validate_request(request: &TnDAnalysisRequest) -> Result<(), Vec<Contract
         if pair[1].top_md_m < pair[0].bottom_md_m {
             errors.push(ContractError::new(
                 "WF-TND-REQ-051",
-                format!("hole sections {i} and {} overlap or are out of order", i + 1),
+                format!(
+                    "hole sections {i} and {} overlap or are out of order",
+                    i + 1
+                ),
             ));
             break;
         }
