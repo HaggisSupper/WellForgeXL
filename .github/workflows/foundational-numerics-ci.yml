@@ -38,5 +38,16 @@ jobs:
           key: foundational-numerics
           cache-on-failure: false
       - run: cargo fmt --all -- --check
-      - run: cargo clippy -p wellforge-numerics -p wellforge-numerics-acceptance --all-targets -- -D warnings
-      - run: cargo test -p wellforge-numerics -p wellforge-numerics-acceptance
+      - run: >-
+          cargo clippy
+          -p wellforge-numerics
+          -p wellforge-numerics-acceptance
+          -p wellforge-bha-static
+          -p wellforge-bha-modal
+          --all-targets -- -D warnings
+      - run: >-
+          cargo test
+          -p wellforge-numerics
+          -p wellforge-numerics-acceptance
+          -p wellforge-bha-static
+          -p wellforge-bha-modal
