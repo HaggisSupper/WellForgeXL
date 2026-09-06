@@ -3,6 +3,10 @@
 //! This crate owns solver mechanics and numerical evidence only. Domain physics
 //! remains in the calculation engines that consume these primitives.
 
+mod root;
+
+pub use root::{RootError, RootOptions, RootSolution, solve_bracketed, solve_safeguarded_newton};
+
 /// Terminal state reported by an iterative numerical primitive.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ConvergenceState {
