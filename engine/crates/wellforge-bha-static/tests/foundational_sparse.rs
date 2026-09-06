@@ -14,13 +14,13 @@ fn independent_reduced_transverse_load(
         let first = &model.nodes[element];
         let second = &model.nodes[element + 1];
         let length = second.md_m - first.md_m;
-        let od = (first.od_m + second.od_m) * 0.5;
-        let id = (first.id_m + second.id_m) * 0.5;
-        let density = (first.density_kg_m3 + second.density_kg_m3) * 0.5;
+        let od = first.od_m.midpoint(second.od_m);
+        let id = first.id_m.midpoint(second.id_m);
+        let density = first.density_kg_m3.midpoint(second.density_kg_m3);
         let area = std::f64::consts::PI * (od.powi(2) - id.powi(2)) / 4.0;
         let buoyed_mass_per_length =
             (density - request.operating.fluid_density_kg_m3).max(0.0) * area;
-        let mid_md = (first.md_m + second.md_m) * 0.5;
+        let mid_md = first.md_m.midpoint(second.md_m);
         let inclination = request
             .trajectory
             .iter()
