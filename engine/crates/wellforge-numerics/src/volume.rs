@@ -59,9 +59,7 @@ impl VolumeCoordinate {
             if segment.interval.end <= segment.interval.start || segment.area < 0.0 {
                 return Err(VolumeError::InvalidSegment);
             }
-            if index > 0
-                && !same_value(segment.interval.start, segments[index - 1].interval.end)
-            {
+            if index > 0 && !same_value(segment.interval.start, segments[index - 1].interval.end) {
                 return Err(VolumeError::Discontinuous);
             }
             cumulative_start.push(cumulative);
