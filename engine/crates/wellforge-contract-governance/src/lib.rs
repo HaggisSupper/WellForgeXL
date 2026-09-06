@@ -107,7 +107,7 @@ impl ContractVersionPolicy {
     /// Parses and validates one incoming semantic-version string.
     ///
     /// # Errors
-    /// Returns [`GovernanceError::InvalidSemanticVersion`] for malformed SemVer and
+    /// Returns [`GovernanceError::InvalidSemanticVersion`] for malformed `SemVer` and
     /// [`GovernanceError::UnsupportedVersion`] when the parsed version does not satisfy policy.
     pub fn validate_str(&self, value: &str) -> Result<Version, GovernanceError> {
         let version = Version::parse(value).map_err(|_| GovernanceError::InvalidSemanticVersion)?;
@@ -206,6 +206,9 @@ pub fn normalize_json(value: &Value) -> Value {
 }
 
 /// Computes a deterministic SHA-256 fingerprint over normalized compact JSON.
+///
+/// # Panics
+/// Panics only if serializing an already-materialized [`serde_json::Value`] unexpectedly fails.
 #[must_use]
 pub fn fingerprint_schema(schema: &Value) -> SchemaFingerprint {
     let normalized = normalize_json(schema);
