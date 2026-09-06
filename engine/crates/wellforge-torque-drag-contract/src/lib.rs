@@ -9,8 +9,8 @@ mod result;
 mod validation;
 
 pub use request::{
-    Api7gPipeSpec, OperationState, StringComponent, TnDAnalysisRequest, TnDOperatingPoint,
-    TnDTrajectoryStation,
+    Api7gPipeSpec, OperationState, StiffStringMode, StringComponent, TnDAnalysisRequest,
+    TnDHoleSection, TnDOperatingPoint, TnDSolverOptions, TnDTrajectoryStation,
 };
 pub use result::{
     AnalysisStatus, ApiSevenGCheck, BucklingScreen, StationResult, TnDAnalysisResult,
