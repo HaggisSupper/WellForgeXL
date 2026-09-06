@@ -1,10 +1,13 @@
 //! Static flexible-beam analysis for BHA Release 1.
 
-use faer::prelude::*;
 use nalgebra::DMatrix;
 use thiserror::Error;
 use wellforge_bha_contract::{BhaAnalysisRequest, StaticNodeResult};
 use wellforge_bha_model::{BhaModel, projected_clearance};
+use wellforge_numerics::{SparseEntry, SparseLinearSystem};
+
+/// Numerical backend used for the reduced static FE solve.
+pub const STATIC_LINEAR_SOLVER_BACKEND: &str = "wellforge-numerics/sparse-lu";
 
 /// Static calculation output and matrices reused by modal analysis.
 #[derive(Clone, Debug)]
@@ -133,6 +136,19 @@ fn geometric_stiffness(length: f64, compression_n: f64) -> [[f64; 4]; 4] {
     ]
 }
 
+fn sparse_entries(matrix: &DMatrix<f64>) -> Vec<SparseEntry> {
+    let mut entries = Vec::new();
+    for row in 0..matrix.nrows() {
+        for col in 0..matrix.ncols() {
+            let value = matrix[(row, col)];
+            if value.abs() > 0.0 {
+                entries.push(SparseEntry::new(row, col, value));
+            }
+        }
+    }
+    entries
+}
+
 /// Solves a small-deflection, buoyed-weight static beam and calculates OD/hole projection indication.
 ///
 /// # Errors
@@ -194,14 +210,17 @@ pub fn solve_static(
     let stiffness = k_full.view((2, 2), (reduced, reduced)).into_owned();
     let mass = m_full.view((2, 2), (reduced, reduced)).into_owned();
     let rhs_values = &f_full[2..];
-    let k_faer = faer::Mat::from_fn(reduced, reduced, |row, col| stiffness[(row, col)]);
-    let rhs = faer::Mat::from_fn(reduced, 1, |row, _| rhs_values[row]);
-    let solved = k_faer.partial_piv_lu().solve(&rhs);
-    let displacement: Vec<f64> = (0..reduced).map(|row| solved[(row, 0)]).collect();
+    let entries = sparse_entries(&stiffness);
+    let system = SparseLinearSystem::new(reduced, &entries)
+        .map_err(|_| StaticSolveError::LinearSolve)?;
+    let solved = system
+        .factor_and_solve(&entries, rhs_values)
+        .map_err(|_| StaticSolveError::LinearSolve)?;
+    let displacement = solved.values;
     if displacement.iter().any(|value| !value.is_finite()) {
         return Err(StaticSolveError::LinearSolve);
     }
-    let residual_norm = (&k_faer * &solved - &rhs).norm_l2() / rhs.norm_l2().max(1.0);
+    let residual_norm = solved.residual_norm;
     let mut full_displacement = vec![0.0; full_dofs];
     full_displacement[2..].copy_from_slice(&displacement);
     let mut nodes = Vec::with_capacity(model.nodes.len());
