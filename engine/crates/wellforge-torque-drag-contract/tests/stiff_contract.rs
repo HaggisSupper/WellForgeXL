@@ -75,7 +75,8 @@ fn default_stiff_options_are_positive_and_bounded() {
 
 #[test]
 fn invalid_hole_geometry_is_rejected() {
-    let mut request: TnDAnalysisRequest = serde_json::from_str(LEGACY_REQUEST).expect("legacy request");
+    let mut request: TnDAnalysisRequest =
+        serde_json::from_str(LEGACY_REQUEST).expect("legacy request");
     request.hole.push(TnDHoleSection {
         id: Uuid::from_u128(0x2b7f_9d1c_44a1_4d31_a92e_7c5b_8f20_0610),
         top_md_m: 0.0,
@@ -88,7 +89,8 @@ fn invalid_hole_geometry_is_rejected() {
 
 #[test]
 fn overlapping_hole_sections_are_rejected() {
-    let mut request: TnDAnalysisRequest = serde_json::from_str(LEGACY_REQUEST).expect("legacy request");
+    let mut request: TnDAnalysisRequest =
+        serde_json::from_str(LEGACY_REQUEST).expect("legacy request");
     request.hole = vec![
         TnDHoleSection {
             id: Uuid::from_u128(0x2b7f_9d1c_44a1_4d31_a92e_7c5b_8f20_0611),
