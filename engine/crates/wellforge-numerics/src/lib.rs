@@ -4,12 +4,14 @@
 //! remains in the calculation engines that consume these primitives.
 
 mod circular;
+mod complementarity;
 mod interpolation;
 mod interval;
 mod root;
 mod volume;
 
 pub use circular::{CircularAccumulator, CircularError, CircularSummary};
+pub use complementarity::{fischer_burmeister, fischer_burmeister_gradient};
 pub use interpolation::{InterpolationError, MonotoneCurve};
 pub use interval::{Interval, IntervalError, partition_boundaries};
 pub use root::{RootError, RootOptions, RootSolution, solve_bracketed, solve_safeguarded_newton};
