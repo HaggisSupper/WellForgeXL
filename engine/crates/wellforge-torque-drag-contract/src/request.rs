@@ -25,6 +25,66 @@ pub enum OperationState {
     Backreaming,
 }
 
+/// Controls whether the bounded stiff-string refinement may run.
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, JsonSchema, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StiffStringMode {
+    /// Never run stiff-string refinement.
+    Disabled,
+    /// Run refinement only for classified severe intervals when hole geometry is available.
+    #[default]
+    Auto,
+}
+
+/// One borehole section available to the bounded stiff-string contact refinement.
+#[derive(Clone, Debug, Deserialize, JsonSchema, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct TnDHoleSection {
+    /// Stable hole-section identity.
+    pub id: Uuid,
+    /// Section top measured depth in metres.
+    pub top_md_m: f64,
+    /// Section bottom measured depth in metres.
+    pub bottom_md_m: f64,
+    /// Borehole diameter in metres.
+    pub diameter_m: f64,
+}
+
+/// Solver controls for severe-interval classification and bounded stiff-string refinement.
+#[derive(Clone, Copy, Debug, Deserialize, JsonSchema, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct TnDSolverOptions {
+    /// Whether stiff-string refinement is disabled or automatically selected.
+    pub stiff_string_mode: StiffStringMode,
+    /// Soft-string normal-load threshold that marks an interval severe, in N/m.
+    pub severity_normal_load_n_m: f64,
+    /// Buckling margin at or below which an interval is considered severe, in N.
+    pub severity_buckling_margin_n: f64,
+    /// MD buffer added around each selected severe interval, in metres.
+    pub transition_buffer_m: f64,
+    /// Maximum stiff-string element length in metres.
+    pub max_element_length_m: f64,
+    /// Unilateral contact penalty stiffness in N/m.
+    pub contact_penalty_n_m: f64,
+}
+
+impl Default for TnDSolverOptions {
+    fn default() -> Self {
+        Self {
+            stiff_string_mode: StiffStringMode::Auto,
+            severity_normal_load_n_m: 25_000.0,
+            severity_buckling_margin_n: 0.0,
+            transition_buffer_m: 30.0,
+            max_element_length_m: 3.0,
+            contact_penalty_n_m: 1.0e7,
+        }
+    }
+}
+
+fn is_default_solver_options(options: &TnDSolverOptions) -> bool {
+    options == &TnDSolverOptions::default()
+}
+
 /// One tubular string section in canonical SI, with API 7G spec.
 #[derive(Clone, Debug, Deserialize, JsonSchema, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -120,6 +180,12 @@ pub struct TnDAnalysisRequest {
     pub components: Vec<StringComponent>,
     /// Trajectory stations covering the full modelled string.
     pub trajectory: Vec<TnDTrajectoryStation>,
+    /// Optional borehole geometry for stiff-string refinement. Empty preserves the soft-only lane.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub hole: Vec<TnDHoleSection>,
+    /// Optional/defaulted solver controls. Default values are omitted from serialized legacy requests.
+    #[serde(default, skip_serializing_if = "is_default_solver_options")]
+    pub solver: TnDSolverOptions,
     /// Operating point.
     pub operating: TnDOperatingPoint,
 }
