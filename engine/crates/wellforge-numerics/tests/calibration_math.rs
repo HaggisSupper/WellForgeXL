@@ -7,7 +7,12 @@ fn monotone_curve_stays_inside_local_data_bounds() {
     let curve = MonotoneCurve::new(&[(0.0, 0.0), (1.0, 2.0), (2.0, 3.0)])
         .expect("strictly increasing x data");
 
-    for (x, lower, upper) in [(0.25, 0.0, 2.0), (0.75, 0.0, 2.0), (1.25, 2.0, 3.0), (1.75, 2.0, 3.0)] {
+    for (x, lower, upper) in [
+        (0.25, 0.0, 2.0),
+        (0.75, 0.0, 2.0),
+        (1.25, 2.0, 3.0),
+        (1.75, 2.0, 3.0),
+    ] {
         let y = curve.evaluate(x).expect("inside curve domain");
         assert!(y >= lower && y <= upper);
     }
