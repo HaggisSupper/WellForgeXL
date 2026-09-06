@@ -3,7 +3,7 @@
 use uuid::Uuid;
 use wellforge_torque_drag_contract::{
     Api7gPipeSpec, OperationState, StringComponent, TnDAnalysisRequest, TnDOperatingPoint,
-    TnDTrajectoryStation,
+    TnDSolverOptions, TnDTrajectoryStation,
 };
 use wellforge_witsml::{SourceObjectRef, WitsmlObjectType};
 
@@ -68,6 +68,8 @@ pub fn canonical_pickup_case() -> TnDAnalysisRequest {
         }],
         components: vec![component],
         trajectory: stations,
+        hole: Vec::new(),
+        solver: TnDSolverOptions::default(),
         operating: TnDOperatingPoint {
             state: OperationState::Pickup,
             weight_on_bit_n: 0.0,

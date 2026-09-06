@@ -9,11 +9,12 @@ mod result;
 mod validation;
 
 pub use request::{
-    Api7gPipeSpec, OperationState, StringComponent, TnDAnalysisRequest, TnDOperatingPoint,
-    TnDTrajectoryStation,
+    Api7gPipeSpec, OperationState, StiffStringMode, StringComponent, TnDAnalysisRequest,
+    TnDHoleSection, TnDOperatingPoint, TnDSolverOptions, TnDTrajectoryStation,
 };
 pub use result::{
-    AnalysisStatus, ApiSevenGCheck, BucklingScreen, StationResult, TnDAnalysisResult,
-    TnDSolverEvidence,
+    AnalysisStatus, ApiSevenGCheck, BucklingScreen, StationResult, StiffConvergence,
+    StiffIntervalCandidate, StiffIntervalReason, StiffIntervalResult, StiffNodeResult,
+    StiffStringResult, TnDAnalysisResult, TnDSolverEvidence, derive_stiff_interval_id,
 };
 pub use validation::{ContractError, validate_request};

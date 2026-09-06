@@ -1,0 +1,40 @@
+name: T&D priority verification
+
+on:
+  push:
+    branches: [feat/tnd-spatial-stiff-priorities]
+    paths:
+      - 'engine/crates/wellforge-torque-drag-*/**'
+      - 'engine/Cargo.toml'
+      - 'engine/Cargo.lock'
+      - '.github/workflows/tnd-priority-ci.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tnd-priority-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  focused-rust:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
+        with:
+          toolchain: 1.98.0
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: engine
+          key: tnd-${{ hashFiles('engine/Cargo.lock') }}
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy -p wellforge-torque-drag-contract -p wellforge-torque-drag-core -p wellforge-torque-drag-fixtures -p wellforge-torque-drag-cli --all-targets --locked -- -D warnings
+      - run: cargo test -p wellforge-torque-drag-contract -p wellforge-torque-drag-core -p wellforge-torque-drag-fixtures -p wellforge-torque-drag-cli --locked
