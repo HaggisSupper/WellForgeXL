@@ -21,7 +21,15 @@ pub enum IntervalError {
 }
 
 fn canonical_zero(value: f64) -> f64 {
-    if value == 0.0 { 0.0 } else { value }
+    if value.to_bits() & 0x7fff_ffff_ffff_ffff == 0 {
+        0.0
+    } else {
+        value
+    }
+}
+
+fn same_boundary(left: f64, right: f64) -> bool {
+    canonical_zero(left).to_bits() == canonical_zero(right).to_bits()
 }
 
 /// Merges ordered boundary sets and returns strictly positive-length intervals.
@@ -46,7 +54,7 @@ pub fn partition_boundaries(boundary_sets: &[&[f64]]) -> Result<Vec<Interval>, I
     }
 
     boundaries.sort_by(f64::total_cmp);
-    boundaries.dedup_by(|left, right| *left == *right);
+    boundaries.dedup_by(|left, right| same_boundary(*left, *right));
     if boundaries.len() < 2 {
         return Err(IntervalError::InsufficientBoundaries);
     }
