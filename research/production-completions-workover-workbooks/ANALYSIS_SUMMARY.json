@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "source_files": 19,
+  "unique_workbooks": 19,
+  "duplicates": 0,
+  "canonical_rust_workbooks": 17,
+  "encrypted_static_limited_workbooks": 2,
+  "sheets": 93,
+  "formula_cells_lower_bound": 2052,
+  "formula_families": 1551,
+  "defined_names": 981,
+  "vba_workbooks": 10,
+  "vba_modules": 42,
+  "vba_procedures": 142,
+  "canonical_reader": "wellforge-workbook-audit / calamine 0.36.1",
+  "canonical_reader_ci_run": 33996605263,
+  "canonical_reader_artifact_sha256": "6cac521eefcc8674154fcffde806e9a1fe66fceaebcfa606a785d71865f54282",
+  "formula_count_note": "Legacy BIFF shared and array formulas are not fully reconstructed by the canonical reader; formula_cells_lower_bound is therefore a lower bound.",
+  "formula_family_note": "Family rows are unique (workbook, sheet, normalized formula) signatures over formulas recovered by the canonical reader."
+}

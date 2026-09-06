@@ -35,3 +35,12 @@ See `DEEP_ANALYSIS.md` for the calculation, unit, VBA, and migration findings.
 inventories are the merged, path-free research index. Raw formula and VBA
 details remain in the ignored
 `outputs/drilling-workbook-analysis/workbooks` directory.
+
+## Adjacent production / completions / workover corpus
+
+The path-free second-corpus inventory under
+`../production-completions-workover-workbooks/` extends the research surface to
+production, completions, workover/intervention, well control, cementing, and
+tubular calculations. `MERGED_CAPABILITY_INVENTORY.csv` in that directory
+compares adjacent evidence with this drilling corpus without committing raw
+source workbooks or private source paths.
