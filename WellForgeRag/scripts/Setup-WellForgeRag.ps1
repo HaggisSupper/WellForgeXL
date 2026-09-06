@@ -20,6 +20,13 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
+$script:LogPath = $null
+$script:ConfigPath = $null
+$script:SidecarPython = $null
+$script:RagRoot = $null
+$script:RepoRoot = $null
+$script:EffectiveIngestRoot = $null
+
 function Write-Step {
     param([Parameter(Mandatory)][string]$Message)
     Write-Host "`n==> $Message" -ForegroundColor Cyan
@@ -45,8 +52,8 @@ function Get-Executable {
 function Invoke-Native {
     param(
         [Parameter(Mandatory)][string]$FilePath,
-        [Parameter()][string[]]$Arguments = @(),
-        [Parameter()][string]$WorkingDirectory
+        [string[]]$Arguments = @(),
+        [string]$WorkingDirectory
     )
 
     if ($WorkingDirectory) { Push-Location $WorkingDirectory }
@@ -106,19 +113,14 @@ function Find-VCTools {
 }
 
 function Ensure-Prerequisites {
-    if (-not $InstallPrerequisites) {
-        Write-Step 'Checking local prerequisites without installing them'
-    }
-    else {
-        Write-Step 'Checking/installing Windows build prerequisites'
-    }
+    Write-Step $(if ($InstallPrerequisites) { 'Checking/installing Windows build prerequisites' } else { 'Checking Windows build prerequisites' })
 
     $packages = @(
-        @{ Command = 'git.exe'; Id = 'Git.Git'; Extra = @() },
-        @{ Command = 'rustup.exe'; Id = 'Rustlang.Rustup'; Extra = @() },
-        @{ Command = 'uv.exe'; Id = 'astral-sh.uv'; Extra = @() },
-        @{ Command = 'cmake.exe'; Id = 'Kitware.CMake'; Extra = @() },
-        @{ Command = 'tesseract.exe'; Id = 'Tesseract-OCR.Tesseract'; Extra = @() }
+        @{ Command = 'git.exe'; Id = 'Git.Git' },
+        @{ Command = 'rustup.exe'; Id = 'Rustlang.Rustup' },
+        @{ Command = 'uv.exe'; Id = 'astral-sh.uv' },
+        @{ Command = 'cmake.exe'; Id = 'Kitware.CMake' },
+        @{ Command = 'tesseract.exe'; Id = 'Tesseract-OCR.Tesseract' }
     )
 
     foreach ($package in $packages) {
@@ -126,25 +128,22 @@ function Ensure-Prerequisites {
             if (-not $InstallPrerequisites) {
                 throw "Missing prerequisite $($package.Command). Re-run with -InstallPrerequisites `$true."
             }
-            Install-WingetPackage -Id $package.Id -ExtraArguments $package.Extra
+            Install-WingetPackage -Id $package.Id
         }
     }
 
     if (-not (Find-VCTools)) {
-        if (-not $InstallPrerequisites) {
-            throw 'Microsoft Visual C++ Build Tools are missing.'
-        }
+        if (-not $InstallPrerequisites) { throw 'Microsoft Visual C++ Build Tools are missing.' }
         Install-WingetPackage -Id 'Microsoft.VisualStudio.2022.BuildTools' -ExtraArguments @(
             '--override',
-            '--wait --passive --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows11SDK.26100 --includeRecommended'
+            '--wait --passive --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows11SDK.22621 --includeRecommended'
         )
     }
 
     Refresh-ProcessPath
-
     foreach ($command in @('git.exe', 'rustup.exe', 'uv.exe', 'cmake.exe')) {
         if (-not (Get-Executable $command)) {
-            throw "Prerequisite installation completed but $command is not visible in the current process PATH. Open a new PowerShell window and rerun this script."
+            throw "Prerequisite installation completed but $command is not visible in PATH. Open a new PowerShell window and rerun the script."
         }
     }
 }
@@ -173,11 +172,11 @@ function Resolve-Roots {
         throw "WellForgeRag Cargo.toml not found under $script:RagRoot"
     }
 
-    if (-not $IngestRoot) {
-        $script:EffectiveIngestRoot = $script:RepoRoot
+    $script:EffectiveIngestRoot = if ($IngestRoot) {
+        (Resolve-Path -LiteralPath $IngestRoot).Path
     }
     else {
-        $script:EffectiveIngestRoot = (Resolve-Path -LiteralPath $IngestRoot).Path
+        $script:RepoRoot
     }
 }
 
@@ -193,6 +192,8 @@ function Write-Event {
         [Parameter(Mandatory)][string]$Status,
         [string]$Detail = ''
     )
+
+    if (-not $script:LogPath) { return }
     $event = [ordered]@{
         timestamp = [DateTimeOffset]::Now.ToString('o')
         stage = $Stage
@@ -314,7 +315,7 @@ function Test-LocalModelEndpoint {
     $embeddingsUri = "$baseUrl/embeddings"  # /v1/embeddings
 
     try {
-        $models = Invoke-RestMethod -Method Get -Uri $modelsUri -TimeoutSec 5
+        [void](Invoke-RestMethod -Method Get -Uri $modelsUri -TimeoutSec 5)
         Write-Host "Model endpoint reachable: $modelsUri" -ForegroundColor Green
         Write-Event -Stage 'model-endpoint' -Status 'pass' -Detail $modelsUri
     }
@@ -327,9 +328,7 @@ function Test-LocalModelEndpoint {
     try {
         $body = @{ model = $EmbeddingModel; input = 'WellForge RAG health check' } | ConvertTo-Json -Depth 4
         $response = Invoke-RestMethod -Method Post -Uri $embeddingsUri -ContentType 'application/json' -Body $body -TimeoutSec 15
-        if (-not $response.data -or -not $response.data[0].embedding) {
-            throw 'Embedding endpoint returned no embedding vector.'
-        }
+        if (-not $response.data -or -not $response.data[0].embedding) { throw 'Embedding endpoint returned no embedding vector.' }
         $dimension = @($response.data[0].embedding).Count
         if ($dimension -ne $EmbeddingDimension) {
             throw "Embedding dimension mismatch. Configured $EmbeddingDimension, endpoint returned $dimension."
@@ -438,9 +437,7 @@ try {
     Write-Host "Log:    $script:LogPath"
 }
 catch {
-    if ($script:LogPath) {
-        Write-Event -Stage 'bootstrap' -Status 'fail' -Detail $_.Exception.Message
-    }
+    Write-Event -Stage 'bootstrap' -Status 'fail' -Detail $_.Exception.Message
     Write-Error $_
     exit 1
 }
