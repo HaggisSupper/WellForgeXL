@@ -8,6 +8,15 @@ fn static_solver_reports_foundational_sparse_backend() {
 }
 
 #[test]
+fn static_solver_does_not_recover_sparse_entries_by_scanning_dense_matrix() {
+    let implementation = include_str!("../src/lib.rs");
+    assert!(
+        !implementation.contains("fn sparse_entries(matrix: &DMatrix"),
+        "static FE solve must assemble sparse coefficients directly from element contributions"
+    );
+}
+
+#[test]
 fn foundational_sparse_path_preserves_static_solution_quality() {
     let request = wellforge_bha_fixtures::minimal_request();
     let model = wellforge_bha_model::assemble_model(&request).expect("valid minimal BHA model");
