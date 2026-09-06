@@ -8,6 +8,7 @@ license.workspace = true
 [dependencies]
 schemars.workspace = true
 serde.workspace = true
+semver.workspace = true
 url.workspace = true
 uuid.workspace = true
 wellforge-contract-governance = { path = "../wellforge-contract-governance", version = "0.1.0" }
