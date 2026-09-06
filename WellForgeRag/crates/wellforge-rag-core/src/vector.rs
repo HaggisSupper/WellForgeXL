@@ -1,7 +1,9 @@
 use std::{path::PathBuf, sync::Arc};
 
 use anyhow::{Context, Result, bail};
-use arrow_array::{FixedSizeListArray, Float32Array, RecordBatch, StringArray, types::Float32Type};
+use arrow_array::{
+    Array, FixedSizeListArray, Float32Array, RecordBatch, StringArray, types::Float32Type,
+};
 use arrow_schema::{DataType, Field, Schema};
 use futures::TryStreamExt;
 use lancedb::{
