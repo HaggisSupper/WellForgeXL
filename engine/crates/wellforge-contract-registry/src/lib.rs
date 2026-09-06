@@ -29,15 +29,15 @@ fn descriptor(
     id: &str,
     version: &str,
     compatibility: CompatibilityPolicy,
-    request_schema: serde_json::Value,
-    result_schema: serde_json::Value,
+    request_schema: &serde_json::Value,
+    result_schema: &serde_json::Value,
 ) -> Result<ContractDescriptor, RegistryBuildError> {
     Ok(ContractDescriptor::new(
         id,
         version,
         compatibility,
-        &request_schema,
-        &result_schema,
+        request_schema,
+        result_schema,
     )?)
 }
 
@@ -61,22 +61,22 @@ pub fn build_registry() -> Result<ContractRegistry, RegistryBuildError> {
         wellforge_trajectory_contract::CONTRACT_ID,
         wellforge_trajectory_contract::CANONICAL_CONTRACT_VERSION,
         CompatibilityPolicy::SameMajor,
-        trajectory_request,
-        trajectory_result,
+        &trajectory_request,
+        &trajectory_result,
     )?)?;
     registry.register(descriptor(
         wellforge_bha_contract::CONTRACT_ID,
         wellforge_bha_contract::CANONICAL_CONTRACT_VERSION,
         CompatibilityPolicy::SameMajor,
-        bha_request,
-        bha_result,
+        &bha_request,
+        &bha_result,
     )?)?;
     registry.register(descriptor(
         wellforge_torque_drag_contract::CONTRACT_ID,
         wellforge_torque_drag_contract::CANONICAL_CONTRACT_VERSION,
         CompatibilityPolicy::Exact,
-        tnd_request,
-        tnd_result,
+        &tnd_request,
+        &tnd_result,
     )?)?;
 
     let hydraulics_compatibility =
@@ -86,8 +86,8 @@ pub fn build_registry() -> Result<ContractRegistry, RegistryBuildError> {
             wellforge_hydraulics_contract::CONTRACT_ID,
             version,
             hydraulics_compatibility.clone(),
-            hydraulics_request.clone(),
-            hydraulics_result.clone(),
+            &hydraulics_request,
+            &hydraulics_result,
         )?)?;
     }
 
