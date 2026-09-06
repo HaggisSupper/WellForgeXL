@@ -1,8 +1,6 @@
 //! Contract tests for deterministic scalar root solvers.
 
-use wellforge_numerics::{
-    RootError, RootOptions, solve_bracketed, solve_safeguarded_newton,
-};
+use wellforge_numerics::{RootError, RootOptions, solve_bracketed, solve_safeguarded_newton};
 
 #[test]
 fn bracketed_solver_converges_on_square_root_two() {
