@@ -164,13 +164,17 @@ fn sparse_system_recovers_manufactured_solution_on_512_dof_banded_system() {
         if row > 0 {
             entries.push(SparseEntry::new(row, row - 1, -1.0));
         }
-        entries.push(SparseEntry::new(row, row, 4.0 + (row as f64) * 1.0e-6));
+        let row_value = f64::from(u16::try_from(row).expect("512-DOF row fits u16"));
+        entries.push(SparseEntry::new(row, row, 4.0 + row_value * 1.0e-6));
         if row + 1 < dimension {
             entries.push(SparseEntry::new(row, row + 1, -1.0));
         }
     }
     let expected: Vec<f64> = (0..dimension)
-        .map(|index| ((index as f64) * 0.013).sin() + 0.25)
+        .map(|index| {
+            let index_value = f64::from(u16::try_from(index).expect("512-DOF index fits u16"));
+            (index_value * 0.013).sin() + 0.25
+        })
         .collect();
     let rhs = manufactured_rhs(dimension, &entries, &expected);
     let system = SparseLinearSystem::new(dimension, &entries).expect("banded FE-size pattern");
