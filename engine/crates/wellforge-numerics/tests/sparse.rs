@@ -79,7 +79,8 @@ fn sparse_system_sums_duplicate_element_contributions() {
         SparseEntry::new(1, 1, 1.0),
         SparseEntry::new(1, 1, 2.0),
     ];
-    let system = SparseLinearSystem::new(2, &entries).expect("duplicate FE contributions are valid");
+    let system =
+        SparseLinearSystem::new(2, &entries).expect("duplicate FE contributions are valid");
     let expected = [2.0, 3.0];
     let rhs = manufactured_rhs(2, &entries, &expected);
 
@@ -149,7 +150,10 @@ fn sparse_system_rejects_exactly_singular_matrix() {
         .factor_and_solve(&entries, &[3.0, 6.0])
         .expect_err("exact singularity must return a typed error");
 
-    assert!(matches!(error, SparseError::Factorization | SparseError::Singular));
+    assert!(matches!(
+        error,
+        SparseError::Factorization | SparseError::Singular
+    ));
 }
 
 #[test]
