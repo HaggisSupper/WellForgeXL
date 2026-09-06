@@ -18,8 +18,8 @@ fn contiguous_normal_load_triggers_merge_into_one_deterministic_interval() {
     assert_eq!(first, second);
     assert_eq!(first.len(), 1);
     let interval = &first[0];
-    assert_eq!(interval.start_md_m, 0.0);
-    assert_eq!(interval.end_md_m, 3000.0);
+    assert!(interval.start_md_m.abs() <= f64::EPSILON);
+    assert!((interval.end_md_m - 3000.0).abs() <= f64::EPSILON);
     assert!(interval.reasons.contains(&StiffIntervalReason::NormalLoad));
 }
 
