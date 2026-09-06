@@ -13,8 +13,9 @@
 
 use wellforge_torque_drag_contract::{
     AnalysisStatus, Api7gPipeSpec, ApiSevenGCheck, BucklingScreen, OperationState, StationResult,
-    StringComponent, TnDAnalysisRequest, TnDAnalysisResult, TnDSolverEvidence,
-    TnDTrajectoryStation,
+    StiffIntervalCandidate, StiffIntervalReason, StiffStringMode, StringComponent,
+    TnDAnalysisRequest, TnDAnalysisResult, TnDSolverEvidence, TnDTrajectoryStation,
+    derive_stiff_interval_id,
 };
 
 /// Errors raised by the solver before writing a result.
@@ -44,6 +45,104 @@ fn spatial_dogleg_rad_per_m(upper: &TnDTrajectoryStation, lower: &TnDTrajectoryS
             * lower.inclination_rad.sin()
             * (lower.azimuth_rad - upper.azimuth_rad).cos();
     cosine.clamp(-1.0, 1.0).acos() / delta_md
+}
+
+fn add_reason(reasons: &mut Vec<StiffIntervalReason>, reason: StiffIntervalReason) {
+    if !reasons.contains(&reason) {
+        reasons.push(reason);
+    }
+}
+
+fn station_severity_reasons(
+    request: &TnDAnalysisRequest,
+    station: &StationResult,
+    buckling: &BucklingScreen,
+) -> Vec<StiffIntervalReason> {
+    let mut reasons = Vec::with_capacity(3);
+    if station.normal_load_n_m >= request.solver.severity_normal_load_n_m {
+        reasons.push(StiffIntervalReason::NormalLoad);
+    }
+    if buckling.sinusoidal_margin_n <= request.solver.severity_buckling_margin_n {
+        reasons.push(StiffIntervalReason::SinusoidalBuckling);
+    }
+    if buckling.helical_margin_n <= request.solver.severity_buckling_margin_n {
+        reasons.push(StiffIntervalReason::HelicalBuckling);
+    }
+    reasons
+}
+
+/// Classifies deterministic severe intervals from an accepted whole-well soft-string result.
+///
+/// The classifier does not calculate contact loads. It selects bounded MD intervals for a later
+/// stiff-string refinement using configured normal-load and buckling-margin triggers. Disabled
+/// stiff-string mode always returns no candidates.
+#[must_use]
+pub fn classify_stiff_intervals(
+    request: &TnDAnalysisRequest,
+    soft_result: &TnDAnalysisResult,
+) -> Vec<StiffIntervalCandidate> {
+    if request.solver.stiff_string_mode == StiffStringMode::Disabled
+        || soft_result.stations.is_empty()
+        || soft_result.stations.len() != soft_result.buckling.len()
+    {
+        return Vec::new();
+    }
+
+    let first_md = soft_result.stations[0].md_m;
+    let last_md = soft_result
+        .stations
+        .last()
+        .map_or(first_md, |station| station.md_m);
+    let mut candidates = Vec::new();
+    let mut group_start: Option<usize> = None;
+    let mut group_end = 0_usize;
+    let mut group_reasons = Vec::new();
+
+    let flush_group = |start: usize,
+                       end: usize,
+                       reasons: &mut Vec<StiffIntervalReason>,
+                       output: &mut Vec<StiffIntervalCandidate>| {
+        let raw_start = soft_result.stations[start].md_m;
+        let raw_end = soft_result
+            .stations
+            .get(end + 1)
+            .map_or(soft_result.stations[end].md_m, |station| station.md_m);
+        let start_md_m = (raw_start - request.solver.transition_buffer_m).max(first_md);
+        let end_md_m = (raw_end + request.solver.transition_buffer_m).min(last_md);
+        output.push(StiffIntervalCandidate {
+            id: derive_stiff_interval_id(request.analysis_id, start_md_m, end_md_m),
+            start_md_m,
+            end_md_m,
+            reasons: std::mem::take(reasons),
+        });
+    };
+
+    for (index, (station, buckling)) in soft_result
+        .stations
+        .iter()
+        .zip(&soft_result.buckling)
+        .enumerate()
+    {
+        let reasons = station_severity_reasons(request, station, buckling);
+        if reasons.is_empty() {
+            if let Some(start) = group_start.take() {
+                flush_group(start, group_end, &mut group_reasons, &mut candidates);
+            }
+            continue;
+        }
+
+        group_start.get_or_insert(index);
+        group_end = index;
+        for reason in reasons {
+            add_reason(&mut group_reasons, reason);
+        }
+    }
+
+    if let Some(start) = group_start {
+        flush_group(start, group_end, &mut group_reasons, &mut candidates);
+    }
+
+    candidates
 }
 
 /// Solve the soft-string pass and return the full result contract.
@@ -160,6 +259,7 @@ pub fn solve_soft_string(request: &TnDAnalysisRequest) -> Result<TnDAnalysisResu
         stations,
         buckling,
         api7g,
+        stiff_string: None,
         evidence,
         warnings,
     })
