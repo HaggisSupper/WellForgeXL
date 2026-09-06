@@ -15,6 +15,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: wellforge-rag-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   rust:
     runs-on: ubuntu-latest
@@ -27,6 +31,15 @@ jobs:
         with:
           toolchain: 1.98.0
           components: rustfmt, clippy
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            WellForgeRag/target
+          key: wellforge-rag-${{ runner.os }}-${{ hashFiles('WellForgeRag/**/Cargo.toml') }}
+          restore-keys: |
+            wellforge-rag-${{ runner.os }}-
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
