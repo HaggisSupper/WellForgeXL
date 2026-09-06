@@ -1,9 +1,7 @@
 use std::{path::PathBuf, sync::Arc};
 
 use anyhow::{Context, Result, bail};
-use arrow_array::{
-    FixedSizeListArray, Float32Array, RecordBatch, StringArray, types::Float32Type,
-};
+use arrow_array::{FixedSizeListArray, Float32Array, RecordBatch, StringArray, types::Float32Type};
 use arrow_schema::{DataType, Field, Schema};
 use futures::TryStreamExt;
 use lancedb::{
@@ -64,7 +62,8 @@ impl LanceVectorIndex {
             ),
         ]));
 
-        let ids = StringArray::from_iter_values(records.iter().map(|record| record.chunk_id.to_string()));
+        let ids =
+            StringArray::from_iter_values(records.iter().map(|record| record.chunk_id.to_string()));
         let vectors = FixedSizeListArray::from_iter_primitive::<Float32Type, _, _>(
             records
                 .iter()
@@ -95,11 +94,10 @@ impl LanceVectorIndex {
             .execute()
             .await
             .context("cannot connect to local LanceDB")?;
-        let table = db
-            .open_table(TABLE_NAME)
-            .execute()
-            .await
-            .context("LanceDB chunk table is not initialized; rebuild the vector index first")?;
+        let table =
+            db.open_table(TABLE_NAME).execute().await.context(
+                "LanceDB chunk table is not initialized; rebuild the vector index first",
+            )?;
         let batches = table
             .query()
             .nearest_to(query)?
@@ -123,8 +121,9 @@ impl LanceVectorIndex {
                 bail!("LanceDB result column length mismatch");
             }
             for row in 0..ids.len() {
-                let chunk_id = Uuid::parse_str(ids.value(row))
-                    .with_context(|| format!("invalid chunk UUID returned by LanceDB: {}", ids.value(row)))?;
+                let chunk_id = Uuid::parse_str(ids.value(row)).with_context(|| {
+                    format!("invalid chunk UUID returned by LanceDB: {}", ids.value(row))
+                })?;
                 hits.push(VectorHit {
                     chunk_id,
                     distance: distances.value(row),
