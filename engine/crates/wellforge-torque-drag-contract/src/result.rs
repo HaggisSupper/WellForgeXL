@@ -32,7 +32,7 @@ pub enum StiffIntervalReason {
 #[derive(Clone, Debug, Deserialize, JsonSchema, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct StiffIntervalCandidate {
-    /// Stable UUIDv5 derived from analysis identity and interval bounds.
+    /// Stable `UUIDv5` derived from analysis identity and interval bounds.
     pub id: Uuid,
     /// Buffered interval start measured depth in metres.
     pub start_md_m: f64,
