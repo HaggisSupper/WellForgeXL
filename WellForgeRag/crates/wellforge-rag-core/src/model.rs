@@ -112,6 +112,138 @@ pub struct SearchHit {
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum InferredCausalityActor {
+    ManualConfirmed,
+    ManualInferred,
+    AutomationCommand,
+    AutomationInferred,
+    Unknown,
+}
+
+impl InferredCausalityActor {
+    pub(crate) const fn as_str(self) -> &'static str {
+        match self {
+            Self::ManualConfirmed => "manual_confirmed",
+            Self::ManualInferred => "manual_inferred",
+            Self::AutomationCommand => "automation_command",
+            Self::AutomationInferred => "automation_inferred",
+            Self::Unknown => "unknown",
+        }
+    }
+
+    pub(crate) fn from_db(value: &str) -> Option<Self> {
+        match value {
+            "manual_confirmed" => Some(Self::ManualConfirmed),
+            "manual_inferred" => Some(Self::ManualInferred),
+            "automation_command" => Some(Self::AutomationCommand),
+            "automation_inferred" => Some(Self::AutomationInferred),
+            "unknown" => Some(Self::Unknown),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum InferredCausalityClaimLevel {
+    ObservedSequence,
+    LikelyReaction,
+    CausalClaim,
+}
+
+impl InferredCausalityClaimLevel {
+    pub(crate) const fn as_str(self) -> &'static str {
+        match self {
+            Self::ObservedSequence => "observed_sequence",
+            Self::LikelyReaction => "likely_reaction",
+            Self::CausalClaim => "causal_claim",
+        }
+    }
+
+    pub(crate) fn from_db(value: &str) -> Option<Self> {
+        match value {
+            "observed_sequence" => Some(Self::ObservedSequence),
+            "likely_reaction" => Some(Self::LikelyReaction),
+            "causal_claim" => Some(Self::CausalClaim),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum InferredCausalityOutcome {
+    Effective,
+    PartiallyEffective,
+    Ineffective,
+    Adverse,
+    Inconclusive,
+}
+
+impl InferredCausalityOutcome {
+    pub(crate) const fn as_str(self) -> &'static str {
+        match self {
+            Self::Effective => "effective",
+            Self::PartiallyEffective => "partially_effective",
+            Self::Ineffective => "ineffective",
+            Self::Adverse => "adverse",
+            Self::Inconclusive => "inconclusive",
+        }
+    }
+
+    pub(crate) fn from_db(value: &str) -> Option<Self> {
+        match value {
+            "effective" => Some(Self::Effective),
+            "partially_effective" => Some(Self::PartiallyEffective),
+            "ineffective" => Some(Self::Ineffective),
+            "adverse" => Some(Self::Adverse),
+            "inconclusive" => Some(Self::Inconclusive),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct InferredCausalityInput {
+    pub episode_key: String,
+    pub start_at: DateTime<Utc>,
+    pub end_at: DateTime<Utc>,
+    pub actor: InferredCausalityActor,
+    pub claim_level: InferredCausalityClaimLevel,
+    pub situation: Value,
+    pub intervention: Value,
+    pub observed_response: Value,
+    pub outcome: InferredCausalityOutcome,
+    pub confidence: f64,
+    pub inference_method: String,
+    pub canonical_state_ref: Option<String>,
+    pub source_artifact_id: Option<Uuid>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct InferredCausalityRecord {
+    pub id: Uuid,
+    pub episode_key: String,
+    pub start_at: DateTime<Utc>,
+    pub end_at: DateTime<Utc>,
+    pub actor: InferredCausalityActor,
+    pub claim_level: InferredCausalityClaimLevel,
+    pub situation: Value,
+    pub intervention: Value,
+    pub observed_response: Value,
+    pub outcome: InferredCausalityOutcome,
+    pub confidence: f64,
+    pub inference_method: String,
+    pub canonical_state_ref: Option<String>,
+    pub source_artifact_id: Option<Uuid>,
+    pub authority: String,
+    pub is_canonical: bool,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct CorpusStats {
     pub artifacts: u64,
     pub concepts: u64,
