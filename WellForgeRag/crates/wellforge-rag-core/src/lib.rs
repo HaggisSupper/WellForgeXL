@@ -5,6 +5,7 @@ mod extract;
 mod model;
 mod service;
 mod store;
+mod vector;
 
 pub use config::{
     ConceptConfig, EmbeddingConfig, IngestConfig, RagConfig, SearchConfig, ServerConfig,
@@ -20,3 +21,4 @@ pub use model::{
 };
 pub use service::RagService;
 pub use store::SqliteStore;
+pub use vector::{LanceVectorIndex, VectorHit, VectorRecord};
