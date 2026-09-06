@@ -9,6 +9,7 @@ license.workspace = true
 schemars.workspace = true
 serde.workspace = true
 uuid.workspace = true
+wellforge-contract-governance = { path = "../wellforge-contract-governance", version = "0.1.0" }
 wellforge-units = { path = "../wellforge-units", version = "0.1.0" }
 wellforge-witsml = { path = "../wellforge-witsml", version = "0.1.0" }
 
