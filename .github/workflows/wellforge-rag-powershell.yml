@@ -1,0 +1,25 @@
+name: WellForgeRag PowerShell
+
+on:
+  push:
+    branches:
+      - feat/wellforge-rag
+    paths:
+      - 'WellForgeRag/scripts/**'
+      - '.github/workflows/wellforge-rag-powershell.yml'
+  pull_request:
+    paths:
+      - 'WellForgeRag/scripts/**'
+      - '.github/workflows/wellforge-rag-powershell.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Windows bootstrap contract
+        shell: powershell
+        run: .\WellForgeRag\scripts\tests\Test-Setup-WellForgeRag.ps1
