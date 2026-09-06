@@ -79,10 +79,8 @@ pub fn build_registry() -> Result<ContractRegistry, RegistryBuildError> {
         tnd_result,
     )?)?;
 
-    let hydraulics_compatibility = CompatibilityPolicy::ExplicitSet(vec![
-        Version::new(0, 1, 0),
-        Version::new(0, 2, 0),
-    ]);
+    let hydraulics_compatibility =
+        CompatibilityPolicy::ExplicitSet(vec![Version::new(0, 1, 0), Version::new(0, 2, 0)]);
     for version in wellforge_hydraulics_contract::SUPPORTED_CONTRACT_VERSIONS {
         registry.register(descriptor(
             wellforge_hydraulics_contract::CONTRACT_ID,

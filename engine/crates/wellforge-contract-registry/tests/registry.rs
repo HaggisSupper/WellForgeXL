@@ -22,8 +22,8 @@ fn malformed_or_unsupported_versions_fail_before_domain_calculation() {
 
     let mut bha = wellforge_bha_fixtures::minimal_request();
     bha.contract_version = "1.bad.0".to_owned();
-    let bha_errors = wellforge_bha_contract::validate_request(&bha)
-        .expect_err("malformed BHA SemVer must fail");
+    let bha_errors =
+        wellforge_bha_contract::validate_request(&bha).expect_err("malformed BHA SemVer must fail");
     assert_eq!(bha_errors[0].code, "WF-BHA-CONTRACT-001");
 
     let mut tnd = wellforge_torque_drag_fixtures::canonical_pickup_case();

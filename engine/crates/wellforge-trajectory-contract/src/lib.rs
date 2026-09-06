@@ -36,7 +36,8 @@ pub fn validate_request(request: &TrajectoryAnalysisRequest) -> Result<(), Vec<C
     {
         return Err(vec![ContractError {
             code: "WF-TRAJECTORY-CONTRACT-001".to_owned(),
-            message: "contract_version must be valid SemVer with supported major version".to_owned(),
+            message: "contract_version must be valid SemVer with supported major version"
+                .to_owned(),
         }]);
     }
     validation::validate_request(request)

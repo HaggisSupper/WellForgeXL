@@ -53,7 +53,9 @@ impl FromStr for ContractId {
         let valid = !value.is_empty()
             && value.split('.').all(|segment| {
                 let mut characters = segment.chars();
-                characters.next().is_some_and(|first| first.is_ascii_lowercase())
+                characters
+                    .next()
+                    .is_some_and(|first| first.is_ascii_lowercase())
                     && characters.all(|character| {
                         character.is_ascii_lowercase()
                             || character.is_ascii_digit()
@@ -207,7 +209,8 @@ pub fn normalize_json(value: &Value) -> Value {
 #[must_use]
 pub fn fingerprint_schema(schema: &Value) -> SchemaFingerprint {
     let normalized = normalize_json(schema);
-    let encoded = serde_json::to_vec(&normalized).expect("serializing serde_json::Value cannot fail");
+    let encoded =
+        serde_json::to_vec(&normalized).expect("serializing serde_json::Value cannot fail");
     let digest = Sha256::digest(encoded);
     let mut bytes = [0_u8; 32];
     bytes.copy_from_slice(&digest);
