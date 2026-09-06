@@ -1,3 +1,5 @@
+//! Backward-compatibility and validation tests for the T&D stiff-string request contract.
+
 use uuid::Uuid;
 use wellforge_torque_drag_contract::{
     StiffStringMode, TnDAnalysisRequest, TnDHoleSection, TnDSolverOptions, validate_request,
