@@ -1,5 +1,6 @@
 use std::{
     fs,
+    io::{Error as IoError, ErrorKind},
     path::Path,
     sync::{Arc, Mutex, MutexGuard},
     time::Duration,
@@ -8,14 +9,17 @@ use std::{
 use anyhow::{Context, Result, bail};
 use chrono::{DateTime, Utc};
 use rusqlite::{Connection, OptionalExtension, params};
+use serde_json::Value;
 use uuid::Uuid;
 
 use crate::model::{
     ArtifactInput, ArtifactRecord, ChunkInput, ChunkRecord, CitationInput, ConceptInput,
-    ConceptRecord, CorpusStats, SearchHit,
+    ConceptRecord, CorpusStats, InferredCausalityActor, InferredCausalityClaimLevel,
+    InferredCausalityInput, InferredCausalityOutcome, InferredCausalityRecord, SearchHit,
 };
 
-const MIGRATION: &str = include_str!("../../../migrations/0001_init.sql");
+const MIGRATION_1: &str = include_str!("../../../migrations/0001_init.sql");
+const MIGRATION_2: &str = include_str!("../../../migrations/0002_inferred_causality.sql");
 
 #[derive(Clone)]
 pub struct SqliteStore {
@@ -35,8 +39,11 @@ impl SqliteStore {
         connection.pragma_update(None, "foreign_keys", "ON")?;
         connection.pragma_update(None, "journal_mode", "WAL")?;
         connection
-            .execute_batch(MIGRATION)
-            .context("cannot initialize SQLite RAG schema")?;
+            .execute_batch(MIGRATION_1)
+            .context("cannot initialize SQLite RAG schema migration 1")?;
+        connection
+            .execute_batch(MIGRATION_2)
+            .context("cannot initialize SQLite RAG schema migration 2")?;
         Ok(Self {
             connection: Arc::new(Mutex::new(connection)),
         })
@@ -434,6 +441,97 @@ impl SqliteStore {
             .context("lexical search failed")
     }
 
+    pub fn upsert_inferred_causality(
+        &self,
+        input: InferredCausalityInput,
+    ) -> Result<InferredCausalityRecord> {
+        validate_inferred_causality(&input)?;
+        let situation = serde_json::to_string(&input.situation)?;
+        let intervention = serde_json::to_string(&input.intervention)?;
+        let observed_response = serde_json::to_string(&input.observed_response)?;
+        let now = Utc::now().to_rfc3339();
+        let mut connection = self.lock()?;
+        let transaction = connection.transaction()?;
+        let existing_id = transaction
+            .query_row(
+                "SELECT id FROM inferred_causality WHERE episode_key = ?1",
+                params![input.episode_key],
+                |row| row.get::<_, String>(0),
+            )
+            .optional()?;
+        let id = existing_id
+            .map(|value| {
+                Uuid::parse_str(&value).context("stored Inferred_Causality UUID is invalid")
+            })
+            .transpose()?
+            .unwrap_or_else(Uuid::new_v4);
+
+        transaction.execute(
+            "INSERT INTO inferred_causality (
+                id, episode_key, start_at, end_at, actor, claim_level,
+                situation_json, intervention_json, observed_response_json,
+                outcome, confidence, inference_method, canonical_state_ref,
+                source_artifact_id, authority, is_canonical, created_at, updated_at
+             ) VALUES (
+                ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14,
+                'Inferred_Causality', 0, ?15, ?15
+             )
+             ON CONFLICT(episode_key) DO UPDATE SET
+                start_at = excluded.start_at,
+                end_at = excluded.end_at,
+                actor = excluded.actor,
+                claim_level = excluded.claim_level,
+                situation_json = excluded.situation_json,
+                intervention_json = excluded.intervention_json,
+                observed_response_json = excluded.observed_response_json,
+                outcome = excluded.outcome,
+                confidence = excluded.confidence,
+                inference_method = excluded.inference_method,
+                canonical_state_ref = excluded.canonical_state_ref,
+                source_artifact_id = excluded.source_artifact_id,
+                authority = 'Inferred_Causality',
+                is_canonical = 0,
+                updated_at = excluded.updated_at",
+            params![
+                id.to_string(),
+                input.episode_key,
+                input.start_at.to_rfc3339(),
+                input.end_at.to_rfc3339(),
+                input.actor.as_str(),
+                input.claim_level.as_str(),
+                situation,
+                intervention,
+                observed_response,
+                input.outcome.as_str(),
+                input.confidence,
+                input.inference_method,
+                input.canonical_state_ref,
+                input.source_artifact_id.map(|value| value.to_string()),
+                now,
+            ],
+        )?;
+        transaction.commit()?;
+        drop(connection);
+        self.get_inferred_causality(id)?
+            .with_context(|| format!("Inferred_Causality episode {id} disappeared after upsert"))
+    }
+
+    pub fn get_inferred_causality(&self, id: Uuid) -> Result<Option<InferredCausalityRecord>> {
+        let connection = self.lock()?;
+        connection
+            .query_row(
+                "SELECT id, episode_key, start_at, end_at, actor, claim_level,
+                        situation_json, intervention_json, observed_response_json,
+                        outcome, confidence, inference_method, canonical_state_ref,
+                        source_artifact_id, authority, is_canonical, created_at, updated_at
+                 FROM inferred_causality WHERE id = ?1",
+                params![id.to_string()],
+                inferred_causality_from_row,
+            )
+            .optional()
+            .context("cannot read Inferred_Causality episode")
+    }
+
     pub fn stats(&self) -> Result<CorpusStats> {
         let connection = self.lock()?;
         Ok(CorpusStats {
@@ -470,6 +568,22 @@ fn validate_concept_path(value: &str) -> Result<()> {
     Ok(())
 }
 
+fn validate_inferred_causality(input: &InferredCausalityInput) -> Result<()> {
+    if input.episode_key.trim().is_empty() {
+        bail!("Inferred_Causality episode key must not be empty");
+    }
+    if input.inference_method.trim().is_empty() {
+        bail!("Inferred_Causality inference method must not be empty");
+    }
+    if input.end_at < input.start_at {
+        bail!("Inferred_Causality end time must not precede start time");
+    }
+    if !input.confidence.is_finite() || !(0.0..=1.0).contains(&input.confidence) {
+        bail!("Inferred_Causality confidence must be finite and between 0 and 1");
+    }
+    Ok(())
+}
+
 fn fts_query(value: &str) -> String {
     value
         .split(|character: char| {
@@ -484,18 +598,20 @@ fn fts_query(value: &str) -> String {
 
 fn parse_optional_datetime(value: Option<String>) -> rusqlite::Result<Option<DateTime<Utc>>> {
     value
-        .map(|text| {
-            DateTime::parse_from_rfc3339(&text)
-                .map(|parsed| parsed.with_timezone(&Utc))
-                .map_err(|error| {
-                    rusqlite::Error::FromSqlConversionFailure(
-                        0,
-                        rusqlite::types::Type::Text,
-                        Box::new(error),
-                    )
-                })
-        })
+        .map(|text| parse_datetime_sql(text, 0))
         .transpose()
+}
+
+fn parse_datetime_sql(value: String, column: usize) -> rusqlite::Result<DateTime<Utc>> {
+    DateTime::parse_from_rfc3339(&value)
+        .map(|parsed| parsed.with_timezone(&Utc))
+        .map_err(|error| {
+            rusqlite::Error::FromSqlConversionFailure(
+                column,
+                rusqlite::types::Type::Text,
+                Box::new(error),
+            )
+        })
 }
 
 fn parse_uuid_sql(value: String, column: usize) -> rusqlite::Result<Uuid> {
@@ -506,6 +622,24 @@ fn parse_uuid_sql(value: String, column: usize) -> rusqlite::Result<Uuid> {
             Box::new(error),
         )
     })
+}
+
+fn parse_json_sql(value: String, column: usize) -> rusqlite::Result<Value> {
+    serde_json::from_str(&value).map_err(|error| {
+        rusqlite::Error::FromSqlConversionFailure(
+            column,
+            rusqlite::types::Type::Text,
+            Box::new(error),
+        )
+    })
+}
+
+fn invalid_text_value(column: usize, message: String) -> rusqlite::Error {
+    rusqlite::Error::FromSqlConversionFailure(
+        column,
+        rusqlite::types::Type::Text,
+        Box::new(IoError::new(ErrorKind::InvalidData, message)),
+    )
 }
 
 fn artifact_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<ArtifactRecord> {
@@ -581,6 +715,53 @@ fn chunk_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<ChunkRecord> {
         token_estimate: token_estimate as u64,
         embedding_state: row.get(9)?,
         embedding_model: row.get(10)?,
+    })
+}
+
+fn inferred_causality_from_row(
+    row: &rusqlite::Row<'_>,
+) -> rusqlite::Result<InferredCausalityRecord> {
+    let actor_text: String = row.get(4)?;
+    let actor = InferredCausalityActor::from_db(&actor_text)
+        .ok_or_else(|| invalid_text_value(4, format!("unknown Inferred_Causality actor {actor_text}")))?;
+    let claim_text: String = row.get(5)?;
+    let claim_level = InferredCausalityClaimLevel::from_db(&claim_text).ok_or_else(|| {
+        invalid_text_value(
+            5,
+            format!("unknown Inferred_Causality claim level {claim_text}"),
+        )
+    })?;
+    let outcome_text: String = row.get(9)?;
+    let outcome = InferredCausalityOutcome::from_db(&outcome_text).ok_or_else(|| {
+        invalid_text_value(9, format!("unknown Inferred_Causality outcome {outcome_text}"))
+    })?;
+    let canonical_flag: i64 = row.get(15)?;
+    if canonical_flag != 0 {
+        return Err(rusqlite::Error::IntegralValueOutOfRange(15, canonical_flag));
+    }
+
+    Ok(InferredCausalityRecord {
+        id: parse_uuid_sql(row.get(0)?, 0)?,
+        episode_key: row.get(1)?,
+        start_at: parse_datetime_sql(row.get(2)?, 2)?,
+        end_at: parse_datetime_sql(row.get(3)?, 3)?,
+        actor,
+        claim_level,
+        situation: parse_json_sql(row.get(6)?, 6)?,
+        intervention: parse_json_sql(row.get(7)?, 7)?,
+        observed_response: parse_json_sql(row.get(8)?, 8)?,
+        outcome,
+        confidence: row.get(10)?,
+        inference_method: row.get(11)?,
+        canonical_state_ref: row.get(12)?,
+        source_artifact_id: row
+            .get::<_, Option<String>>(13)?
+            .map(|value| parse_uuid_sql(value, 13))
+            .transpose()?,
+        authority: row.get(14)?,
+        is_canonical: false,
+        created_at: parse_datetime_sql(row.get(16)?, 16)?,
+        updated_at: parse_datetime_sql(row.get(17)?, 17)?,
     })
 }
 
