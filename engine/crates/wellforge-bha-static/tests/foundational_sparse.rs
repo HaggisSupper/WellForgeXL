@@ -4,10 +4,7 @@ use wellforge_bha_static::{STATIC_LINEAR_SOLVER_BACKEND, solve_static};
 
 #[test]
 fn static_solver_reports_foundational_sparse_backend() {
-    assert_eq!(
-        STATIC_LINEAR_SOLVER_BACKEND,
-        "wellforge-numerics/sparse-lu"
-    );
+    assert_eq!(STATIC_LINEAR_SOLVER_BACKEND, "wellforge-numerics/sparse-lu");
 }
 
 #[test]
