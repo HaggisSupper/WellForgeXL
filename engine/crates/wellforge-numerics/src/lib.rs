@@ -1,4 +1,4 @@
-//! Shared deterministic numerical primitives for WellForge engineering engines.
+//! Shared deterministic numerical primitives for `WellForge` engineering engines.
 //!
 //! This crate owns solver mechanics and numerical evidence only. Domain physics
 //! remains in the calculation engines that consume these primitives.
