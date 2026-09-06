@@ -136,19 +136,6 @@ fn geometric_stiffness(length: f64, compression_n: f64) -> [[f64; 4]; 4] {
     ]
 }
 
-fn sparse_entries(matrix: &DMatrix<f64>) -> Vec<SparseEntry> {
-    let mut entries = Vec::new();
-    for row in 0..matrix.nrows() {
-        for col in 0..matrix.ncols() {
-            let value = matrix[(row, col)];
-            if value.abs() > 0.0 {
-                entries.push(SparseEntry::new(row, col, value));
-            }
-        }
-    }
-    entries
-}
-
 /// Solves a small-deflection, buoyed-weight static beam and calculates OD/hole projection indication.
 ///
 /// # Errors
@@ -166,6 +153,7 @@ pub fn solve_static(
     let mut k_full = DMatrix::<f64>::zeros(full_dofs, full_dofs);
     let mut m_full = DMatrix::<f64>::zeros(full_dofs, full_dofs);
     let mut f_full = vec![0.0; full_dofs];
+    let mut stiffness_entries = Vec::<SparseEntry>::with_capacity((model.nodes.len() - 1) * 16);
     for element in 0..model.nodes.len() - 1 {
         let first = &model.nodes[element];
         let second = &model.nodes[element + 1];
@@ -186,8 +174,18 @@ pub fn solve_static(
         ];
         for row in 0..4 {
             for col in 0..4 {
-                k_full[(map[row], map[col])] += ke[row][col] - kg[row][col];
-                m_full[(map[row], map[col])] += me[row][col];
+                let global_row = map[row];
+                let global_col = map[col];
+                let stiffness_value = ke[row][col] - kg[row][col];
+                k_full[(global_row, global_col)] += stiffness_value;
+                m_full[(global_row, global_col)] += me[row][col];
+                if global_row >= 2 && global_col >= 2 {
+                    stiffness_entries.push(SparseEntry::new(
+                        global_row - 2,
+                        global_col - 2,
+                        stiffness_value,
+                    ));
+                }
             }
         }
         let buoyed_mass_per_length =
@@ -210,11 +208,10 @@ pub fn solve_static(
     let stiffness = k_full.view((2, 2), (reduced, reduced)).into_owned();
     let mass = m_full.view((2, 2), (reduced, reduced)).into_owned();
     let rhs_values = &f_full[2..];
-    let entries = sparse_entries(&stiffness);
-    let system =
-        SparseLinearSystem::new(reduced, &entries).map_err(|_| StaticSolveError::LinearSolve)?;
+    let system = SparseLinearSystem::new(reduced, &stiffness_entries)
+        .map_err(|_| StaticSolveError::LinearSolve)?;
     let solved = system
-        .factor_and_solve(&entries, rhs_values)
+        .factor_and_solve(&stiffness_entries, rhs_values)
         .map_err(|_| StaticSolveError::LinearSolve)?;
     let displacement = solved.values;
     if displacement.iter().any(|value| !value.is_finite()) {
