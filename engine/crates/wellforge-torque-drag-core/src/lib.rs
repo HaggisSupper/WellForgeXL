@@ -14,6 +14,7 @@
 use wellforge_torque_drag_contract::{
     AnalysisStatus, Api7gPipeSpec, ApiSevenGCheck, BucklingScreen, OperationState, StationResult,
     StringComponent, TnDAnalysisRequest, TnDAnalysisResult, TnDSolverEvidence,
+    TnDTrajectoryStation,
 };
 
 /// Errors raised by the solver before writing a result.
@@ -32,6 +33,18 @@ pub enum SolveError {
 
 const STEEL_DENSITY_KG_M3: f64 = 7850.0;
 const GRAVITY_M_S2: f64 = 9.80665;
+
+fn spatial_dogleg_rad_per_m(upper: &TnDTrajectoryStation, lower: &TnDTrajectoryStation) -> f64 {
+    let delta_md = lower.md_m - upper.md_m;
+    if delta_md <= 0.0 {
+        return 0.0;
+    }
+    let cosine = upper.inclination_rad.cos() * lower.inclination_rad.cos()
+        + upper.inclination_rad.sin()
+            * lower.inclination_rad.sin()
+            * (lower.azimuth_rad - upper.azimuth_rad).cos();
+    cosine.clamp(-1.0, 1.0).acos() / delta_md
+}
 
 /// Solve the soft-string pass and return the full result contract.
 ///
@@ -73,11 +86,7 @@ pub fn solve_soft_string(request: &TnDAnalysisRequest) -> Result<TnDAnalysisResu
             let s_lower = &request.trajectory[i + 1];
             let dmd = (s_lower.md_m - s_upper.md_m).max(0.0);
             let avg = f64::midpoint(s_upper.inclination_rad, s_lower.inclination_rad);
-            let dl = if dmd > 0.0 {
-                ((s_lower.inclination_rad - s_upper.inclination_rad).abs()) / dmd
-            } else {
-                0.0
-            };
+            let dl = spatial_dogleg_rad_per_m(s_upper, s_lower);
             (dmd, avg, dl)
         } else {
             (0.0, s_upper.inclination_rad, 0.0)
