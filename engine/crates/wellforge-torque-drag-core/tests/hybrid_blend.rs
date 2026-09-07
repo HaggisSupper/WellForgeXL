@@ -26,11 +26,8 @@ fn stiff_values_substitute_soft_stations_and_only_contact_points_are_inserted() 
         .expect("300 m soft station")
         .clone();
 
-    let interval_id = wellforge_torque_drag_contract::derive_stiff_interval_id(
-        request.analysis_id,
-        0.0,
-        200.0,
-    );
+    let interval_id =
+        wellforge_torque_drag_contract::derive_stiff_interval_id(request.analysis_id, 0.0, 200.0);
     let stiff = StiffStringResult {
         intervals: vec![StiffIntervalResult {
             interval_id,
@@ -86,10 +83,12 @@ fn stiff_values_substitute_soft_stations_and_only_contact_points_are_inserted() 
     let blended = blend_stiff_refinement(soft, &stiff);
 
     assert_eq!(blended.stations.len(), original_len + 1);
-    assert!(blended
-        .stations
-        .windows(2)
-        .all(|pair| pair[1].md_m > pair[0].md_m));
+    assert!(
+        blended
+            .stations
+            .windows(2)
+            .all(|pair| pair[1].md_m > pair[0].md_m)
+    );
 
     let inserted = blended
         .stations
@@ -115,10 +114,12 @@ fn stiff_values_substitute_soft_stations_and_only_contact_points_are_inserted() 
         StiffPointKind::Substituted
     );
 
-    assert!(blended
-        .stations
-        .iter()
-        .all(|station| (station.md_m - 150.0).abs() > 1.0e-9));
+    assert!(
+        blended
+            .stations
+            .iter()
+            .all(|station| (station.md_m - 150.0).abs() > 1.0e-9)
+    );
 
     let after = blended
         .stations
