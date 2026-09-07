@@ -451,7 +451,7 @@ Public Sub WellForge_UnitSwitchSelfTest()
     Dim model As String, domainName As String, valueSheet As String, valueAddress As String, labelAddress As String
     Dim siValue As Double, imperialValue As Double, customValue As Double
     Dim siLabel As String, imperialLabel As String, customLabel As String
-    Dim failureNumber As Long, failureDescription As String
+    Dim failureNumber As Long, failureSource As String, failureDescription As String
 
     Set wsUnits = ThisWorkbook.Worksheets("Unit Map")
     oldSystem = wsUnits.Range("B5").Value2
@@ -503,10 +503,10 @@ Cleanup:
     WF_DispatchModel model
     WF_RefreshCharts
     On Error GoTo 0
-    If failureNumber <> 0 Then Err.Raise failureNumber, "WellForge_UnitSwitchSelfTest", failureDescription
+    If failureNumber <> 0 Then Err.Raise failureNumber, failureSource, failureDescription
     Exit Sub
 Failed:
-    failureNumber = Err.Number: failureDescription = Err.Description
+    failureNumber = Err.Number: failureSource = Err.Source: failureDescription = Err.Description
     Resume Cleanup
 End Sub
 

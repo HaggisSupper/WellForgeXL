@@ -188,6 +188,10 @@ test('VBA recalculation preserves reversed-depth chart axes and refreshes visibl
   assert.match(core, /WF_AssertModelDepthCharts/);
   assert.match(core, /ReversePlotOrder <> True/);
   assert.match(core, /TickLabelPosition <> xlHigh And \.Axes\(xlCategory\)\.TickLabelPosition <> xlNextToAxis/);
+  assert.match(core, /failureNumber = Err\.Number: failureSource = Err\.Source: failureDescription = Err\.Description/,
+    'unit-switch cleanup must preserve the original failing source');
+  assert.match(core, /Err\.Raise failureNumber, failureSource, failureDescription/,
+    'unit-switch cleanup must re-raise the original error metadata');
 
   assert.match(hydraulics, /WF_ConfigureDepthChart wsCharts\.Name, 1, "Pressure \(" & WF_UnitLabel\("Pressure"\) & "\)", "MD \(" & WF_UnitLabel\("Length"\) & "\)"/);
   assert.match(hydraulics, /Minimum annular velocity/);
