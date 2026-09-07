@@ -58,13 +58,7 @@ fn weighted_least_squares(
     let columns = design[0].len();
     let mut normal = vec![0.0; columns * columns];
     let mut rhs = vec![0.0; columns];
-    for (row, ((features, &observation), &weight)) in design
-        .iter()
-        .zip(observations)
-        .zip(weights)
-        .enumerate()
-    {
-        let _ = row;
+    for ((features, &observation), &weight) in design.iter().zip(observations).zip(weights) {
         if weight == 0.0 {
             continue;
         }
@@ -203,12 +197,11 @@ pub fn robust_weighted_least_squares(
     let mut coefficients = robust_seed(design, observations, weights)?;
     let initial_residuals = residuals(design, observations, &coefficients);
     let initial_norm = residual_norm(&initial_residuals, weights);
-    let mut final_norm = initial_norm;
 
     for iteration in 1..=options.max_iterations {
         let current_residuals = residuals(design, observations, &coefficients);
-        let scale = (1.4826 * median_absolute_deviation(&current_residuals))
-            .max(options.minimum_scale);
+        let scale =
+            (1.4826 * median_absolute_deviation(&current_residuals)).max(options.minimum_scale);
         let cutoff = options.huber_k * scale;
         let effective_weights = current_residuals
             .iter()
@@ -231,7 +224,7 @@ pub fn robust_weighted_least_squares(
             .fold(0.0_f64, f64::max);
         coefficients = updated;
         let updated_residuals = residuals(design, observations, &coefficients);
-        final_norm = residual_norm(&updated_residuals, &effective_weights);
+        let final_norm = residual_norm(&updated_residuals, &effective_weights);
         if max_change <= options.coefficient_tolerance {
             return Ok(RobustRegressionFit {
                 coefficients,
@@ -248,6 +241,5 @@ pub fn robust_weighted_least_squares(
         }
     }
 
-    let _ = final_norm;
     Err(RegressionError::NotConverged)
 }
