@@ -537,7 +537,7 @@ Private Sub WF_AssertDepthChart(ByVal SheetName As String, ByVal ChartIndex As L
     Dim profileChart As Chart
     Set profileChart = ThisWorkbook.Worksheets(SheetName).ChartObjects(ChartIndex).Chart
     With profileChart
-        If .ChartType <> xlXYScatterLinesNoMarkers Then Err.Raise vbObjectError + 8217, "WF_AssertDepthChart", SheetName & " chart " & CStr(ChartIndex) & " is not an XY depth roadmap"
+        If .ChartType <> xlXYScatterLinesNoMarkers And .ChartType <> xlXYScatterLines Then Err.Raise vbObjectError + 8217, "WF_AssertDepthChart", SheetName & " chart " & CStr(ChartIndex) & " is not an XY depth roadmap"
         If .Axes(xlValue).ReversePlotOrder <> True Then Err.Raise vbObjectError + 8218, "WF_AssertDepthChart", SheetName & " chart " & CStr(ChartIndex) & " does not reverse depth"
         If .Axes(xlCategory).TickLabelPosition <> xlHigh And .Axes(xlCategory).TickLabelPosition <> xlNextToAxis Then Err.Raise vbObjectError + 8219, "WF_AssertDepthChart", SheetName & " chart " & CStr(ChartIndex) & " does not place the response axis at the top"
     End With

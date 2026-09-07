@@ -188,6 +188,8 @@ test('VBA recalculation preserves reversed-depth chart axes and refreshes visibl
   assert.match(core, /WF_AssertModelDepthCharts/);
   assert.match(core, /ReversePlotOrder <> True/);
   assert.match(core, /TickLabelPosition <> xlHigh And \.Axes\(xlCategory\)\.TickLabelPosition <> xlNextToAxis/);
+  assert.match(core, /\.ChartType <> xlXYScatterLinesNoMarkers And \.ChartType <> xlXYScatterLines/,
+    'depth validation must accept both valid XY line chart variants');
   assert.match(core, /failureNumber = Err\.Number: failureSource = Err\.Source: failureDescription = Err\.Description/,
     'unit-switch cleanup must preserve the original failing source');
   assert.match(core, /Err\.Raise failureNumber, failureSource, failureDescription/,
