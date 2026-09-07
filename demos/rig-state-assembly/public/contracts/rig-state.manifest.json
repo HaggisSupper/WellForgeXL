@@ -1,0 +1,423 @@
+{
+  "layers": [
+    {
+      "id": "PIPE",
+      "slot": "structure",
+      "label": "Drill pipe",
+      "protectedZones": [
+        "pipe"
+      ]
+    },
+    {
+      "id": "BIT",
+      "slot": "structure",
+      "label": "Bit",
+      "protectedZones": [
+        "bit"
+      ]
+    },
+    {
+      "id": "ROTATION",
+      "slot": "activity",
+      "label": "Rotating arrow",
+      "protectedZones": [
+        "pipe"
+      ]
+    },
+    {
+      "id": "SLIDE_KINK",
+      "slot": "activity",
+      "label": "Slide bend",
+      "protectedZones": [
+        "bit"
+      ]
+    },
+    {
+      "id": "FLOW_LOOP",
+      "slot": "fluid",
+      "label": "Circulation loop",
+      "protectedZones": [
+        "annulus"
+      ]
+    },
+    {
+      "id": "RETURNS_OBSERVE",
+      "slot": "observation",
+      "label": "Observe returns",
+      "protectedZones": [
+        "return-line"
+      ]
+    },
+    {
+      "id": "MOVE_DOWN",
+      "slot": "movement",
+      "label": "Moving down",
+      "exclusiveSlot": true,
+      "protectedZones": [
+        "pipe"
+      ]
+    },
+    {
+      "id": "MOVE_UP",
+      "slot": "movement",
+      "label": "Moving up",
+      "exclusiveSlot": true,
+      "protectedZones": [
+        "pipe"
+      ]
+    },
+    {
+      "id": "REAM",
+      "slot": "activity",
+      "label": "Reaming cutter",
+      "protectedZones": [
+        "bit"
+      ]
+    },
+    {
+      "id": "BACKREAM",
+      "slot": "activity",
+      "label": "Backreaming cutter",
+      "protectedZones": [
+        "bit"
+      ]
+    },
+    {
+      "id": "CORE",
+      "slot": "activity",
+      "label": "Core barrel",
+      "protectedZones": [
+        "bit"
+      ]
+    },
+    {
+      "id": "CEMENT",
+      "slot": "fluid",
+      "label": "Cement circulation",
+      "protectedZones": [
+        "annulus"
+      ]
+    },
+    {
+      "id": "PACK_OFF",
+      "slot": "dysfunction",
+      "label": "Pack-off restriction",
+      "protectedZones": [
+        "annulus"
+      ]
+    },
+    {
+      "id": "WASHOUT",
+      "slot": "dysfunction",
+      "label": "Washout leak",
+      "protectedZones": [
+        "pipe"
+      ]
+    },
+    {
+      "id": "LOSS",
+      "slot": "dysfunction",
+      "label": "Lost returns",
+      "protectedZones": [
+        "annulus"
+      ]
+    },
+    {
+      "id": "INFLUX",
+      "slot": "dysfunction",
+      "label": "Influx",
+      "protectedZones": [
+        "annulus"
+      ]
+    },
+    {
+      "id": "WELL_CONTROL",
+      "slot": "dysfunction",
+      "label": "Well-control barrier",
+      "protectedZones": [
+        "surface"
+      ]
+    },
+    {
+      "id": "WHIRL",
+      "slot": "dysfunction",
+      "label": "Whirl vibration",
+      "protectedZones": [
+        "pipe"
+      ]
+    }
+  ],
+  "activities": [
+    {
+      "id": "ROTATE_ON_BOTTOM",
+      "label": "Rotating on bottom",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "ROTATION"
+      ]
+    },
+    {
+      "id": "SLIDE_ON_BOTTOM",
+      "label": "Sliding on bottom",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "SLIDE_KINK"
+      ]
+    },
+    {
+      "id": "CIRCULATE_OFF_BOTTOM",
+      "label": "Circulating off bottom",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "FLOW_LOOP"
+      ]
+    },
+    {
+      "id": "CIRC_ROTATE_OFF_BOTTOM",
+      "label": "Rotating and circulating off bottom",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "ROTATION",
+        "FLOW_LOOP"
+      ]
+    },
+    {
+      "id": "HOLD_OBSERVE_RETURNS",
+      "label": "Holding and observing returns",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "RETURNS_OBSERVE"
+      ]
+    },
+    {
+      "id": "TRIP_IN",
+      "label": "Tripping in",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "MOVE_DOWN"
+      ]
+    },
+    {
+      "id": "TRIP_OUT",
+      "label": "Tripping out",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "MOVE_UP"
+      ]
+    },
+    {
+      "id": "REAM",
+      "label": "Reaming",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "ROTATION",
+        "MOVE_DOWN",
+        "REAM"
+      ]
+    },
+    {
+      "id": "BACKREAM",
+      "label": "Backreaming",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "ROTATION",
+        "MOVE_UP",
+        "BACKREAM"
+      ]
+    },
+    {
+      "id": "CORING",
+      "label": "Coring",
+      "layerIds": [
+        "PIPE",
+        "CORE",
+        "MOVE_DOWN"
+      ]
+    },
+    {
+      "id": "CEMENT_CIRC",
+      "label": "Cement circulation",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "CEMENT"
+      ]
+    },
+    {
+      "id": "WELL_CONTROL",
+      "label": "Well-control response",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "WELL_CONTROL"
+      ]
+    },
+    {
+      "id": "UNCLASSIFIED",
+      "label": "Unclassified activity",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "RETURNS_OBSERVE"
+      ]
+    }
+  ],
+  "dysfunctions": [
+    {
+      "id": "PACK_OFF",
+      "label": "Pack-off",
+      "severity": "warning",
+      "layerIds": [
+        "PACK_OFF"
+      ]
+    },
+    {
+      "id": "WASHOUT",
+      "label": "Washout",
+      "severity": "warning",
+      "layerIds": [
+        "WASHOUT"
+      ]
+    },
+    {
+      "id": "LOSS",
+      "label": "Losses",
+      "severity": "critical",
+      "layerIds": [
+        "LOSS"
+      ]
+    },
+    {
+      "id": "INFLUX",
+      "label": "Influx / kick",
+      "severity": "critical",
+      "layerIds": [
+        "INFLUX"
+      ]
+    },
+    {
+      "id": "WHIRL",
+      "label": "Whirl",
+      "severity": "advisory",
+      "layerIds": [
+        "WHIRL"
+      ]
+    }
+  ],
+  "states": [
+    {
+      "id": "ROTATE_ON_BOTTOM",
+      "label": "Rotate on bottom",
+      "activityId": "ROTATE_ON_BOTTOM"
+    },
+    {
+      "id": "SLIDE_ON_BOTTOM",
+      "label": "Slide on bottom",
+      "activityId": "SLIDE_ON_BOTTOM"
+    },
+    {
+      "id": "CIRCULATE_OFF_BOTTOM",
+      "label": "Circulate off bottom",
+      "activityId": "CIRCULATE_OFF_BOTTOM"
+    },
+    {
+      "id": "CIRC_ROTATE_OFF_BOTTOM",
+      "label": "Circulate and rotate off bottom",
+      "activityId": "CIRC_ROTATE_OFF_BOTTOM"
+    },
+    {
+      "id": "FLOW_CHECK",
+      "label": "Flow check",
+      "activityId": "HOLD_OBSERVE_RETURNS"
+    },
+    {
+      "id": "TRIP_IN",
+      "label": "Trip in",
+      "activityId": "TRIP_IN"
+    },
+    {
+      "id": "TRIP_OUT",
+      "label": "Trip out",
+      "activityId": "TRIP_OUT"
+    },
+    {
+      "id": "REAM",
+      "label": "Ream",
+      "activityId": "REAM"
+    },
+    {
+      "id": "BACKREAM",
+      "label": "Backream",
+      "activityId": "BACKREAM"
+    },
+    {
+      "id": "CORING",
+      "label": "Coring",
+      "activityId": "CORING"
+    },
+    {
+      "id": "CEMENT_CIRC",
+      "label": "Cement circulation",
+      "activityId": "CEMENT_CIRC"
+    },
+    {
+      "id": "PACK_OFF",
+      "label": "Pack-off",
+      "activityId": "CIRCULATE_OFF_BOTTOM",
+      "dysfunctionIds": [
+        "PACK_OFF"
+      ]
+    },
+    {
+      "id": "WASHOUT",
+      "label": "Washout",
+      "activityId": "ROTATE_ON_BOTTOM",
+      "dysfunctionIds": [
+        "WASHOUT"
+      ]
+    },
+    {
+      "id": "LOSS",
+      "label": "Losses",
+      "activityId": "CIRCULATE_OFF_BOTTOM",
+      "dysfunctionIds": [
+        "LOSS"
+      ]
+    },
+    {
+      "id": "INFLUX",
+      "label": "Influx / kick",
+      "activityId": "CIRCULATE_OFF_BOTTOM",
+      "dysfunctionIds": [
+        "INFLUX"
+      ]
+    },
+    {
+      "id": "WHIRL",
+      "label": "Whirl",
+      "activityId": "ROTATE_ON_BOTTOM",
+      "dysfunctionIds": [
+        "WHIRL"
+      ]
+    },
+    {
+      "id": "WELL_CONTROL",
+      "label": "Well control",
+      "activityId": "WELL_CONTROL"
+    },
+    {
+      "id": "UNKNOWN",
+      "label": "Unknown",
+      "activityId": "UNCLASSIFIED"
+    }
+  ]
+}
