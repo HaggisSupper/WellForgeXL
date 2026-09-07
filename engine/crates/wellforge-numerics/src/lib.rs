@@ -5,18 +5,30 @@
 
 mod circular;
 mod complementarity;
+mod flow;
 mod interpolation;
 mod interval;
+mod nonlinear;
+mod regression;
 mod root;
 mod sparse;
+mod transport;
 mod volume;
 
 pub use circular::{CircularAccumulator, CircularError, CircularSummary};
 pub use complementarity::{fischer_burmeister, fischer_burmeister_gradient};
+pub use flow::{FlowEdge, FlowError, continuity_residuals};
 pub use interpolation::{InterpolationError, MonotoneCurve};
 pub use interval::{Interval, IntervalError, partition_boundaries};
+pub use nonlinear::{
+    JacobianProvider, NewtonError, NewtonOptions, NewtonSolution, ResidualModel, solve_newton_system,
+};
+pub use regression::{
+    RegressionError, RobustRegressionFit, RobustRegressionOptions, robust_weighted_least_squares,
+};
 pub use root::{RootError, RootOptions, RootSolution, solve_bracketed, solve_safeguarded_newton};
 pub use sparse::{SparseEntry, SparseError, SparseLinearSystem, SparseSolution};
+pub use transport::{Parcel, ParcelError, ParcelQueue};
 pub use volume::{VolumeCoordinate, VolumeError, VolumeSegment};
 
 /// Terminal state reported by an iterative numerical primitive.
