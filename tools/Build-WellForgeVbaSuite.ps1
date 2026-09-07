@@ -12,6 +12,8 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 Import-Module Microsoft.PowerShell.Utility -ErrorAction Stop
 Add-Type -AssemblyName System.IO.Compression.FileSystem
+. (Join-Path $PSScriptRoot 'WellForgeBuildGuards.ps1')
+. (Join-Path $PSScriptRoot 'WellForgeWorkbookPackage.ps1')
 
 $xlOpenXMLWorkbookMacroEnabled = 52
 $xlCellTypeFormulas = -4123
@@ -20,10 +22,14 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $usingVersionedSourceDirectory = [string]::IsNullOrWhiteSpace($SourceDirectory)
 if ($usingVersionedSourceDirectory) { $SourceDirectory = Join-Path $repositoryRoot 'workbooks\source' }
 if ([string]::IsNullOrWhiteSpace($OutputDirectory)) { $OutputDirectory = Join-Path $repositoryRoot 'outputs\vba-engine' }
+$OutputDirectory = Resolve-WellForgeOutputDirectory -RepositoryRoot $repositoryRoot -OutputDirectory $OutputDirectory
 if ([string]::IsNullOrWhiteSpace($LogDirectory)) { $LogDirectory = Join-Path $repositoryRoot 'logs' }
+$LogDirectory = Resolve-WellForgeOutputDirectory -RepositoryRoot $repositoryRoot -OutputDirectory $LogDirectory
+$bhaDiagnosticPaths = Get-WellForgeBhaDiagnosticPaths -OutputDirectory $OutputDirectory -LogDirectory $LogDirectory
 New-Item -ItemType Directory -Path $LogDirectory -Force | Out-Null
 $logPath = Join-Path $LogDirectory ('vba-suite-build-{0}.jsonl' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
-$materializedSourceDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ('WellForgeSource-' + [guid]::NewGuid().ToString('N'))
+$materializedSourceRunDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ('WellForgeSource-' + [guid]::NewGuid().ToString('N'))
+$materializedSourceDirectory = Join-Path $materializedSourceRunDirectory 'source'
 
 $defaultWorkbookNames = @(
     'API_7G_Drill_String_Strength_and_Torque_SI.xlsx',
@@ -33,6 +39,7 @@ $defaultWorkbookNames = @(
     'Directional_Drilling_Wellplan_and_Survey_SI.xlsx'
 )
 if ($null -eq $WorkbookNames -or $WorkbookNames.Count -eq 0) { $WorkbookNames = $defaultWorkbookNames }
+Assert-WellForgeWorkbookNames -WorkbookNames $WorkbookNames
 $moduleFiles = @(
     'WellForgeCore.bas',
     'WellForgeJsonExchange.bas',
@@ -127,39 +134,6 @@ function Get-FormulaCount {
     return $count
 }
 
-function Assert-XlsxPackageIntegrity {
-    param([Parameter(Mandatory = $true)][string]$Path)
-    $archive = $null
-    $manifestStream = $null
-    $reader = $null
-    try {
-        $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
-        $manifestEntry = $archive.GetEntry('[Content_Types].xml')
-        if ($null -eq $manifestEntry) { throw 'The OOXML content-type manifest is missing.' }
-        $manifestStream = $manifestEntry.Open()
-        $reader = [System.IO.StreamReader]::new($manifestStream)
-        [xml]$manifest = $reader.ReadToEnd()
-        $packageParts = @{}
-        foreach ($entry in $archive.Entries) {
-            $packageParts['/' + $entry.FullName.Replace('\', '/')] = $true
-        }
-        foreach ($override in $manifest.SelectNodes("//*[local-name()='Override']")) {
-            $partName = [string]$override.PartName
-            if ([string]::IsNullOrWhiteSpace($partName) -or -not $packageParts.ContainsKey($partName)) {
-                throw "The OOXML manifest declares a missing package part: $partName"
-            }
-        }
-    }
-    catch {
-        throw "Source workbook package validation failed for '$Path'. $($_.Exception.Message)"
-    }
-    finally {
-        if ($null -ne $reader) { $reader.Dispose() }
-        elseif ($null -ne $manifestStream) { $manifestStream.Dispose() }
-        if ($null -ne $archive) { $archive.Dispose() }
-    }
-}
-
 function Get-WorksheetFormulaElementCount {
     param([Parameter(Mandatory = $true)][string]$Path)
     $archive = $null
@@ -231,11 +205,12 @@ function Convert-WorkbookFormulasToCachedValues {
 }
 
 function Invoke-BhaEngineEndToEnd {
-    param([Parameter(Mandatory = $true)][string]$OutputDirectory)
+    param([Parameter(Mandatory = $true)][string]$OutputDirectory, [Parameter(Mandatory = $true)][string]$LogDirectory)
     $enginePath = Join-Path $OutputDirectory 'wellforge-bha.exe'
     $requestPath = Join-Path $repositoryRoot 'engine\fixtures\requests\release-one-minimal.json'
-    $resultPath = Join-Path $OutputDirectory 'bha-e2e-result.json'
-    $bridgePath = Join-Path $OutputDirectory 'bha-e2e-result.wfbridge'
+    $diagnostics = Get-WellForgeBhaDiagnosticPaths -OutputDirectory $OutputDirectory -LogDirectory $LogDirectory
+    $resultPath = $diagnostics.result
+    $bridgePath = $diagnostics.bridge
     $requestHash = (& $enginePath validate --input $requestPath).Trim()
     if ($LASTEXITCODE -ne 0 -or $requestHash -notmatch '^[0-9a-f]{64}$') { throw 'The external BHA engine rejected its release fixture.' }
     & $enginePath run --input $requestPath --output $resultPath
@@ -295,7 +270,7 @@ try {
             $actualSourceHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $sourcePath).Hash.ToLowerInvariant()
             if ($actualSourceHash -ne $sourceHashes[$name]) { throw "Source workbook hash mismatch: $name" }
         }
-        Assert-XlsxPackageIntegrity -Path $sourcePath
+        Assert-XlsxPackageIntegrity -Path $sourcePath -RequireBhaLayers:($name -eq 'BHA_Vibration_Bending_and_Drill_Ahead_Tendency_SI.xlsx')
         $sourcePaths[$name] = $sourcePath
     }
 
@@ -314,8 +289,8 @@ try {
         if ($LASTEXITCODE -ne 0) { throw ("The Rust {0} engine build failed; workbook compilation was stopped." -f $rustEngine.label) }
         Write-BuildEvent SUCCESS ("Rust {0} engine built and hashed beside workbook outputs." -f $rustEngine.label) @{ executable = (Join-Path $OutputDirectory $rustEngine.executable) }
     }
-    Invoke-BhaEngineEndToEnd -OutputDirectory $OutputDirectory
-    Write-BuildEvent SUCCESS 'External BHA engine end-to-end contract passed.' @{ result = (Join-Path $OutputDirectory 'bha-e2e-result.json') }
+    Invoke-BhaEngineEndToEnd -OutputDirectory $OutputDirectory -LogDirectory $LogDirectory
+    Write-BuildEvent SUCCESS 'External BHA engine end-to-end contract passed (not workbook dispatch acceptance).' $bhaDiagnosticPaths
     try { $excel = New-Object -ComObject Excel.Application } catch { throw 'Desktop Microsoft Excel could not be started.' }
     $excel.Visible = [bool]$VisibleExcel
     $excel.DisplayAlerts = $false
@@ -367,11 +342,11 @@ try {
             Write-BuildEvent INFO "Saved initialized VBA project for $targetName"
 
             if ($usesExternalEngine) {
-                # The active Office automation host denies workbook child-process
-                # creation.  The engine sequence above exercises the same
-                # hash/validate/run/verify/bridge contract outside that host.
+                # Historical build compatibility only; this is not evidence of
+                # current host policy or native workbook acceptance. The release
+                # runner must execute all five actual workbook dispatchers.
                 $workbook.Worksheets('Summary').Range('K5').Value2 = '2.0.0-vba'
-                Write-BuildEvent WARN "Workbook engine dispatch is externally verified because Office automation blocks child processes." @{ workbook = $targetName }
+                Write-BuildEvent WARN 'BuildInitialize/unit-switch bypass: native workbook dispatch is NOT accepted; release gates are required.' @{ workbook = $targetName }
             }
             else {
                 $excel.Run(("'{0}'!WellForge_BuildInitialize" -f $workbook.Name))
@@ -389,6 +364,7 @@ try {
             $workbook = $null
 
             Convert-WorkbookFormulasToCachedValues -Path $stagingPath
+            Assert-XlsxPackageIntegrity -Path $stagingPath -RequireBhaLayers:($name -eq 'BHA_Vibration_Bending_and_Drill_Ahead_Tendency_SI.xlsx')
             $formulaCount = Get-WorksheetFormulaElementCount -Path $stagingPath
             if ($formulaCount -ne 0) { throw "$targetName still contains $formulaCount worksheet formulas after package value conversion." }
 
@@ -413,11 +389,18 @@ catch {
     Write-BuildEvent ERROR $_.Exception.Message @{ detail = $failureText }
 }
 finally {
-    if ($null -ne $excel) { try { $excel.Quit() } catch { } }
+    try { Invoke-WellForgeExcelQuit -Application $excel }
+    catch {
+        $succeeded = $false
+        $failureText = "Blocked/manual cleanup: Excel shutdown could not be verified. $($_.Exception.Message)"
+        Write-BuildEvent ERROR $failureText
+    }
     Release-ComObject $workbooks; Release-ComObject $excel
     if (Test-Path -LiteralPath $materializedSourceDirectory -PathType Container) {
+        Assert-WellForgeCleanupTarget -Path $materializedSourceDirectory -RunDirectory $materializedSourceRunDirectory
         Remove-Item -LiteralPath $materializedSourceDirectory -Recurse -Force
     }
+    if (Test-Path -LiteralPath $materializedSourceRunDirectory -PathType Container) { Remove-Item -LiteralPath $materializedSourceRunDirectory }
     [GC]::Collect(); [GC]::WaitForPendingFinalizers(); [GC]::Collect(); [GC]::WaitForPendingFinalizers()
     Write-Host ''
     if ($succeeded) {

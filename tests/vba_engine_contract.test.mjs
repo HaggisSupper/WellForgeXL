@@ -54,8 +54,9 @@ test('Windows builder compiles self-contained XLSM files, rejects residual formu
     'Windows build must exercise SI, Imperial, and Custom display-unit changes before accepting an XLSM');
   assert.match(script, /Get-FormulaCount/);
   assert.match(script, /if \(\$formulaCount -ne 0\)/);
-  assert.match(script, /function Assert-XlsxPackageIntegrity/);
-  assert.match(script, /SelectNodes\("\/\/\*\[local-name\(\)='Override'\]"\)/);
+  const packageGuard = await read('tools/WellForgeWorkbookPackage.ps1');
+  assert.match(packageGuard, /function Assert-XlsxPackageIntegrity/);
+  assert.match(packageGuard, /SelectNodes\("\/\/\*\[local-name\(\)='Override'\]"\)/);
   assert.match(script, /Assert-XlsxPackageIntegrity -Path \$sourcePath/);
   assert.match(script, /\[switch\]\$NoPause/);
   assert.match(script, /Read-Host 'Press Enter to close this window'/);

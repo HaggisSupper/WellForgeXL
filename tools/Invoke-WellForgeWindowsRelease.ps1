@@ -7,6 +7,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'WellForgeBuildGuards.ps1')
+. (Join-Path $PSScriptRoot 'WellForgeWorkbookPackage.ps1')
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $packageDirectory = Join-Path $RunRoot 'package'
 $logDirectory = Join-Path $RunRoot 'logs'
@@ -14,7 +16,7 @@ $renderDirectory = Join-Path $RunRoot 'chart-renders'
 $extractDirectory = Join-Path $RunRoot 'extracted'
 $archivePath = Join-Path $RunRoot ("wellforgexl-windows-{0}.zip" -f $ExpectedGitSha)
 $gateResultsPath = Join-Path $RunRoot 'gate-results.json'
-$excelPidPath = Join-Path $RunRoot 'excel.pid'
+$excelIdentityPath = Join-Path $logDirectory 'excel-identities.jsonl'
 $releaseTool = Join-Path $repositoryRoot 'tools\release-package.mjs'
 $requiredComponents = @(
     'WellForgeCore', 'WellForgeJsonExchange', 'WellForgeApi7G', 'WellForgeHydraulics',
@@ -44,7 +46,7 @@ $gateDocument = [ordered]@{
 $currentGate = $null
 $excel = $null
 $workbooks = $null
-$excelProcessId = $null
+$excelProcessIdentity = $null
 $succeeded = $false
 
 function Save-GateResults {
@@ -114,8 +116,30 @@ function Register-ExcelProcess {
     $processId = 0
     [void][WellForgeNativeMethods]::GetWindowThreadProcessId([IntPtr]$Application.Hwnd, [ref]$processId)
     if ($processId -le 0) { throw 'Excel process identity could not be captured.' }
-    [System.IO.File]::WriteAllText($excelPidPath, [string]$processId, [System.Text.Encoding]::ASCII)
-    return $processId
+    $process = Get-Process -Id $processId -ErrorAction Stop
+    $identity = @{ process_id = $processId; start_time_utc = $process.StartTime.ToUniversalTime().ToString('o'); window_handle = [long]$Application.Hwnd; run_id = $RunId }
+    $identity | ConvertTo-Json -Compress | Add-Content -LiteralPath $excelIdentityPath -Encoding UTF8
+    return $identity
+}
+
+function Close-ReleaseExcel {
+    if ($null -eq $script:excel -and $null -eq $script:excelProcessIdentity) { return }
+    try { Invoke-WellForgeExcelQuit -Application $script:excel }
+    finally {
+        Release-ComObject $script:workbooks
+        Release-ComObject $script:excel
+        $script:workbooks = $null
+        $script:excel = $null
+        [GC]::Collect()
+        [GC]::WaitForPendingFinalizers()
+    }
+    $remainingProcess = $null
+    if ($null -ne $script:excelProcessIdentity) {
+        try { $remainingProcess = Get-Process -Id $script:excelProcessIdentity.process_id -ErrorAction Stop }
+        catch { if ($_.FullyQualifiedErrorId -notlike 'NoProcessFoundForGivenId*') { throw } }
+    }
+    Assert-WellForgeExcelShutdown -Identity $script:excelProcessIdentity -CurrentProcess $remainingProcess
+    $script:excelProcessIdentity = $null
 }
 
 function Invoke-WorkbookMacro {
@@ -169,6 +193,7 @@ try {
     New-Item -ItemType Directory -Path $packageDirectory, $renderDirectory | Out-Null
 
     Start-ReleaseGate 'native_binaries'
+    $dependencyPolicy = Invoke-WellForgeDependencyPolicy -EngineRoot (Join-Path $repositoryRoot 'engine') -LogPath (Join-Path $logDirectory 'cargo-deny-policy.log')
     $builder = Join-Path $repositoryRoot 'tools\Build-WellForgeVbaSuite.ps1'
     & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $builder `
         -OutputDirectory $packageDirectory -LogDirectory $logDirectory -NoPause
@@ -181,12 +206,15 @@ try {
         -LogPath (Join-Path $logDirectory 'trajectory-native-smoke.log')
     Copy-Item -LiteralPath (Join-Path $repositoryRoot 'LICENSE') -Destination (Join-Path $packageDirectory 'LICENSE')
     Copy-Item -LiteralPath (Join-Path $repositoryRoot 'LICENSE-APACHE') -Destination (Join-Path $packageDirectory 'LICENSE-APACHE')
-    Complete-ReleaseGate 'native_binaries' @{ rust_toolchain = '1.98.0'; cargo_deny = '0.20.2'; smoke_tests = 2 }
+    Complete-ReleaseGate 'native_binaries' @{ rust_toolchain = '1.98.0'; cargo_deny = $dependencyPolicy; smoke_tests = 2 }
 
     & node $releaseTool create --package-dir $packageDirectory --archive $archivePath --git-sha $ExpectedGitSha
     if ($LASTEXITCODE -ne 0) { throw 'Release archive creation failed.' }
     & node $releaseTool verify --archive $archivePath --extract-dir $extractDirectory --git-sha $ExpectedGitSha
     if ($LASTEXITCODE -ne 0) { throw 'Release archive verification or clean extraction failed.' }
+    foreach ($name in $workbookNames) {
+        Assert-XlsxPackageIntegrity -Path (Join-Path $extractDirectory $name) -RequireBhaLayers:($name -like 'BHA_*')
+    }
 
     try { $excel = New-Object -ComObject Excel.Application } catch { throw 'Desktop Microsoft Excel could not be started for package acceptance.' }
     $excel.Visible = $false
@@ -195,7 +223,7 @@ try {
     $excel.AskToUpdateLinks = $false
     $excel.AutomationSecurity = 1
     $workbooks = $excel.Workbooks
-    $excelProcessId = Register-ExcelProcess -Application $excel
+    $excelProcessIdentity = Register-ExcelProcess -Application $excel
     $excelIdentity = @{ version = [string]$excel.Version; build = [string]$excel.Build; operating_system = [string]$excel.OperatingSystem }
 
     Start-ReleaseGate 'vba_compilation_excel_com'
@@ -297,16 +325,7 @@ try {
     $secondExtractDirectory = Join-Path $RunRoot 'second-clean-extraction'
     & node $releaseTool verify --archive $archivePath --extract-dir $secondExtractDirectory --git-sha $ExpectedGitSha
     if ($LASTEXITCODE -ne 0) { throw 'Final package verification and independent extraction failed.' }
-    try { $excel.Quit() } catch { }
-    Release-ComObject $workbooks
-    Release-ComObject $excel
-    $ownedExcel = Get-Process -Id $excelProcessId -ErrorAction SilentlyContinue
-    if ($null -ne $ownedExcel) { Stop-Process -Id $excelProcessId -Force -ErrorAction SilentlyContinue }
-    $excelProcessId = $null
-    $workbooks = $null
-    $excel = $null
-    [GC]::Collect()
-    [GC]::WaitForPendingFinalizers()
+    Close-ReleaseExcel
     try { $excel = New-Object -ComObject Excel.Application } catch { throw 'Desktop Microsoft Excel could not be restarted for final package acceptance.' }
     $excel.Visible = $false
     $excel.DisplayAlerts = $false
@@ -314,7 +333,7 @@ try {
     $excel.AskToUpdateLinks = $false
     $excel.AutomationSecurity = 1
     $workbooks = $excel.Workbooks
-    $excelProcessId = Register-ExcelProcess -Application $excel
+    $excelProcessIdentity = Register-ExcelProcess -Application $excel
     foreach ($name in $workbookNames) {
         $workbook = $null
         try {
@@ -329,6 +348,7 @@ try {
             if ($null -ne $workbook) { try { $workbook.Close($false) } catch { }; Release-ComObject $workbook }
         }
     }
+    Close-ReleaseExcel
     Complete-ReleaseGate 'package_acceptance' @{ archive = $archivePath; independently_extracted_and_reopened_workbooks = $workbookNames.Count }
     $succeeded = $true
 }
@@ -346,16 +366,15 @@ catch {
     Write-Host $gateDocument.failure -ForegroundColor Red
 }
 finally {
-    if ($null -ne $excel) { try { $excel.Quit() } catch { } }
-    Release-ComObject $workbooks
-    Release-ComObject $excel
-    [GC]::Collect()
-    [GC]::WaitForPendingFinalizers()
-    if ($null -ne $excelProcessId) {
-        $ownedExcel = Get-Process -Id $excelProcessId -ErrorAction SilentlyContinue
-        if ($null -ne $ownedExcel) { Stop-Process -Id $excelProcessId -Force -ErrorAction SilentlyContinue }
+    try { Close-ReleaseExcel }
+    catch {
+        $succeeded = $false
+        $gateDocument.cleanup = 'blocked_manual_cleanup'
+        $cleanupFailure = "Blocked/manual cleanup: $($_.Exception.Message)"
+        $gateDocument.cleanup_failure = $cleanupFailure
+        $gates['package_acceptance'] = [ordered]@{ status = 'failed'; error = $cleanupFailure }
+        Write-Host $cleanupFailure -ForegroundColor Red
     }
-    if (Test-Path -LiteralPath $excelPidPath -PathType Leaf) { Remove-Item -LiteralPath $excelPidPath -Force }
     Save-GateResults
 }
 
