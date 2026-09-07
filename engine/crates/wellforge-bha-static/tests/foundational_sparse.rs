@@ -5,10 +5,7 @@ use wellforge_bha_contract::BhaAnalysisRequest;
 use wellforge_bha_model::BhaModel;
 use wellforge_bha_static::{STATIC_LINEAR_SOLVER_BACKEND, solve_static};
 
-fn independent_reduced_transverse_load(
-    model: &BhaModel,
-    request: &BhaAnalysisRequest,
-) -> Vec<f64> {
+fn independent_reduced_transverse_load(model: &BhaModel, request: &BhaAnalysisRequest) -> Vec<f64> {
     let mut full_load = vec![0.0; model.nodes.len() * 2];
     for element in 0..model.nodes.len() - 1 {
         let first = &model.nodes[element];
