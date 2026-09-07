@@ -1,5 +1,7 @@
 # Integrity-Bound Analytics Projection Implementation Plan
 
+> Status: unfinished projection proposal, not the current wire contract. The source integration implements `wellforge.analytics.approved-extract/v1` guards with a bounded immutable snapshot and retains the existing report shape and Polars dependency. See [source integration dispositions](../../3dmk-source-integration.md) and the [current utility contract](../../../tools/wellforge-analytics/README.md). Two independent pathname reads are not an approved integrity boundary.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Bind standalone DuckDB/Polars analytics to bounded, approved JSONL extracts and publish a deterministic parity-checked projection report.
