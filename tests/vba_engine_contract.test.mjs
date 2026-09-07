@@ -111,6 +111,14 @@ test('PowerShell SHA-256 output removes only CR/LF before strict digest comparis
     'retain exact 64-character SHA-256 acceptance');
 });
 
+test('Hydraulics section IDs retain a valid 12-character UUID tail', async () => {
+  const hydraulics = await read('VBA/WellForgeHydraulicsEngine.bas');
+  assert.match(hydraulics, /section\.Add\s+"id",\s+"35b15a48-47c1-4d31-a92e-7c5b8f200"\s*&\s*Right\$\("000"\s*&\s*CStr\(i\),\s*3\)/,
+    'generated Hydraulics section IDs must use a complete UUID group');
+  assert.doesNotMatch(hydraulics, /section\.Add\s+"id",\s+"35b15a48-47c1-4d31-a92e-7c5b8f20"\s*&/,
+    'do not emit an 11-character UUID tail');
+});
+
 test('VBA engines expose complete calculation entry points and shared SI/unit runtime', async () => {
   const [core, api, hydraulics, hydraulicsEngine, torqueDrag, torqueDragEngine, bha, directional, json] = await Promise.all([
     read('VBA/WellForgeCore.bas'), read('VBA/WellForgeApi7G.bas'), read('VBA/WellForgeHydraulics.bas'),

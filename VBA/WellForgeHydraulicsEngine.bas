@@ -174,7 +174,7 @@ Private Function WF_BuildHydraulicsRequest(ByVal nozzleDiameter As Double) As Ob
         flowType = LCase$(Trim$(WF_Str("Inputs", "G" & CStr(i + 5), "pipe")))
         If sectionLength <= 0# Or flowDiameter <= 0# Or hydraulicDiameter <= 0# Then Err.Raise vbObjectError + 8921, "WF_BuildHydraulicsRequest", "Invalid flow geometry at Inputs row " & CStr(i + 5)
         Set section = CreateObject("Scripting.Dictionary")
-        section.Add "id", "35b15a48-47c1-4d31-a92e-7c5b8f20" & Right$("000" & CStr(i), 3)
+        section.Add "id", "35b15a48-47c1-4d31-a92e-7c5b8f200" & Right$("000" & CStr(i), 3)
         section.Add "name", WF_Str("Inputs", "D" & CStr(i + 5), "Flow section " & CStr(i))
         section.Add "top_md_m", topDepth: topDepth = topDepth + sectionLength
         section.Add "bottom_md_m", topDepth
