@@ -597,9 +597,7 @@ fn fts_query(value: &str) -> String {
 }
 
 fn parse_optional_datetime(value: Option<String>) -> rusqlite::Result<Option<DateTime<Utc>>> {
-    value
-        .map(|text| parse_datetime_sql(text, 0))
-        .transpose()
+    value.map(|text| parse_datetime_sql(text, 0)).transpose()
 }
 
 fn parse_datetime_sql(value: String, column: usize) -> rusqlite::Result<DateTime<Utc>> {
@@ -722,8 +720,9 @@ fn inferred_causality_from_row(
     row: &rusqlite::Row<'_>,
 ) -> rusqlite::Result<InferredCausalityRecord> {
     let actor_text: String = row.get(4)?;
-    let actor = InferredCausalityActor::from_db(&actor_text)
-        .ok_or_else(|| invalid_text_value(4, format!("unknown Inferred_Causality actor {actor_text}")))?;
+    let actor = InferredCausalityActor::from_db(&actor_text).ok_or_else(|| {
+        invalid_text_value(4, format!("unknown Inferred_Causality actor {actor_text}"))
+    })?;
     let claim_text: String = row.get(5)?;
     let claim_level = InferredCausalityClaimLevel::from_db(&claim_text).ok_or_else(|| {
         invalid_text_value(
@@ -733,7 +732,10 @@ fn inferred_causality_from_row(
     })?;
     let outcome_text: String = row.get(9)?;
     let outcome = InferredCausalityOutcome::from_db(&outcome_text).ok_or_else(|| {
-        invalid_text_value(9, format!("unknown Inferred_Causality outcome {outcome_text}"))
+        invalid_text_value(
+            9,
+            format!("unknown Inferred_Causality outcome {outcome_text}"),
+        )
     })?;
     let canonical_flag: i64 = row.get(15)?;
     if canonical_flag != 0 {
