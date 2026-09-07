@@ -25,3 +25,13 @@ fn pickup_produces_monotonically_increasing_tension_up_hole() {
     let ratio = result.api7g.tensile_utilization;
     assert!(ratio.is_finite() && ratio >= 0.0);
 }
+
+#[test]
+fn surface_station_buckling_values_are_finite_and_json_numeric() {
+    let mut request = canonical_pickup_case();
+    request.trajectory[0].inclination_rad = 0.0;
+    let result = solve_soft_string(&request).expect("solver must succeed");
+    let surface = &result.buckling[0];
+    assert!(surface.sinusoidal_threshold_n.is_finite());
+    assert!(surface.helical_threshold_n.is_finite());
+}

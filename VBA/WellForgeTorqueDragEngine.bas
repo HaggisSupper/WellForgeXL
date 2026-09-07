@@ -70,7 +70,7 @@ Private Function WF_BuildTorqueDragRequest(ByVal stateName As String) As Object
     mudDensity = WF_ToSI(WF_Num("Inputs", "B5"), WF_Str("Inputs", "C5", "kg/m3")): od = WF_ToSI(WF_Num("Inputs", "B9"), WF_Str("Inputs", "C9", "m")): insideDiameter = WF_ToSI(WF_Num("Inputs", "B10"), WF_Str("Inputs", "C10", "m")): steelDensity = WF_ToSI(WF_Num("Inputs", "B11", 7850#), WF_Str("Inputs", "C11", "kg/m3")): youngPa = WF_ToSI(WF_Num("Inputs", "B12"), WF_Str("Inputs", "C12", "GPa"))
     If od <= insideDiameter Or insideDiameter < 0# Or mudDensity <= 0# Or steelDensity <= 0# Or youngPa <= 0# Then Err.Raise vbObjectError + 8940, "WF_BuildTorqueDragRequest", "Invalid tubular or material properties"
     linearWeight = steelDensity * WF_TD_PI / 4# * (od ^ 2 - insideDiameter ^ 2)
-    apiYieldPa = WF_Num("API 7G Limits", "B7", 758000000#): wearDerating = WF_Num("API 7G Limits", "B8", 0.8): safetyFactor = WF_Num("API 7G Limits", "B9", 1.1)
+    apiYieldPa = WF_Num("API 7G Limits", "B7", 931000000#): wearDerating = WF_Num("API 7G Limits", "B8", 0.8): safetyFactor = WF_Num("API 7G Limits", "B9", 1.1)
     torsionalYieldNm = (apiYieldPa / Sqr(3#)) * (WF_TD_PI / 32# * (od ^ 4 - insideDiameter ^ 4) / (od / 2#)) * wearDerating / safetyFactor
     Set spec = CreateObject("Scripting.Dictionary"): spec.Add "grade", WF_Str("API 7G Limits", "B6", "S135"): spec.Add "tensile_yield_pa", apiYieldPa: spec.Add "torsional_yield_nm", torsionalYieldNm: spec.Add "wear_class_derating", wearDerating: spec.Add "safety_factor", safetyFactor
     Set component = CreateObject("Scripting.Dictionary"): component.Add "id", "2b7f9d1c-44a1-4d31-a92e-7c5b8f200603": component.Add "name", "Workbook tubular string": component.Add "top_md_m", 0#: component.Add "bottom_md_m", WF_Num("Survey", "A" & CStr(WF_TDRowCount() + 5)): component.Add "od_m", od: component.Add "id_m", insideDiameter: component.Add "linear_weight_kg_m", linearWeight: component.Add "youngs_modulus_pa", youngPa: component.Add "density_kg_m3", steelDensity: component.Add "api7g_spec", spec
@@ -179,7 +179,7 @@ Private Sub WF_TDCaptureSnapshots(ByRef snapshots As Collection)
     Call WF_TDSnapshot(snapshots, "Graphs", "A3:F540")
     Call WF_TDSnapshot(snapshots, "Operation Charts", "A5:E120")
     Call WF_TDSnapshot(snapshots, "Summary", "A6:B8")
-    Call WF_TDSnapshot(snapshots, "Hydraulics Dashboard", "A46:X545")
+    If WF_SheetExists("Hydraulics Dashboard") Then Call WF_TDSnapshot(snapshots, "Hydraulics Dashboard", "A46:X545")
 End Sub
 
 Private Sub WF_TDSnapshot(ByVal snapshots As Collection, ByVal sheetName As String, ByVal address As String)

@@ -359,7 +359,11 @@ fn buckling_thresholds(
     let r = component.od_m / 2.0;
     let w_sin_inc = weight_per_m * inclination_rad.sin().abs();
     if r <= 0.0 || w_sin_inc <= 0.0 || i_area <= 0.0 {
-        return (f64::INFINITY, f64::INFINITY);
+        // The contract is value-only JSON and cannot represent IEEE infinity;
+        // use a large finite sentinel for a station with no lateral buckling
+        // mechanism (for example, the vertical surface station).
+        let no_buckling_threshold_n = f64::MAX / 4.0;
+        return (no_buckling_threshold_n, no_buckling_threshold_n);
     }
     let sin_th = 2.0 * (e * i_area * w_sin_inc / r).sqrt();
     let hel_th = 2.0 * (2.0_f64).sqrt() * sin_th;

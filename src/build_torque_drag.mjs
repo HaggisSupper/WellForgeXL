@@ -84,7 +84,7 @@ export function buildTorqueDragWorkbook() {
   Api7gLimits.getRange('A5:C5').values=[['Control','Value','Unit']];
   Api7gLimits.getRange('A6:C12').values=[
     ['Grade','S135',''],
-    ['Material yield strength',758000000,'Pa'],
+    ['Material yield strength',931000000,'Pa'],
     ['Wear-class derating',0.8,'1'],
     ['Safety factor',1.1,'1'],
     ['Derived tensile limit',null,'N'],
