@@ -1,0 +1,37 @@
+name: Sparse numerics verification
+
+on:
+  push:
+    branches:
+      - feat/foundational-numerics
+    paths:
+      - 'engine/crates/wellforge-numerics/src/sparse.rs'
+      - 'engine/crates/wellforge-numerics/tests/sparse.rs'
+      - '.github/workflows/sparse-numerics-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sparse-rust:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
+        with:
+          toolchain: 1.98.0
+          components: clippy
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: engine
+          key: sparse-numerics
+          cache-on-failure: false
+      - run: cargo clippy -p wellforge-numerics --test sparse -- -D warnings
+      - run: cargo test -p wellforge-numerics --test sparse

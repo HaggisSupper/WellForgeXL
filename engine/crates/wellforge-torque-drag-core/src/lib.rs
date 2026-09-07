@@ -13,7 +13,8 @@
 
 use wellforge_torque_drag_contract::{
     AnalysisStatus, Api7gPipeSpec, ApiSevenGCheck, BucklingScreen, OperationState, StationResult,
-    StiffIntervalCandidate, StiffIntervalReason, StiffStringMode, StringComponent,
+    StiffConvergence, StiffIntervalCandidate, StiffIntervalReason, StiffNodeResult, StiffPointKind,
+    StiffStationRefinement, StiffStringMode, StiffStringResult, StringComponent,
     TnDAnalysisRequest, TnDAnalysisResult, TnDSolverEvidence, TnDTrajectoryStation,
     derive_stiff_interval_id,
 };
@@ -34,6 +35,7 @@ pub enum SolveError {
 
 const STEEL_DENSITY_KG_M3: f64 = 7850.0;
 const GRAVITY_M_S2: f64 = 9.80665;
+const STIFF_MD_MATCH_TOLERANCE_M: f64 = 1.0e-9;
 
 fn spatial_dogleg_rad_per_m(upper: &TnDTrajectoryStation, lower: &TnDTrajectoryStation) -> f64 {
     let delta_md = lower.md_m - upper.md_m;
@@ -211,6 +213,7 @@ pub fn solve_soft_string(request: &TnDAnalysisRequest) -> Result<TnDAnalysisResu
             torque_nm: running_torque,
             normal_load_n_m: normal_per_m,
             dogleg_rad_m,
+            refinement: None,
         });
         buckle_buf.push(BucklingScreen {
             md_m: s_upper.md_m,
@@ -263,6 +266,67 @@ pub fn solve_soft_string(request: &TnDAnalysisRequest) -> Result<TnDAnalysisResu
         evidence,
         warnings,
     })
+}
+
+fn station_refinement(node: &StiffNodeResult, kind: StiffPointKind) -> StiffStationRefinement {
+    StiffStationRefinement {
+        kind,
+        displacement_m: node.displacement_m,
+        radial_clearance_m: node.radial_clearance_m,
+        contact_force_n: node.contact_force_n,
+        bending_moment_nm: node.bending_moment_nm,
+        bending_stress_pa: node.bending_stress_pa,
+    }
+}
+
+fn substitute_stiff_node(station: &mut StationResult, node: &StiffNodeResult) {
+    station.effective_tension_n = node.effective_tension_n;
+    station.torque_nm = node.torque_nm;
+    station.normal_load_n_m = node.normal_load_n_m;
+    station.dogleg_rad_m = node.dogleg_rad_m;
+    station.refinement = Some(station_refinement(node, StiffPointKind::Substituted));
+}
+
+/// Blend converged stiff-string nodal states into the accepted whole-well soft result.
+///
+/// Existing soft stations at the same measured depth are substituted. A stiff node that does not
+/// coincide with a soft station is inserted only when it carries positive contact force, preventing
+/// unconstrained mesh nodes from expanding the public station series. Non-converged interval nodes
+/// never overwrite accepted soft values. The attached stiff result remains available for diagnostics.
+#[must_use]
+pub fn blend_stiff_refinement(
+    mut soft_result: TnDAnalysisResult,
+    stiff_result: &StiffStringResult,
+) -> TnDAnalysisResult {
+    for interval in &stiff_result.intervals {
+        if interval.convergence != StiffConvergence::Converged {
+            continue;
+        }
+        for node in &interval.nodes {
+            if let Some(station) = soft_result
+                .stations
+                .iter_mut()
+                .find(|station| (station.md_m - node.md_m).abs() <= STIFF_MD_MATCH_TOLERANCE_M)
+            {
+                substitute_stiff_node(station, node);
+            } else if node.contact_force_n > 0.0 {
+                soft_result.stations.push(StationResult {
+                    md_m: node.md_m,
+                    effective_tension_n: node.effective_tension_n,
+                    torque_nm: node.torque_nm,
+                    normal_load_n_m: node.normal_load_n_m,
+                    dogleg_rad_m: node.dogleg_rad_m,
+                    refinement: Some(station_refinement(node, StiffPointKind::InsertedContact)),
+                });
+            }
+        }
+    }
+    soft_result
+        .stations
+        .sort_by(|left, right| left.md_m.total_cmp(&right.md_m));
+    soft_result.stiff_string = Some(stiff_result.clone());
+    soft_result.evidence.result_hash.clear();
+    soft_result
 }
 
 fn find_component(
