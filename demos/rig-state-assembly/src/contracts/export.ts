@@ -47,6 +47,8 @@ export function createRigStateArtifacts(manifest: RigStateManifest = RIG_STATE_M
 }
 
 export function validateRigStateArtifacts(artifacts: RigStateArtifacts, manifest: RigStateManifest = RIG_STATE_MANIFEST): string[] {
+  const manifestErrors = validateRigStateManifest(manifest);
+  if (manifestErrors.length) return manifestErrors.map(error => `Invalid rig-state manifest: ${error}`);
   const errors: string[] = [];
   const duplicateIds = (entries: readonly { id: string }[], kind: string): void => {
     const seen = new Set<string>();
@@ -69,7 +71,12 @@ export function validateRigStateArtifacts(artifacts: RigStateArtifacts, manifest
 
   const validLayerIds = new Set((manifest.layers ?? []).map((l) => l.id));
 
+  artifacts.catalogue.forEach(entry => {
+    if (new Set(entry.dysfunctionIds).size !== entry.dysfunctionIds.length) errors.push(`catalogue ${entry.id} has duplicate dysfunction references`);
+  });
   artifacts.compositions.forEach((composition) => {
+    if (new Set(composition.layerIds).size !== composition.layerIds.length) errors.push(`composition ${composition.id} has duplicate layer references`);
+    if (new Set(composition.dysfunctionIds).size !== composition.dysfunctionIds.length) errors.push(`composition ${composition.id} has duplicate dysfunction references`);
     const catalogue = artifacts.catalogue.find((entry) => entry.id === composition.id);
     if (catalogue && catalogue.activityId !== composition.activityId) {
       errors.push(`composition activity differs from catalogue for ${composition.id}`);

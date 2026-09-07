@@ -140,6 +140,9 @@ const states: readonly RigStateDefinition[] = [
 
 export const RIG_STATE_MANIFEST: RigStateManifest = { layers, activities, dysfunctions, states };
 
+const isNonemptyText = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0;
+const isContractId = (value: unknown): value is string => typeof value === "string" && /^[A-Z0-9_]+$/.test(value);
+
 const uniqueIds = (items: readonly { id: string }[], noun: string): string[] => {
   const seen = new Set<string>();
   const errors: string[] = [];
@@ -158,8 +161,11 @@ export function validateRigStateManifest(manifest: RigStateManifest = RIG_STATE_
     if (!Array.isArray(items)) collectionErrors.push(`manifest ${name} must be an array`);
     else {
       if (name !== "dysfunctions" && !items.length) collectionErrors.push(`manifest ${name} must not be empty`);
-      if (items.some(item => !item || typeof item.id !== "string" || !item.id.trim())) {
+      if (Array.from(items).some(item => !item || typeof item !== "object" || Array.isArray(item) || !isContractId(item.id))) {
         return [...collectionErrors, `manifest ${name} contains an invalid id`];
+      }
+      for (const item of items) {
+        if (!isNonemptyText(item.label)) collectionErrors.push(`${name} ${item.id} must have a nonempty label`);
       }
     }
   }
@@ -178,11 +184,18 @@ export function validateRigStateManifest(manifest: RigStateManifest = RIG_STATE_
   const activityIds = new Set(activeActivities.map((item) => item.id));
   const dysfunctionIds = new Set(activeDysfunctions.map((item) => item.id));
 
+  for (const layer of activeLayers) {
+    if (!["structure", "activity", "fluid", "movement", "observation", "dysfunction"].includes(layer.slot)) {
+      errors.push(`layer ${layer.id} has invalid slot`);
+    }
+  }
+
   for (const activity of activeActivities) {
     if (!Array.isArray(activity.layerIds) || !activity.layerIds.length) {
       errors.push(`activity ${activity.id} must have layers`);
       continue;
     }
+    if (new Set(activity.layerIds).size !== activity.layerIds.length) errors.push(`activity ${activity.id} has duplicate layer references`);
     const usedExclusiveSlots = new Set<GlyphSlot>();
     for (const layerId of activity.layerIds) {
       const layer = activeLayers.find((candidate) => candidate.id === layerId);
@@ -193,10 +206,14 @@ export function validateRigStateManifest(manifest: RigStateManifest = RIG_STATE_
   }
 
   for (const dysfunction of activeDysfunctions) {
+    if (!["normal", "advisory", "warning", "critical"].includes(dysfunction.severity)) {
+      errors.push(`dysfunction ${dysfunction.id} has invalid severity`);
+    }
     if (!Array.isArray(dysfunction.layerIds) || !dysfunction.layerIds.length) {
       errors.push(`dysfunction ${dysfunction.id} must have layers`);
       continue;
     }
+    if (new Set(dysfunction.layerIds).size !== dysfunction.layerIds.length) errors.push(`dysfunction ${dysfunction.id} has duplicate layer references`);
     for (const layerId of dysfunction.layerIds) {
       if (!layerIds.has(layerId)) errors.push(`dysfunction ${dysfunction.id} references unknown layer: ${layerId}`);
     }
@@ -208,9 +225,16 @@ export function validateRigStateManifest(manifest: RigStateManifest = RIG_STATE_
       errors.push(`state ${state.id} dysfunctionIds must be an array`);
       continue;
     }
+    if (new Set(state.dysfunctionIds).size !== (state.dysfunctionIds ?? []).length) errors.push(`state ${state.id} has duplicate dysfunction references`);
     for (const dysfunctionId of state.dysfunctionIds ?? []) {
       if (!dysfunctionIds.has(dysfunctionId)) errors.push(`state ${state.id} references unknown dysfunction: ${dysfunctionId}`);
     }
+    const contributors = [
+      activeActivities.find(activity => activity.id === state.activityId),
+      ...(state.dysfunctionIds ?? []).map((id: string) => activeDysfunctions.find(dysfunction => dysfunction.id === id)),
+    ];
+    const composedLayerIds = contributors.flatMap(contributor => Array.isArray(contributor?.layerIds) ? contributor.layerIds : []);
+    if (new Set(composedLayerIds).size !== composedLayerIds.length) errors.push(`state ${state.id} has duplicate composed layer references`);
   }
 
   return errors;
