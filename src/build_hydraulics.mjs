@@ -8,9 +8,10 @@ export function hydraulicsFormulaPlan() {
 }
 
 export function buildHydraulicsWorkbook() {
-  const { workbook, sheets } = createSuiteWorkbook('Steady-State Hydraulics and Nozzle Optimization — SI', { extraSheetNames: ['Fluid Model', 'Flow Path', 'Nozzle Cases', 'Pressure Profile', 'Hydraulics Charts', 'Flow Cases', 'Hydraulics Dashboard'] });
-  const { Summary, Inputs, Results, Graphs, Calc } = sheets;
+  const { workbook, sheets } = createSuiteWorkbook('Steady-State Hydraulics and Nozzle Optimization — SI', { extraSheetNames: ['Fluid Model', 'Flow Path', 'Nozzle Cases', 'Pressure Profile', 'Hydraulics Charts', 'Flow Cases', 'Hydraulics Dashboard', 'BHA Assembly'] });
+  const { Summary, Inputs, Survey, Results, Graphs, Calc } = sheets;
   const FluidModel=sheets['Fluid Model']; const FlowPath=sheets['Flow Path']; const NozzleCases=sheets['Nozzle Cases']; const PressureProfile=sheets['Pressure Profile']; const HydraulicsCharts=sheets['Hydraulics Charts'];
+  const BhaAssembly=sheets['BHA Assembly'];
   const baseNozzle = MOCK_CASE.pumpNozzle.nozzles.find(({ id }) => id === MOCK_CASE.pumpNozzle.baseNozzleId);
   sectionHeader(Inputs, 'A3:H3', 'SI operating inputs and full tube-section flow path');
   Inputs.getRange('A5:B20').values = [['Rig preset',MOCK_CASE.rig.preset],['Surface pressure limit Pa',MOCK_CASE.hydraulics.surfacePressureLimitPa],['Pump efficiency',MOCK_CASE.rig.pumpEfficiency],['Flow rate m3/s',MOCK_CASE.hydraulics.flowRateM3S],['Mud density kg/m3',MOCK_CASE.fluid.densityKgM3],['Apparent viscosity Pa-s',MOCK_CASE.fluid.apparentViscosityPaS],['Bit nozzles count',MOCK_CASE.pumpNozzle.nozzleCount],['Base nozzle diameter m',baseNozzle.diameterM],['Nozzle Cd',MOCK_CASE.pumpNozzle.dischargeCoefficient],['Max ECD screen kg/m3',MOCK_CASE.rig.ecdScreenDensityKgM3],['Minimum annular velocity screen m/s',0.50],['ECD reference TVD m',MOCK_CASE.holeSections.at(-1).bottomMdM],['Surface backpressure Pa',0],['Pressure correlation','darcy_weisbach_screening'],['Compute backend','serial_cpu'],['Thermal assumption','constant_properties']];
@@ -22,6 +23,42 @@ export function buildHydraulicsWorkbook() {
   Inputs.getRange('D6:H13').values = MOCK_CASE.hydraulics.flowPath.map((section) => [section.name, section.lengthM, section.flowIdM, section.flowType, section.hydraulicDiameterM]);
   Inputs.getRange('I5:I13').values = [['Exchange record ID'], ...MOCK_CASE.hydraulics.flowPath.map(({ id }) => [id])];
   tableHeader(Inputs, 'D5:H5'); inputTableStyle(Inputs, 'D6:H13');
+
+  // Hydraulics consumes the shared well context. Keep the survey and BHA
+  // visible in this workbook so a case is usable without manually copying
+  // context from the directional or BHA workbook.
+  sectionHeader(Survey, 'A3:F3', 'Shared SI survey stations — reused by engineering models');
+  Survey.getRange('A5:E5').values = [['MD m', 'Inclination rad', 'Azimuth rad', 'Hole ID m', 'Exchange record ID']];
+  Survey.getRange(`A6:D${5 + MOCK_CASE.surveyStations.length}`).values = MOCK_CASE.surveyStations.map((station) => [station.mdM, station.inclinationRad, station.azimuthRad, station.holeIdM]);
+  Survey.getRange(`E6:E${5 + MOCK_CASE.surveyStations.length}`).values = MOCK_CASE.surveyStations.map(({ id }) => [id]);
+  tableHeader(Survey, 'A5:E5'); inputTableStyle(Survey, `A6:D${5 + MOCK_CASE.surveyStations.length}`);
+
+  sectionHeader(BhaAssembly, 'A3:M3', 'Shared SI BHA assembly — reused by hydraulics, torque/drag and BHA models');
+  BhaAssembly.getRange('A5:M5').values = [['Record ID', 'Component', 'Top m', 'Bottom m', 'Length m', 'OD m', 'ID m', 'Area m2', 'I m4', 'Mass kg', 'Support factor', 'Connection / role', 'Status']];
+  BhaAssembly.getRange(`A6:B${5 + MOCK_CASE.bha.length}`).values = MOCK_CASE.bha.map(({ id, name }) => [id, name]);
+  BhaAssembly.getRange(`C6:G${5 + MOCK_CASE.bha.length}`).formulas = MOCK_CASE.bha.map((_, index) => {
+    const row = index + 6;
+    const input = MOCK_CASE.bha[index];
+    return [
+      index === 0 ? '=0' : `=D${row - 1}`,
+      `=C${row}+E${row}`,
+      `=${input.lengthM}`,
+      `=${input.odM}`,
+      `=${input.idM}`,
+    ];
+  });
+  BhaAssembly.getRange(`H6:M${5 + MOCK_CASE.bha.length}`).formulas = MOCK_CASE.bha.map((input, index) => {
+    const row = index + 6;
+    return [
+      `=PI()/4*(F${row}^2-G${row}^2)`,
+      `=PI()/64*(F${row}^4-G${row}^4)`,
+      `=H${row}*E${row}*${MOCK_CASE.material.steelDensityKgM3}`,
+      `=${input.supportFactor}`,
+      index === 0 ? '="Bit / formation interface"' : '="BHA component"',
+      `=IF(AND(F${row}>G${row},E${row}>0),"PASS","REVIEW")`,
+    ];
+  });
+  tableHeader(BhaAssembly, 'A5:M5'); resultsTableStyle(BhaAssembly, `A6:M${5 + MOCK_CASE.bha.length}`);
 
   sectionHeader(Calc, 'A3:J3', 'Formula-driven pressure-loss calculations');
   Calc.getRange('A5:J5').values = [['Tube section','Length m','Hydraulic dia. m','Velocity m/s','Reynolds','Friction factor','Pressure loss Pa','Cumulative Pa','Pressure % limit','Status']];

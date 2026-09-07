@@ -40,6 +40,17 @@ test('all engineering workbooks use the shared mock operating case for repeated 
   assert.equal(hydraulics.getRange('E6:H13').values[0][0], MOCK_CASE.hydraulics.flowPath[0].lengthM);
   assert.equal(hydraulics.getRange('E6:H13').values[7][1], MOCK_CASE.hydraulics.flowPath[7].flowIdM);
   assert.equal(api.getRange('F6:H11').values[0][0], MOCK_CASE.api7g.sections[0].axialLoadN);
+
+  const sharedSurvey = hydraulicsWorkbook.worksheets.getItem('Survey');
+  assert.deepEqual(sharedSurvey.getRange('A6:D6').values[0], [
+    MOCK_CASE.surveyStations[0].mdM,
+    MOCK_CASE.surveyStations[0].inclinationRad,
+    MOCK_CASE.surveyStations[0].azimuthRad,
+    MOCK_CASE.surveyStations[0].holeIdM,
+  ]);
+  const sharedBha = hydraulicsWorkbook.worksheets.getItem('BHA Assembly');
+  assert.deepEqual(sharedBha.getRange('A6:B6').values[0], [MOCK_CASE.bha[0].id, MOCK_CASE.bha[0].name]);
+  assert.deepEqual(sharedBha.getRange('E6:G6').formulas[0], [`=${MOCK_CASE.bha[0].lengthM}`, `=${MOCK_CASE.bha[0].odM}`, `=${MOCK_CASE.bha[0].idM}`]);
 });
 
 test('torque and drag reuses the directional mock survey in canonical SI', () => {

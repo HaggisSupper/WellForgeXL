@@ -17,7 +17,7 @@ const EXCHANGE_SHEETS = ['Exchange Map', 'Exchange State', 'Exchange Buffer'];
 const DIRECTIONAL_SHEETS = ['Summary', 'Inputs', 'Plan', 'Survey', 'Targets', 'Slide Performance', 'Formation Tops', 'Results', 'Graphs', 'Chart Settings', 'Unit Map', 'Checks', 'Calc', ...EXCHANGE_SHEETS];
 const EXPECTED_SHEETS = {
   api7g: ['Summary', 'Inputs', 'Survey', 'Results', 'Graphs', 'Tubular Catalog', 'Load Cases', 'Section Detail', 'Strength Charts', 'Chart Settings', 'Unit Map', 'Checks', 'Calc', ...EXCHANGE_SHEETS],
-  hydraulics: ['Summary', 'Inputs', 'Survey', 'Results', 'Graphs', 'Fluid Model', 'Flow Path', 'Nozzle Cases', 'Pressure Profile', 'Hydraulics Charts', 'Flow Cases', 'Hydraulics Dashboard', 'Chart Settings', 'Unit Map', 'Checks', 'Calc', ...EXCHANGE_SHEETS],
+  hydraulics: ['Summary', 'Inputs', 'Survey', 'Results', 'Graphs', 'Fluid Model', 'Flow Path', 'Nozzle Cases', 'Pressure Profile', 'Hydraulics Charts', 'Flow Cases', 'Hydraulics Dashboard', 'BHA Assembly', 'Chart Settings', 'Unit Map', 'Checks', 'Calc', ...EXCHANGE_SHEETS],
   torqueDrag: ['Summary', 'Inputs', 'Survey', 'Results', 'Graphs', 'Wellbore', 'Drillstring', 'Operation Cases', 'ALL', 'PUW', 'SOW', 'BKR', 'SLD', 'ROT', 'DRLG', 'Operation Charts', 'Observed Data', 'Engineering Dashboard', 'Chart Settings', 'Unit Map', 'Checks', 'Calc', ...EXCHANGE_SHEETS],
   bha: ['Summary', 'Inputs', 'Survey', 'Results', 'Graphs', 'BHA Assembly', 'Vibration Modes', 'Bending Response', 'BHA Geometry View', 'Tendency Matrix', 'Polar Plot', 'Rust Engine', 'Rust Engine Results', 'Rust Calc', 'Chart Settings', 'Unit Map', 'Checks', 'Calc', ...EXCHANGE_SHEETS],
   directional: DIRECTIONAL_SHEETS,
