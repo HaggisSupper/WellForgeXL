@@ -1,0 +1,39 @@
+name: Phase 1 stabilization verification
+
+on:
+  push:
+    branches:
+      - feat/foundational-numerics
+  pull_request:
+    paths:
+      - 'engine/**'
+      - '.github/workflows/foundational-numerics-ci.yml'
+
+concurrency:
+  group: foundational-numerics-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust-workspace:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
+        with:
+          toolchain: 1.98.0
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: engine
+          key: phase-one-stabilization
+          cache-on-failure: false
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
+      - name: Verify lockfile is canonical
+        run: git diff --exit-code -- Cargo.lock

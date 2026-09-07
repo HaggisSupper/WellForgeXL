@@ -17,4 +17,28 @@ pub use result::{
     StiffIntervalCandidate, StiffIntervalReason, StiffIntervalResult, StiffNodeResult,
     StiffStringResult, TnDAnalysisResult, TnDSolverEvidence, derive_stiff_interval_id,
 };
-pub use validation::{ContractError, validate_request};
+pub use validation::ContractError;
+
+/// Canonical registry identifier for torque-and-drag analysis.
+pub const CONTRACT_ID: &str = "wellforge.torque_drag.analysis";
+/// Canonical torque-and-drag contract version.
+pub const CANONICAL_CONTRACT_VERSION: &str = "0.1.0";
+
+/// Validates canonical version policy before applying torque-and-drag domain invariants.
+///
+/// # Errors
+/// Returns stable contract diagnostics for unsupported versions or invalid domain content.
+pub fn validate_request(request: &TnDAnalysisRequest) -> Result<(), Vec<ContractError>> {
+    if wellforge_contract_governance::validate_exact(
+        &request.contract_version,
+        CANONICAL_CONTRACT_VERSION,
+    )
+    .is_err()
+    {
+        return Err(vec![ContractError {
+            code: "WF-TND-REQ-001",
+            message: "contract_version must be exactly supported canonical SemVer".to_owned(),
+        }]);
+    }
+    validation::validate_request(request)
+}
