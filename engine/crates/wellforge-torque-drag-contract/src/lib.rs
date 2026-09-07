@@ -15,7 +15,8 @@ pub use request::{
 pub use result::{
     AnalysisStatus, ApiSevenGCheck, BucklingScreen, StationResult, StiffConvergence,
     StiffIntervalCandidate, StiffIntervalReason, StiffIntervalResult, StiffNodeResult,
-    StiffStringResult, TnDAnalysisResult, TnDSolverEvidence, derive_stiff_interval_id,
+    StiffPointKind, StiffStationRefinement, StiffStringResult, TnDAnalysisResult,
+    TnDSolverEvidence, derive_stiff_interval_id,
 };
 pub use validation::ContractError;
 
