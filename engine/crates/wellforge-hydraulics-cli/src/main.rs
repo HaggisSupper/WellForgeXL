@@ -165,7 +165,9 @@ fn attach_hashes(
     check_result_numbers(result)?;
     result.evidence.request_hash = normalized_request_hash(request)?;
     result.evidence.result_hash = result_payload_hash(result)?;
-    Ok(())
+    // Both producing commands must satisfy the consumer checks before writing any output.
+    verify_request_binding(request, result)?;
+    verify_result_value(result, &result.evidence.request_hash)
 }
 
 fn verify_result_value(result: &HydraulicsAnalysisResult, request_hash: &str) -> Result<()> {
@@ -495,5 +497,44 @@ mod tests {
         assert!(attach_hashes(&request, &mut result).is_err());
         assert!(result.evidence.request_hash.is_empty());
         assert!(result.evidence.result_hash.is_empty());
+    }
+
+    #[test]
+    fn attachment_rejects_results_that_consumers_cannot_verify() {
+        let request = canonical_bingham_case();
+        let result = solve_hydraulics(&request).unwrap();
+        let mutations: &[fn(&mut HydraulicsAnalysisResult)] = &[
+            |r| r.status = AnalysisStatus::Failed,
+            |r| r.contract_version = "99.0.0".to_owned(),
+            |r| {
+                r.analysis_id =
+                    serde_json::from_str(r#""00000000-0000-0000-0000-000000000000""#).unwrap();
+            },
+            |r| {
+                r.sections[0].section_id =
+                    serde_json::from_str(r#""00000000-0000-0000-0000-000000000000""#).unwrap();
+            },
+            |r| r.sections.push(r.sections[0].clone()),
+            |r| r.sections.clear(),
+            |r| r.evidence.engine_version.push('\n'),
+            |r| r.evidence.profile_standard.push('\n'),
+            |r| r.evidence.profile_edition.push('\n'),
+            |r| r.warnings.push("unsafe\nwarning".to_owned()),
+            |r| r.analysis_id = r.sections[0].section_id,
+            |r| r.sections.reverse(),
+            |r| r.evidence.profile_edition = "other edition".to_owned(),
+        ];
+        let mut accepted = Vec::new();
+        for (index, mutate) in mutations.iter().enumerate() {
+            let mut invalid = result.clone();
+            mutate(&mut invalid);
+            if attach_hashes(&request, &mut invalid).is_ok() {
+                accepted.push(index);
+            }
+        }
+        assert!(
+            accepted.is_empty(),
+            "attachment accepted unverifiable result cases: {accepted:?}"
+        );
     }
 }

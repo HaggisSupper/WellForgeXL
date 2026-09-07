@@ -94,10 +94,13 @@ pub fn validate_request(request: &HydraulicsAnalysisRequest) -> Result<(), Vec<C
         ));
     }
 
-    if request.profile.standard.trim().is_empty() || request.profile.edition.trim().is_empty() {
+    if [&request.profile.standard, &request.profile.edition]
+        .iter()
+        .any(|text| text.trim().is_empty() || text.chars().any(char::is_control))
+    {
         errors.push(ContractError::new(
             "WF-HYD-REQ-002",
-            "profile.standard and profile.edition are both required",
+            "profile.standard and profile.edition are required and must not contain control characters",
         ));
     }
 
@@ -125,12 +128,13 @@ pub fn validate_request(request: &HydraulicsAnalysisRequest) -> Result<(), Vec<C
     }
 
     for (i, s) in request.sections.iter().enumerate() {
-        if is_version_two
-            && (s.id.is_nil() || !section_ids.insert(s.id) || s.name.trim().is_empty())
+        if s.id.is_nil()
+            || !section_ids.insert(s.id)
+            || (is_version_two && s.name.trim().is_empty())
         {
             errors.push(ContractError::new(
                 "WF-HYD-REQ-016",
-                format!("sections[{i}] must have a unique non-nil ID and non-empty name"),
+                format!("sections[{i}] must have a unique non-nil ID and, for contract 0.2.0, a non-empty name"),
             ));
         }
         let invalid_md = !s.top_md_m.is_finite()

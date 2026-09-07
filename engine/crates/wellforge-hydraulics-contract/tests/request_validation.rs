@@ -38,3 +38,42 @@ fn legacy_rejects_invalid_surface_temperature() {
         );
     }
 }
+
+#[test]
+fn legacy_rejects_nil_section_identity() {
+    let mut request = legacy();
+    request.sections[0].id = uuid::Uuid::nil();
+    let errors = validate_request(&request).expect_err("nil section ID cannot be verified");
+    assert!(errors.iter().any(|error| error.code == "WF-HYD-REQ-016"));
+}
+
+#[test]
+fn legacy_rejects_repeated_section_identity() {
+    let mut request = legacy();
+    let mut later = request.sections[0].clone();
+    later.top_md_m = later.bottom_md_m;
+    later.bottom_md_m += 100.0;
+    request.sections.push(later);
+    let errors = validate_request(&request).expect_err("repeated section ID cannot be verified");
+    assert!(errors.iter().any(|error| error.code == "WF-HYD-REQ-016"));
+}
+
+#[test]
+fn legacy_rejects_control_characters_in_profile_standard() {
+    for control in ['\n', '\r', '\t', '\0', '\u{007f}', '\u{0085}'] {
+        let mut request = legacy();
+        request.profile.standard = format!("API{control}RP 13D");
+        let errors = validate_request(&request).expect_err("unsafe standard cannot be verified");
+        assert!(errors.iter().any(|error| error.code == "WF-HYD-REQ-002"));
+    }
+}
+
+#[test]
+fn legacy_rejects_control_characters_in_profile_edition() {
+    for control in ['\n', '\r', '\t', '\0', '\u{007f}', '\u{0085}'] {
+        let mut request = legacy();
+        request.profile.edition = format!("7th{control}Edition");
+        let errors = validate_request(&request).expect_err("unsafe edition cannot be verified");
+        assert!(errors.iter().any(|error| error.code == "WF-HYD-REQ-002"));
+    }
+}

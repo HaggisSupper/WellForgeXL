@@ -247,3 +247,95 @@ fn numerically_valid_tampering_still_fails_hash_comparison() {
     assert_eq!(output.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&output.stderr).contains("result hash mismatch"));
 }
+
+fn assert_invalid_request_preserves_output(mutate: impl FnOnce(&mut Value), batch: bool) {
+    let dir = tempdir().unwrap();
+    let input = dir.path().join("request.json");
+    let output = dir.path().join("result.json");
+    let mut request: Value = serde_json::from_str(REQUEST).unwrap();
+    mutate(&mut request);
+    let payload = if batch {
+        // A valid earlier result must not be committed when a later request is invalid.
+        let first: Value = serde_json::from_str(REQUEST).unwrap();
+        json!({"requests": [first, request]})
+    } else {
+        request
+    };
+    fs::write(&input, serde_json::to_vec(&payload).unwrap()).unwrap();
+    let prior_output = b"previous accepted result bytes";
+    fs::write(&output, prior_output).unwrap();
+
+    let validated = cli()
+        .arg(if batch { "validate-batch" } else { "validate" })
+        .arg("--input")
+        .arg(&input)
+        .output()
+        .unwrap();
+    let produced = cli()
+        .arg(if batch { "run-batch" } else { "run" })
+        .arg("--input")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert_eq!(
+        produced.status.code(),
+        Some(2),
+        "producer accepted invalid request: {produced:?}"
+    );
+    assert_eq!(fs::read(&output).unwrap(), prior_output);
+    assert_eq!(
+        validated.status.code(),
+        Some(2),
+        "validator accepted invalid request: {validated:?}"
+    );
+    let diagnostic: Value = serde_json::from_slice(&validated.stdout).unwrap();
+    assert_eq!(diagnostic["error"], "request_validation_failure");
+}
+
+macro_rules! rejects_unverifiable_request {
+    ($single:ident, $batch:ident, $mutate:expr) => {
+        #[test]
+        fn $single() {
+            assert_invalid_request_preserves_output($mutate, false);
+        }
+        #[test]
+        fn $batch() {
+            assert_invalid_request_preserves_output($mutate, true);
+        }
+    };
+}
+
+rejects_unverifiable_request!(
+    nil_section_request_preserves_output,
+    later_nil_section_request_preserves_batch_output,
+    |r: &mut Value| {
+        r["sections"][0]["id"] = json!("00000000-0000-0000-0000-000000000000");
+    }
+);
+rejects_unverifiable_request!(
+    duplicate_section_request_preserves_output,
+    later_duplicate_section_request_preserves_batch_output,
+    |r: &mut Value| {
+        let mut later = r["sections"][0].clone();
+        later["top_md_m"] = later["bottom_md_m"].clone();
+        later["bottom_md_m"] = json!(later["top_md_m"].as_f64().unwrap() + 100.0);
+        r["sections"].as_array_mut().unwrap().push(later);
+    }
+);
+rejects_unverifiable_request!(
+    unsafe_standard_request_preserves_output,
+    later_unsafe_standard_request_preserves_batch_output,
+    |r: &mut Value| {
+        r["profile"]["standard"] = json!("API\nRP 13D");
+    }
+);
+rejects_unverifiable_request!(
+    unsafe_edition_request_preserves_output,
+    later_unsafe_edition_request_preserves_batch_output,
+    |r: &mut Value| {
+        r["profile"]["edition"] = json!("7th\nEdition");
+    }
+);
