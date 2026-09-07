@@ -13,25 +13,43 @@ Public Function WF_RustElapsedSeconds(ByVal Started As Double) As Double
 End Function
 
 Public Function WF_RustExecBounded(ByVal CommandLine As String, ByVal TimeoutSeconds As Double, ByRef StdOutText As String, ByRef StdErrText As String) As Long
-    Dim shell As Object, process As Object, started As Double
+    Dim shell As Object
+    Dim runPath As String, stdoutPath As String, stderrPath As String, exitCodePath As String, batchPath As String, hiddenCommand As String
+    Dim exitCode As Long
     On Error GoTo Failed
+    runPath = WF_RustFreshRunDirectory("WellForgeRustRuntime", CStr(CLng(Timer * 1000#)))
+    stdoutPath = runPath & Application.PathSeparator & "stdout.txt"
+    stderrPath = runPath & Application.PathSeparator & "stderr.txt"
+    exitCodePath = runPath & Application.PathSeparator & "exit-code.txt"
+    batchPath = runPath & Application.PathSeparator & "run-engine.cmd"
+    Open batchPath For Output As #1
+    Print #1, "@echo off"
+    Print #1, CommandLine & " 1>" & WF_RustQuote(stdoutPath) & " 2>" & WF_RustQuote(stderrPath)
+    Print #1, "echo %ERRORLEVEL% > " & WF_RustQuote(exitCodePath)
+    Close #1
+    hiddenCommand = "cmd.exe /d /c " & WF_RustQuote(batchPath)
     Set shell = CreateObject("WScript.Shell")
-    Set process = shell.Exec(CommandLine)
-    started = Timer
-    Do While process.Status = 0
-        DoEvents
-        If WF_RustElapsedSeconds(started) > TimeoutSeconds Then
-            process.Terminate
-            Err.Raise WF_RUST_RUNTIME_ERROR + 1, "WF_RustExecBounded", "ENGINE TIMEOUT"
-        End If
-    Loop
-    StdOutText = process.StdOut.ReadAll
-    StdErrText = process.StdErr.ReadAll
-    WF_RustExecBounded = process.ExitCode
+    ' Run with window style 0 keeps the helper and engine console windows hidden.
+    ' The synchronous wait preserves the existing bounded workbook contract while
+    ' stdout/stderr remain available for diagnostics through redirected files.
+    exitCode = shell.Run(hiddenCommand, 0, True)
+    StdOutText = vbNullString: If Len(Dir$(stdoutPath, vbNormal)) > 0 Then StdOutText = ReadUtf8File(stdoutPath)
+    StdErrText = vbNullString: If Len(Dir$(stderrPath, vbNormal)) > 0 Then StdErrText = ReadUtf8File(stderrPath)
+    If Len(Dir$(exitCodePath, vbNormal)) > 0 Then
+        WF_RustExecBounded = WF_RustReadProcessExitCode(exitCodePath)
+    Else
+        WF_RustExecBounded = exitCode
+    End If
     Exit Function
 Failed:
-    If Err.Number = WF_RUST_RUNTIME_ERROR + 1 Then Err.Raise Err.Number, Err.Source, Err.Description
     Err.Raise WF_RUST_RUNTIME_ERROR, "WF_RustExecBounded", Err.Description
+End Function
+
+Private Function WF_RustReadProcessExitCode(ByVal ExitCodePath As String) As Long
+    Dim textValue As String
+    If Len(Dir$(ExitCodePath, vbNormal)) = 0 Then WF_RustReadProcessExitCode = 1: Exit Function
+    textValue = Trim$(ReadUtf8File(ExitCodePath))
+    If IsNumeric(textValue) Then WF_RustReadProcessExitCode = CLng(textValue) Else WF_RustReadProcessExitCode = 1
 End Function
 
 Public Function WF_RustFileSha256(ByVal FilePath As String) As String

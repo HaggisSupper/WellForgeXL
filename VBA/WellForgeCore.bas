@@ -137,9 +137,10 @@ Cleanup:
         End If
     End If
     WF_Busy = False
-    ' A saved failure must escape this procedure, not re-enter Failed.
     On Error GoTo 0
-    If failureNumber <> 0 Then Err.Raise failureNumber, failureSource, failureDescription
+    If failureNumber <> 0 Then
+        WF_WriteEngineStatus "FAILED", failureSource & ": " & failureDescription
+    End If
     Exit Sub
 Failed:
     failureNumber = Err.Number
@@ -504,7 +505,9 @@ Cleanup:
     WF_DispatchModel model
     WF_RefreshCharts
     On Error GoTo 0
-    If failureNumber <> 0 Then Err.Raise failureNumber, failureSource, failureDescription
+    If failureNumber <> 0 Then
+        WF_WriteEngineStatus "FAILED", failureSource & ": " & failureDescription
+    End If
     Exit Sub
 Failed:
     failureNumber = Err.Number: failureSource = Err.Source: failureDescription = Err.Description

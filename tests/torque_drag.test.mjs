@@ -21,3 +21,14 @@ test('torque drag presents Young modulus in engineering-scale units while calcul
   assert.deepEqual(inputs.getRange('C12').dataValidation.rule.values, ['GPa', 'MPa', 'Pa', 'Mpsi', 'psi']);
   assert.match(calc.getRange('L6').formulas[0][0], /Inputs!\$B\$12\*IF\(Inputs!\$C\$12="GPa",1E9/);
 });
+
+test('torque drag derives governing limits from the folded API 7G layer', async () => {
+  const { buildTorqueDragWorkbook } = await import('../src/build_torque_drag.mjs');
+  const workbook = buildTorqueDragWorkbook();
+  const limits = workbook.worksheets.getItem('API 7G Limits');
+  const inputs = workbook.worksheets.getItem('Inputs');
+  assert.match(limits.getRange('B10').formulas[0][0], /Inputs!\$B\$9\^2-Inputs!\$B\$10\^2/);
+  assert.match(limits.getRange('B11').formulas[0][0], /SQRT\(3\)/);
+  assert.equal(inputs.getRange('B13').formulas[0][0], "='API 7G Limits'!$B$10");
+  assert.equal(inputs.getRange('B14').formulas[0][0], "='API 7G Limits'!$B$11");
+});

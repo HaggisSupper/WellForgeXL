@@ -395,20 +395,7 @@ Private Function WF_CreateFreshTrajectoryRunDirectory() As String
 End Function
 
 Private Function WF_ExecTrajectoryBounded(ByVal commandLine As String, ByVal timeoutSeconds As Double, ByRef stdOutText As String, ByRef stdErrText As String) As Long
-    Dim shell As Object, process As Object, started As Double
-    Set shell = CreateObject("WScript.Shell")
-    Set process = shell.Exec(commandLine)
-    started = Timer
-    Do While process.Status = 0
-        DoEvents
-        If WF_TrajectoryElapsedSeconds(started) > timeoutSeconds Then
-            process.Terminate
-            Err.Raise vbObjectError + 8815, "WF_ExecTrajectoryBounded", "ENGINE TIMEOUT"
-        End If
-    Loop
-    stdOutText = process.StdOut.ReadAll
-    stdErrText = process.StdErr.ReadAll
-    WF_ExecTrajectoryBounded = process.ExitCode
+    WF_ExecTrajectoryBounded = WF_RustExecBounded(commandLine, timeoutSeconds, stdOutText, stdErrText)
 End Function
 
 Private Function WF_TrajectoryFileSha256(ByVal filePath As String) As String

@@ -49,7 +49,8 @@ test('hydraulics workbook authority is the verified Rust adapter', async () => {
   assert.match(engine, /LAST ACCEPTED VALUES PRESERVED/);
   assert.doesNotMatch(engine, /cmd\.exe/i);
   assert.match(runtime, /Public Function WF_RustExecBounded/);
-  assert.match(runtime, /process\.Terminate/);
+  assert.match(runtime, /shell\.Run\(hiddenCommand, 0, True\)/);
+  assert.doesNotMatch(runtime, /\.Exec\(/i);
   assert.match(builder, /WellForgeHydraulicsEngine\.bas/);
   assert.match(benchmark, /validate-batch[\s\S]*run-batch[\s\S]*verify-batch/);
   assert.match(benchmark, /Single15LaunchMedianMs[\s\S]*Batch3LaunchMedianMs/);
