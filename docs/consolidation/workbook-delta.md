@@ -67,6 +67,16 @@ native VBA semantics. Runtime-injected-error acceptance remains pending safe-clo
 and reviewed native execution. This change does not establish the cause of, or
 claim to resolve, the observed native initialization stall.
 
+The shared `ReadUtf8File` path now removes only a leading UTF-8 BOM code unit
+when ADODB.Stream exposes it as U+FEFF. This addresses the native HYD evidence
+where the external 64-character executable and sidecar digests matched but the
+VBA-side validation reported `ENGINE HASH MISMATCH`. The sidecar remains lower-
+cased, trimmed, and subject to the existing exact 64-character hexadecimal
+validation and full digest comparison; no substring or alternate hash is
+accepted. Focused source tests cover the normalization contract, but do not
+prove ADODB.Stream behavior or native Excel semantics. No Rust engine or solver
+code changed.
+
 The bounded runner launches its helper hidden. On timeout it may stop only its
 captured helper handle; it does not infer ownership of descendants or Excel from
 baseline differences, start times or stale PIDs. Failures preserve Excel and

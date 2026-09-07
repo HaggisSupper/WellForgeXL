@@ -570,12 +570,18 @@ End Function
 
 Public Function ReadUtf8File(ByVal FilePath As String) As String
     Dim stream As Object
+    Dim text As String
     Set stream = CreateObject("ADODB.Stream")
     stream.Type = 2
     stream.Charset = "utf-8"
     stream.Open
     stream.LoadFromFile FilePath
-    ReadUtf8File = stream.ReadText(-1)
+    text = stream.ReadText(-1)
+    ' ADODB.Stream may expose a UTF-8 BOM as U+FEFF (AscW = -257).
+    If Len(text) > 0 Then
+        If AscW(Left$(text, 1)) = -257 Then text = Mid$(text, 2)
+    End If
+    ReadUtf8File = text
     stream.Close
 End Function
 

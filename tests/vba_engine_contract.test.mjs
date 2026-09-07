@@ -78,6 +78,25 @@ test('BuildInitialize source retains the successful initialization sequence and 
     'initialization must not add rebuilds, UI, workbook closure or process shutdown');
 });
 
+test('UTF-8 sidecar reading removes only a leading BOM before strict SHA-256 validation', async () => {
+  const [exchange, hydraulics, runtime] = await Promise.all([
+    read('VBA/WellForgeJsonExchange.bas'), read('VBA/WellForgeHydraulicsEngine.bas'),
+    read('VBA/WellForgeRustEngineRuntime.bas'),
+  ]);
+  const reader = exchange.match(/Public Function ReadUtf8File[\s\S]*?End Function/);
+  assert.ok(reader, 'shared UTF-8 reader must remain present');
+  assert.match(reader[0], /ReadText\(-1\)/);
+  assert.match(reader[0], /Len\(text\)\s*>\s*0[\s\S]*?AscW\(Left\$\(text,\s*1\)\)\s*=\s*-257[\s\S]*?text\s*=\s*Mid\$\(text,\s*2\)/,
+    'strip only the UTF-8 BOM code unit returned by ADODB.Stream');
+  assert.match(hydraulics, /expectedHash\s*=\s*LCase\$\(Trim\$\(ReadUtf8File\(hashPath\)\)\)/,
+    'HYD must continue using the shared sidecar reader and strict normalization');
+  assert.match(hydraulics, /WF_RustIsSha256\(expectedHash\)/);
+  assert.match(runtime, /Len\(Value\)\s*<>\s*64/,
+    'hash acceptance must remain exactly 64 hexadecimal characters');
+  assert.match(hydraulics, /StrComp\(WF_RustFileSha256\(executablePath\),\s*expectedHash,\s*vbBinaryCompare\)/,
+    'the full executable digest must still match the normalized sidecar digest');
+});
+
 test('VBA engines expose complete calculation entry points and shared SI/unit runtime', async () => {
   const [core, api, hydraulics, hydraulicsEngine, torqueDrag, torqueDragEngine, bha, directional, json] = await Promise.all([
     read('VBA/WellForgeCore.bas'), read('VBA/WellForgeApi7G.bas'), read('VBA/WellForgeHydraulics.bas'),
