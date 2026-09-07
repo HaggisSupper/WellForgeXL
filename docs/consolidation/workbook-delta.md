@@ -77,6 +77,14 @@ accepted. Focused source tests cover the normalization contract, but do not
 prove ADODB.Stream behavior or native Excel semantics. No Rust engine or solver
 code changed.
 
+The shared PowerShell SHA-256 reader also removes only CR/LF line endings from
+the command's stdout before the existing `Trim$`, lowercase, exact-64-character,
+and full-digest checks. Fresh diagnostic evidence showed the VBA-side executable
+digest as 66 characters while external verification was the exact expected
+64-character digest; this normalization addresses that output boundary without
+accepting arbitrary extra output or weakening hash validation. Focused source
+tests cover the contract; native rerun remains pending independent review.
+
 The bounded runner launches its helper hidden. On timeout it may stop only its
 captured helper handle; it does not infer ownership of descendants or Excel from
 baseline differences, start times or stale PIDs. Failures preserve Excel and

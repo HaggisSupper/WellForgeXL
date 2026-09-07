@@ -97,6 +97,20 @@ test('UTF-8 sidecar reading removes only a leading BOM before strict SHA-256 val
     'the full executable digest must still match the normalized sidecar digest');
 });
 
+test('PowerShell SHA-256 output removes only CR/LF before strict digest comparison', async () => {
+  const runtime = await read('VBA/WellForgeRustEngineRuntime.bas');
+  const hashFunction = runtime.match(/Public Function WF_RustFileSha256[\s\S]*?End Function/);
+  assert.ok(hashFunction, 'shared file-hash function must remain present');
+  assert.match(hashFunction[0], /Replace\$\(outputText,\s*vbCr,\s*vbNullString\)/,
+    'remove carriage-return line endings from command output');
+  assert.match(hashFunction[0], /Replace\$\(outputText,\s*vbLf,\s*vbNullString\)|Replace\$\(normalizedOutput,\s*vbLf,\s*vbNullString\)/,
+    'remove line-feed endings from command output');
+  assert.match(hashFunction[0], /LCase\$\(Trim\$\(/,
+    'retain case/space normalization after line-ending cleanup');
+  assert.match(runtime, /Len\(Value\)\s*<>\s*64/,
+    'retain exact 64-character SHA-256 acceptance');
+});
+
 test('VBA engines expose complete calculation entry points and shared SI/unit runtime', async () => {
   const [core, api, hydraulics, hydraulicsEngine, torqueDrag, torqueDragEngine, bha, directional, json] = await Promise.all([
     read('VBA/WellForgeCore.bas'), read('VBA/WellForgeApi7G.bas'), read('VBA/WellForgeHydraulics.bas'),

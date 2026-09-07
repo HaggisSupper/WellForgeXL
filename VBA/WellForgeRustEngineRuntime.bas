@@ -35,12 +35,15 @@ Failed:
 End Function
 
 Public Function WF_RustFileSha256(ByVal FilePath As String) As String
-    Dim outputText As String, errorText As String, exitCode As Long
+    Dim outputText As String, normalizedOutput As String, errorText As String, exitCode As Long
     exitCode = WF_RustExecBounded("powershell.exe -NoProfile -NonInteractive -Command " & _
         WF_RustQuote("(Get-FileHash -Algorithm SHA256 -LiteralPath '" & Replace$(FilePath, "'", "''") & "').Hash"), _
         30#, outputText, errorText)
     If exitCode <> 0 Then Err.Raise WF_RUST_RUNTIME_ERROR + 2, "WF_RustFileSha256", "Unable to hash engine: " & Trim$(errorText)
-    WF_RustFileSha256 = LCase$(Trim$(outputText))
+    ' PowerShell emits CR/LF around the digest; remove only those line endings.
+    normalizedOutput = Replace$(outputText, vbCr, vbNullString)
+    normalizedOutput = Replace$(normalizedOutput, vbLf, vbNullString)
+    WF_RustFileSha256 = LCase$(Trim$(normalizedOutput))
 End Function
 
 Public Function WF_RustIsSha256(ByVal Value As String) As Boolean
