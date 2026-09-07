@@ -232,17 +232,17 @@ html, body {
   border-radius: 50%;
 }
 
-.tone-confirmed { background: var(--confirmed-soft); color: var(--confirmed); }
-.tone-confirmed .status-dot { background: var(--confirmed); }
+.tone-positive { background: var(--confirmed-soft); color: var(--confirmed); }
+.tone-positive .status-dot { background: var(--confirmed); }
 
-.tone-pending { background: var(--warning-soft); color: var(--warning); }
-.tone-pending .status-dot { background: var(--warning); }
+.tone-caution { background: var(--warning-soft); color: var(--warning); }
+.tone-caution .status-dot { background: var(--warning); }
 
-.tone-stale { background: rgba(148, 163, 184, 0.15); color: var(--muted); }
-.tone-stale .status-dot { background: var(--muted); }
+.tone-neutral { background: rgba(148, 163, 184, 0.15); color: var(--muted); }
+.tone-neutral .status-dot { background: var(--muted); }
 
-.tone-conflict { background: var(--critical-soft); color: var(--critical); }
-.tone-conflict .status-dot { background: var(--critical); }
+.tone-critical { background: var(--critical-soft); color: var(--critical); }
+.tone-critical .status-dot { background: var(--critical); }
 
 /* --- Glyph & Summary Stage Grid --- */
 .glyph-stage {
