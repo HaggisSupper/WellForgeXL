@@ -17,4 +17,4 @@ levenberg-marquardt = "0.15.0"
 nalgebra = "0.34.2"
 parry3d-f64 = "0.30.2"
 serde = { version = "1.0.229", features = ["derive"] }
-
+wellforge-numerics = { path = "../wellforge-numerics" }

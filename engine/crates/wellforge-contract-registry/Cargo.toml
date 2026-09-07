@@ -1,0 +1,26 @@
+[package]
+name = "wellforge-contract-registry"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+schemars.workspace = true
+semver.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+wellforge-contract-governance = { path = "../wellforge-contract-governance", version = "0.1.0" }
+wellforge-trajectory-contract = { path = "../wellforge-trajectory-contract", version = "0.1.0" }
+wellforge-bha-contract = { path = "../wellforge-bha-contract", version = "0.1.0" }
+wellforge-torque-drag-contract = { path = "../wellforge-torque-drag-contract", version = "0.1.0" }
+wellforge-hydraulics-contract = { path = "../wellforge-hydraulics-contract", version = "0.1.0" }
+
+[dev-dependencies]
+wellforge-trajectory-fixtures = { path = "../wellforge-trajectory-fixtures", version = "0.1.0" }
+wellforge-bha-fixtures = { path = "../wellforge-bha-fixtures", version = "0.1.0" }
+wellforge-torque-drag-fixtures = { path = "../wellforge-torque-drag-fixtures", version = "0.1.0" }
+wellforge-hydraulics-fixtures = { path = "../wellforge-hydraulics-fixtures", version = "0.1.0" }

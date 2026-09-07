@@ -1,10 +1,13 @@
 //! Static flexible-beam analysis for BHA Release 1.
 
-use faer::prelude::*;
 use nalgebra::DMatrix;
 use thiserror::Error;
 use wellforge_bha_contract::{BhaAnalysisRequest, StaticNodeResult};
 use wellforge_bha_model::{BhaModel, projected_clearance};
+use wellforge_numerics::{SparseEntry, SparseLinearSystem};
+
+/// Numerical backend used for the reduced static FE solve.
+pub const STATIC_LINEAR_SOLVER_BACKEND: &str = "wellforge-numerics/sparse-lu";
 
 /// Static calculation output and matrices reused by modal analysis.
 #[derive(Clone, Debug)]
@@ -150,6 +153,7 @@ pub fn solve_static(
     let mut k_full = DMatrix::<f64>::zeros(full_dofs, full_dofs);
     let mut m_full = DMatrix::<f64>::zeros(full_dofs, full_dofs);
     let mut f_full = vec![0.0; full_dofs];
+    let mut stiffness_entries = Vec::<SparseEntry>::with_capacity((model.nodes.len() - 1) * 16);
     for element in 0..model.nodes.len() - 1 {
         let first = &model.nodes[element];
         let second = &model.nodes[element + 1];
@@ -170,8 +174,18 @@ pub fn solve_static(
         ];
         for row in 0..4 {
             for col in 0..4 {
-                k_full[(map[row], map[col])] += ke[row][col] - kg[row][col];
-                m_full[(map[row], map[col])] += me[row][col];
+                let global_row = map[row];
+                let global_col = map[col];
+                let stiffness_value = ke[row][col] - kg[row][col];
+                k_full[(global_row, global_col)] += stiffness_value;
+                m_full[(global_row, global_col)] += me[row][col];
+                if global_row >= 2 && global_col >= 2 {
+                    stiffness_entries.push(SparseEntry::new(
+                        global_row - 2,
+                        global_col - 2,
+                        stiffness_value,
+                    ));
+                }
             }
         }
         let buoyed_mass_per_length =
@@ -194,14 +208,16 @@ pub fn solve_static(
     let stiffness = k_full.view((2, 2), (reduced, reduced)).into_owned();
     let mass = m_full.view((2, 2), (reduced, reduced)).into_owned();
     let rhs_values = &f_full[2..];
-    let k_faer = faer::Mat::from_fn(reduced, reduced, |row, col| stiffness[(row, col)]);
-    let rhs = faer::Mat::from_fn(reduced, 1, |row, _| rhs_values[row]);
-    let solved = k_faer.partial_piv_lu().solve(&rhs);
-    let displacement: Vec<f64> = (0..reduced).map(|row| solved[(row, 0)]).collect();
+    let system = SparseLinearSystem::new(reduced, &stiffness_entries)
+        .map_err(|_| StaticSolveError::LinearSolve)?;
+    let solved = system
+        .factor_and_solve(&stiffness_entries, rhs_values)
+        .map_err(|_| StaticSolveError::LinearSolve)?;
+    let displacement = solved.values;
     if displacement.iter().any(|value| !value.is_finite()) {
         return Err(StaticSolveError::LinearSolve);
     }
-    let residual_norm = (&k_faer * &solved - &rhs).norm_l2() / rhs.norm_l2().max(1.0);
+    let residual_norm = solved.residual_norm;
     let mut full_displacement = vec![0.0; full_dofs];
     full_displacement[2..].copy_from_slice(&displacement);
     let mut nodes = Vec::with_capacity(model.nodes.len());
