@@ -39,7 +39,7 @@ test('Unit Map writes Angular gradient factors and selector formulas to workbook
   );
   assert.equal(
     unitMap.getRange(`I${rowNumber}`).formulas[0][0],
-    `=IF($B$5="SI",1,IF($B$5="Imperial",E${rowNumber},IF($B$5="Mixed",F${rowNumber},IF($B$5="Custom",IF(J${rowNumber}="SI",1,IF(J${rowNumber}="Imperial",E${rowNumber},IF(J${rowNumber}="Mixed",F${rowNumber},NA()))),NA()))))`,
+    `=IF($B$5="SI",K${rowNumber},IF($B$5="Imperial",E${rowNumber},IF($B$5="Mixed",F${rowNumber},IF($B$5="Custom",IF(J${rowNumber}="SI",K${rowNumber},IF(J${rowNumber}="Imperial",E${rowNumber},IF(J${rowNumber}="Mixed",F${rowNumber},NA()))),NA()))))`,
   );
   assert.deepEqual(unitMap.getRange(`J${rowNumber}`).dataValidation.rule.values, CUSTOM_UNIT_SYSTEMS);
 });

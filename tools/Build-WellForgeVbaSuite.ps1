@@ -118,6 +118,24 @@ function Set-ThisWorkbookEvents {
     finally { Release-ComObject $codeModule; Release-ComObject $component }
 }
 
+function Set-WellForgeUnitMapSchema {
+    param([Parameter(Mandatory = $true)][object]$Workbook)
+    $sheet = $Workbook.Worksheets.Item('Unit Map')
+    $sheet.Cells.Item(7, 11).Value2 = 'SI factor'
+    for ($row = 8; $row -le 40; $row++) {
+        $domain = [string]$sheet.Cells.Item($row, 1).Value2
+        if ([string]::IsNullOrWhiteSpace($domain)) { break }
+        if ($domain.Trim().Equals('Density', [System.StringComparison]::OrdinalIgnoreCase)) {
+            $sheet.Cells.Item($row, 2).Value2 = 'g/cm3'
+            $sheet.Cells.Item($row, 4).Value2 = 'g/cm3'
+            $sheet.Cells.Item($row, 11).Value2 = 0.001
+        }
+        elseif ([string]::IsNullOrWhiteSpace([string]$sheet.Cells.Item($row, 11).Value2)) {
+            $sheet.Cells.Item($row, 11).Value2 = 1
+        }
+    }
+}
+
 function Get-FormulaCount {
     param([object]$Workbook)
     $count = 0L
@@ -168,6 +186,7 @@ function Convert-WorkbookFormulasToCachedValues {
         $source = [System.IO.Compression.ZipFile]::OpenRead($Path)
         $destination = [System.IO.Compression.ZipFile]::Open($temporaryPath, [System.IO.Compression.ZipArchiveMode]::Create)
         foreach ($entry in $source.Entries) {
+            if ($entry.FullName -eq 'xl/calcChain.xml') { continue }
             $outputEntry = $destination.CreateEntry($entry.FullName, [System.IO.Compression.CompressionLevel]::Optimal)
             $input = $null
             $output = $null
@@ -176,7 +195,23 @@ function Convert-WorkbookFormulasToCachedValues {
             try {
                 $input = $entry.Open()
                 $output = $outputEntry.Open()
-                if ($entry.FullName -match '^xl/worksheets/sheet\d+\.xml$') {
+                if ($entry.FullName -eq '[Content_Types].xml' -or $entry.FullName -eq 'xl/_rels/workbook.xml.rels') {
+                    $reader = [System.IO.StreamReader]::new($input)
+                    [xml]$packageXml = $reader.ReadToEnd()
+                    if ($entry.FullName -eq '[Content_Types].xml') {
+                        foreach ($override in @($packageXml.SelectNodes("//*[local-name()='Override'][contains(@PartName, 'calcChain.xml')]"))) {
+                            [void]$override.ParentNode.RemoveChild($override)
+                        }
+                    }
+                    else {
+                        foreach ($relationship in @($packageXml.SelectNodes("//*[local-name()='Relationship'][contains(@Target, 'calcChain.xml')]"))) {
+                            [void]$relationship.ParentNode.RemoveChild($relationship)
+                        }
+                    }
+                    $writer = [System.IO.StreamWriter]::new($output, [System.Text.UTF8Encoding]::new($false))
+                    $writer.Write($packageXml.OuterXml)
+                }
+                elseif ($entry.FullName -match '^xl/worksheets/sheet\d+\.xml$') {
                     $reader = [System.IO.StreamReader]::new($input)
                     [xml]$worksheet = $reader.ReadToEnd()
                     foreach ($formula in @($worksheet.SelectNodes("//*[local-name()='f']"))) {
@@ -338,6 +373,7 @@ try {
             }
             Write-BuildEvent INFO "Imported VBA modules for $targetName"
             Set-ThisWorkbookEvents -Workbook $workbook -Code $eventCode
+            Set-WellForgeUnitMapSchema -Workbook $workbook
             $workbook.Save()
             Write-BuildEvent INFO "Saved initialized VBA project for $targetName"
 

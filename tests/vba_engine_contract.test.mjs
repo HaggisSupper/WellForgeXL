@@ -97,16 +97,14 @@ test('UTF-8 sidecar reading removes only a leading BOM before strict SHA-256 val
     'the full executable digest must still match the normalized sidecar digest');
 });
 
-test('PowerShell SHA-256 output removes only CR/LF before strict digest comparison', async () => {
+test('native SHA-256 output is parsed as one strict digest before comparison', async () => {
   const runtime = await read('VBA/WellForgeRustEngineRuntime.bas');
   const hashFunction = runtime.match(/Public Function WF_RustFileSha256[\s\S]*?End Function/);
   assert.ok(hashFunction, 'shared file-hash function must remain present');
-  assert.match(hashFunction[0], /Replace\$\(outputText,\s*vbCr,\s*vbNullString\)/,
-    'remove carriage-return line endings from command output');
-  assert.match(hashFunction[0], /Replace\$\(outputText,\s*vbLf,\s*vbNullString\)|Replace\$\(normalizedOutput,\s*vbLf,\s*vbNullString\)/,
-    'remove line-feed endings from command output');
-  assert.match(hashFunction[0], /LCase\$\(Trim\$\(/,
-    'retain case/space normalization after line-ending cleanup');
+  assert.match(hashFunction[0], /certutil\.exe\s+-hashfile/,
+    'use the Windows-native hash utility available in constrained PowerShell hosts');
+  assert.match(hashFunction[0], /WF_RustIsSha256\(candidate\)/,
+    'accept only a canonical 64-hex digest line from command output');
   assert.match(runtime, /Len\(Value\)\s*<>\s*64/,
     'retain exact 64-character SHA-256 acceptance');
 });
@@ -165,6 +163,10 @@ test('Windows builder compiles self-contained XLSM files, rejects residual formu
     'Windows build must exercise SI, Imperial, and Custom display-unit changes before accepting an XLSM');
   assert.match(script, /Get-FormulaCount/);
   assert.match(script, /if \(\$formulaCount -ne 0\)/);
+  assert.match(script, /if \(\$entry\.FullName -eq 'xl\/calcChain\.xml'\) \{ continue \}/,
+    'formula-free package conversion must remove stale calculation chains');
+  assert.match(script, /calcChain\.xml[\s\S]*RemoveChild/,
+    'formula-free package conversion must remove calculation-chain package references');
   const packageGuard = await read('tools/WellForgeWorkbookPackage.ps1');
   assert.match(packageGuard, /function Assert-XlsxPackageIntegrity/);
   assert.match(packageGuard, /SelectNodes\("\/\/\*\[local-name\(\)='Override'\]"\)/);

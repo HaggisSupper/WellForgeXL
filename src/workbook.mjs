@@ -49,25 +49,26 @@ export function addChartSettings(sheet) {
 }
 
 export function addUnitMap(sheet) {
-  sectionHeader(sheet, 'A3:J3', 'Display-unit control — calculations and stored inputs remain SI');
+  sectionHeader(sheet, 'A3:K3', 'Display-unit control — calculations and stored inputs remain SI');
   sheet.getRange('J:J').format.columnWidth = 18;
   sheet.getRange('A5:B5').values = [['Display system', 'SI']];
   formatInput(sheet.getRange('B5'));
   sheet.getRange('B5').dataValidation = { rule: { type: 'list', values: UNIT_SYSTEMS } };
-  sheet.getRange('D5:J5').merge();
+  sheet.getRange('D5:K5').merge();
   sheet.getRange('D5').values = [['Choose Custom, then set each domain dropdown in column J.']];
-  sheet.getRange('D5:J5').format = { fill: COLORS.tealLight, font: { italic: true, color: COLORS.charcoal } };
-  sheet.getRange('A7:J7').values = [['Domain', 'SI unit', 'Imperial', 'Mixed', 'Imp factor', 'Mixed factor', 'Offset', 'Selected unit', 'Selected factor', 'Custom selection']];
+  sheet.getRange('D5:K5').format = { fill: COLORS.tealLight, font: { italic: true, color: COLORS.charcoal } };
+  sheet.getRange('A7:K7').values = [['Domain', 'SI unit', 'Imperial', 'Mixed', 'Imp factor', 'Mixed factor', 'Offset', 'Selected unit', 'Selected factor', 'Custom selection', 'SI factor']];
   sheet.getRange(`A8:G${7 + UNIT_ROWS.length}`).values = UNIT_ROWS.map((row) => [row.domain, row.siUnit, row.imperialUnit, row.mixedUnit, row.imperialMultiplier, row.mixedMultiplier, row.offset]);
+  sheet.getRange(`K8:K${7 + UNIT_ROWS.length}`).values = UNIT_ROWS.map((row) => [row.siMultiplier ?? 1]);
   for (let r = 8; r < 8 + UNIT_ROWS.length; r += 1) {
     sheet.getRange(`J${r}`).values = [['SI']];
     sheet.getRange(`J${r}`).dataValidation = { rule: { type: 'list', values: CUSTOM_UNIT_SYSTEMS } };
     sheet.getRange(`H${r}`).formulas = [[`=IF($B$5="SI",B${r},IF($B$5="Imperial",C${r},IF($B$5="Mixed",D${r},IF($B$5="Custom",IF(J${r}="SI",B${r},IF(J${r}="Imperial",C${r},IF(J${r}="Mixed",D${r},"INVALID"))),"INVALID"))))`]];
-    sheet.getRange(`I${r}`).formulas = [[`=IF($B$5="SI",1,IF($B$5="Imperial",E${r},IF($B$5="Mixed",F${r},IF($B$5="Custom",IF(J${r}="SI",1,IF(J${r}="Imperial",E${r},IF(J${r}="Mixed",F${r},NA()))),NA()))))`]];
+    sheet.getRange(`I${r}`).formulas = [[`=IF($B$5="SI",K${r},IF($B$5="Imperial",E${r},IF($B$5="Mixed",F${r},IF($B$5="Custom",IF(J${r}="SI",K${r},IF(J${r}="Imperial",E${r},IF(J${r}="Mixed",F${r},NA()))),NA()))))`]];
   }
   formatInput(sheet.getRange(`J8:J${7 + UNIT_ROWS.length}`));
-  sheet.getRange(`A7:J${7 + UNIT_ROWS.length}`).format.borders = { preset: 'all', style: 'thin', color: COLORS.line };
-  sheet.getRange('A7:J7').format = { fill: COLORS.charcoal, font: { bold: true, color: COLORS.white } };
+  sheet.getRange(`A7:K${7 + UNIT_ROWS.length}`).format.borders = { preset: 'all', style: 'thin', color: COLORS.line };
+  sheet.getRange('A7:K7').format = { fill: COLORS.charcoal, font: { bold: true, color: COLORS.white } };
   sheet.getRange(`E8:G${7 + UNIT_ROWS.length}`).format.numberFormat = '0.000000';
 }
 

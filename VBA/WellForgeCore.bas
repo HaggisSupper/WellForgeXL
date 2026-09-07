@@ -326,6 +326,7 @@ Public Function WF_ToSI(ByVal Value As Double, ByVal UnitName As String) As Doub
         Case "gpm": WF_ToSI = Value * 0.0000630901964
         Case "l/min": WF_ToSI = Value / 60000#
         Case "ppg": WF_ToSI = Value * 119.826427316
+        Case "g/cm3": WF_ToSI = Value * 1000#
         Case "cp": WF_ToSI = Value * 0.001
         Case Else: Err.Raise vbObjectError + 8201, "WF_ToSI", "Unsupported unit: " & UnitName
     End Select
@@ -372,7 +373,7 @@ Public Sub WF_UpdateUnitMap()
         If Len(CStr(ws.Cells(rowIndex, 1).Value2)) = 0 Then Exit For
         If systemName = "Custom" Then customName = Trim$(CStr(ws.Cells(rowIndex, 10).Value2)) Else customName = systemName
         Select Case customName
-            Case "SI": choiceColumn = 2: ws.Cells(rowIndex, 9).Value2 = 1#
+            Case "SI": choiceColumn = 2: ws.Cells(rowIndex, 9).Value2 = CDbl(ws.Cells(rowIndex, 11).Value2)
             Case "Imperial": choiceColumn = 3: ws.Cells(rowIndex, 9).Value2 = ws.Cells(rowIndex, 5).Value2
             Case "Mixed": choiceColumn = 4: ws.Cells(rowIndex, 9).Value2 = ws.Cells(rowIndex, 6).Value2
             Case Else: Err.Raise vbObjectError + 8205, "WF_UpdateUnitMap", "Invalid custom unit choice at row " & CStr(rowIndex)
