@@ -1,6 +1,6 @@
 //! `WellForge` hydraulics engine command-line interface.
 
-use std::{fs, path::PathBuf};
+use std::{collections::HashSet, fs, path::PathBuf};
 
 use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand};
@@ -8,7 +8,8 @@ use schemars::schema_for;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use wellforge_hydraulics_contract::{
-    AnalysisStatus, HydraulicsAnalysisRequest, HydraulicsAnalysisResult, validate_request,
+    AnalysisStatus, FlowLoop, HydraulicsAnalysisRequest, HydraulicsAnalysisResult,
+    SUPPORTED_CONTRACT_VERSIONS, validate_request, validate_result_numbers,
 };
 use wellforge_hydraulics_core::{solve_hydraulics, solve_hydraulics_batch};
 
@@ -98,6 +99,7 @@ fn hash(bytes: &[u8]) -> String {
 }
 
 fn result_payload_hash(result: &HydraulicsAnalysisResult) -> Result<String> {
+    check_result_numbers(result)?;
     let bytes = serde_json::to_vec(result)?;
     let mut value: serde_json::Value = serde_json::from_slice(&bytes)?;
     value["evidence"]["result_hash"] = serde_json::Value::String(String::new());
@@ -160,12 +162,15 @@ fn attach_hashes(
     request: &HydraulicsAnalysisRequest,
     result: &mut HydraulicsAnalysisResult,
 ) -> Result<()> {
+    check_result_numbers(result)?;
     result.evidence.request_hash = normalized_request_hash(request)?;
     result.evidence.result_hash = result_payload_hash(result)?;
     Ok(())
 }
 
 fn verify_result_value(result: &HydraulicsAnalysisResult, request_hash: &str) -> Result<()> {
+    check_result_numbers(result)?;
+    verify_result_evidence(result, request_hash)?;
     if result.evidence.request_hash != request_hash {
         bail!("result request hash does not match the validated request");
     }
@@ -173,8 +178,88 @@ fn verify_result_value(result: &HydraulicsAnalysisResult, request_hash: &str) ->
     if result.evidence.result_hash != expected_hash {
         bail!("result hash mismatch");
     }
+    Ok(())
+}
+
+fn check_result_numbers(result: &HydraulicsAnalysisResult) -> Result<()> {
+    validate_result_numbers(result)
+        .map_err(|error| anyhow::anyhow!("{}: {}", error.code, error.message))
+}
+
+fn verify_result_evidence(result: &HydraulicsAnalysisResult, request_hash: &str) -> Result<()> {
+    if !SUPPORTED_CONTRACT_VERSIONS.contains(&result.contract_version.as_str()) {
+        bail!("unsupported hydraulics result contract version");
+    }
+    if result.analysis_id.is_nil() {
+        bail!("hydraulics result has nil analysis identity");
+    }
     if matches!(result.status, AnalysisStatus::Failed) {
         bail!("hydraulics result is failed");
+    }
+    if result.sections.is_empty() {
+        bail!("hydraulics result has no sections");
+    }
+    let mut identities = HashSet::new();
+    for section in &result.sections {
+        let is_pipe = section.flow_loop == FlowLoop::Pipe;
+        if section.section_id.is_nil() || !identities.insert((section.section_id, is_pipe)) {
+            bail!("hydraulics result has nil or duplicate section/flow-loop identity");
+        }
+    }
+    for digest in [
+        request_hash,
+        &result.evidence.request_hash,
+        &result.evidence.result_hash,
+    ] {
+        if digest.len() != 64
+            || !digest
+                .bytes()
+                .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+        {
+            bail!("hydraulics evidence must contain lowercase SHA-256 hashes");
+        }
+    }
+    for text in [
+        &result.evidence.engine_version,
+        &result.evidence.profile_standard,
+        &result.evidence.profile_edition,
+    ]
+    .into_iter()
+    .chain(&result.warnings)
+    {
+        if text.chars().any(char::is_control) {
+            bail!("hydraulics result evidence or warnings contain control characters");
+        }
+    }
+    Ok(())
+}
+
+fn verify_request_binding(
+    request: &HydraulicsAnalysisRequest,
+    result: &HydraulicsAnalysisResult,
+) -> Result<()> {
+    if result.analysis_id != request.analysis_id
+        || result.contract_version != request.contract_version
+    {
+        bail!("result analysis identity or contract version does not match request");
+    }
+    if result.evidence.profile_standard != request.profile.standard
+        || result.evidence.profile_edition != request.profile.edition
+    {
+        bail!("result profile evidence does not match request");
+    }
+    let expected = request.sections.iter().flat_map(|section| {
+        [
+            (section.id, FlowLoop::Pipe),
+            (section.id, FlowLoop::Annulus),
+        ]
+    });
+    let actual = result
+        .sections
+        .iter()
+        .map(|section| (section.section_id, section.flow_loop));
+    if !expected.eq(actual) {
+        bail!("result section identities, flow-loop order or count do not match request");
     }
     Ok(())
 }
@@ -203,9 +288,8 @@ fn verify_batch(request_path: &PathBuf, result_path: &PathBuf) -> Result<()> {
         .zip(&result_batch.results)
         .enumerate()
     {
-        if result.analysis_id != request.analysis_id {
-            bail!("batch result {index} analysis ID mismatch");
-        }
+        verify_request_binding(request, result)
+            .with_context(|| format!("batch result {index} failed request binding"))?;
         let request_hash = normalized_request_hash(request)?;
         verify_result_value(result, &request_hash)
             .with_context(|| format!("batch result {index} failed verification"))?;
@@ -359,5 +443,57 @@ mod tests {
             serde_json::from_slice(&serde_json::to_vec_pretty(&result).unwrap()).unwrap();
         let after = result_payload_hash(&parsed).unwrap();
         assert_eq!(before, after);
+    }
+
+    #[test]
+    fn hash_rejects_nonfinite_numbers_before_json_can_replace_them_with_null() {
+        let result =
+            solve_hydraulics(&wellforge_hydraulics_fixtures::generalized_yield_power_law_case())
+                .unwrap();
+        let mutations: &[fn(&mut HydraulicsAnalysisResult, f64)] = &[
+            |r, v| r.total_pipe_pressure_loss_pa = v,
+            |r, v| r.total_annulus_pressure_loss_pa = v,
+            |r, v| r.bit_pressure_loss_pa = v,
+            |r, v| r.total_flow_area_m2 = v,
+            |r, v| r.equivalent_circulating_density_kg_m3 = v,
+            |r, v| r.reference_vertical_depth_m = Some(v),
+            |r, v| r.surface_backpressure_pa = Some(v),
+            |r, v| r.nozzle_discharge_coefficient = Some(v),
+            |r, v| r.circulating_system_pressure_pa = Some(v),
+            |r, v| r.sections[0].bulk_velocity_m_s = v,
+            |r, v| r.sections[0].reynolds_number = v,
+            |r, v| r.sections[0].fanning_friction_factor = v,
+            |r, v| r.sections[0].pressure_loss_pa = v,
+        ];
+        let mut accepted = Vec::new();
+        for (index, mutate) in mutations.iter().enumerate() {
+            for value in [
+                f64::NAN,
+                f64::INFINITY,
+                f64::NEG_INFINITY,
+                -1.0,
+                f64::from_bits(1),
+            ] {
+                let mut invalid = result.clone();
+                mutate(&mut invalid, value);
+                if result_payload_hash(&invalid).is_ok() {
+                    accepted.push((index, value));
+                }
+            }
+        }
+        assert!(
+            accepted.is_empty(),
+            "hash accepted invalid numeric fields: {accepted:?}"
+        );
+    }
+
+    #[test]
+    fn attachment_rejects_invalid_numeric_source_before_changing_evidence() {
+        let request = canonical_bingham_case();
+        let mut result = solve_hydraulics(&request).unwrap();
+        result.bit_pressure_loss_pa = f64::INFINITY;
+        assert!(attach_hashes(&request, &mut result).is_err());
+        assert!(result.evidence.request_hash.is_empty());
+        assert!(result.evidence.result_hash.is_empty());
     }
 }

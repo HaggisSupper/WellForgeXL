@@ -6,6 +6,7 @@
 
 mod request;
 mod result;
+mod result_validation;
 mod validation;
 
 pub use request::{
@@ -17,6 +18,7 @@ pub use result::{
     AnalysisStatus, FlowRegime, HydraulicsAnalysisResult, HydraulicsSolverEvidence,
     SectionPressureLoss,
 };
+pub use result_validation::validate_result_numbers;
 pub use validation::ContractError;
 
 /// Canonical registry identifier for hydraulics analysis.

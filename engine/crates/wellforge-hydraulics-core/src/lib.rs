@@ -11,8 +11,9 @@ mod correlation;
 
 use rayon::prelude::*;
 use wellforge_hydraulics_contract::{
-    AnalysisStatus, ComputeBackend, FlowLoop, FlowRegime, HydraulicsAnalysisRequest,
+    AnalysisStatus, ComputeBackend, ContractError, FlowLoop, FlowRegime, HydraulicsAnalysisRequest,
     HydraulicsAnalysisResult, HydraulicsSolverEvidence, SectionPressureLoss, TubularSection,
+    validate_request, validate_result_numbers,
 };
 
 use correlation::evaluate_flow_response;
@@ -20,6 +21,9 @@ use correlation::evaluate_flow_response;
 /// Errors raised by the hydraulics solver.
 #[derive(Debug, thiserror::Error)]
 pub enum SolveError {
+    /// Caller-supplied operating conditions or geometry violate the request contract.
+    #[error("invalid hydraulics request: {0:?}")]
+    InvalidRequest(Vec<ContractError>),
     /// The rheology parameters are internally inconsistent.
     #[error("rheology parameters incomplete or inconsistent for the selected model")]
     Rheology,
@@ -51,13 +55,14 @@ struct PreparedFlowState {
 ///
 /// # Errors
 ///
-/// Returns [`SolveError::Rheology`] when the caller-supplied parameters are incomplete
-/// (contract validation should prevent this).
+/// Returns a request or rheology error for invalid inputs, or [`SolveError::Numerical`]
+/// when computed areas or results leave the supported floating-point range.
 pub fn solve_hydraulics(
     request: &HydraulicsAnalysisRequest,
 ) -> Result<HydraulicsAnalysisResult, SolveError> {
+    validate_solver_request(request)?;
     let prepared = prepare_flow_state(request)?;
-    Ok(complete_result(request, &prepared))
+    complete_result(request, &prepared)
 }
 
 /// Solve a bounded request batch, reusing section flow state when only nozzle geometry differs.
@@ -79,14 +84,30 @@ pub fn solve_hydraulics_batch(
         .skip(1)
         .all(|request| has_shared_flow_state(first, request))
     {
+        for request in requests {
+            validate_solver_request(request)?;
+        }
         let prepared = prepare_flow_state(first)?;
-        return Ok(requests
+        return requests
             .iter()
             .map(|request| complete_result(request, &prepared))
-            .collect());
+            .collect();
     }
 
     requests.iter().map(solve_hydraulics).collect()
+}
+
+fn validate_solver_request(request: &HydraulicsAnalysisRequest) -> Result<(), SolveError> {
+    validate_request(request).map_err(|errors| {
+        if errors
+            .iter()
+            .any(|error| matches!(error.code, "WF-HYD-REQ-030" | "WF-HYD-REQ-031"))
+        {
+            SolveError::Rheology
+        } else {
+            SolveError::InvalidRequest(errors)
+        }
+    })
 }
 
 fn has_shared_flow_state(
@@ -174,7 +195,7 @@ fn prepare_flow_state(
 fn complete_result(
     request: &HydraulicsAnalysisRequest,
     prepared: &PreparedFlowState,
-) -> HydraulicsAnalysisResult {
+) -> Result<HydraulicsAnalysisResult, SolveError> {
     let op = &request.operating;
     let rho = op.mud_density_kg_m3;
     let q = op.flow_rate_m3_s;
@@ -182,7 +203,14 @@ fn complete_result(
     let is_version_two = request.contract_version == "0.2.0";
     let nozzle_discharge_coefficient = op.nozzle_discharge_coefficient.unwrap_or(0.95);
     let surface_backpressure_pa = op.surface_backpressure_pa.unwrap_or(0.0);
-    let total_flow_area_m2: f64 = op.nozzles.iter().map(|n| area_circle(n.diameter_m)).sum();
+    let total_flow_area_m2: f64 = op
+        .nozzles
+        .iter()
+        .map(|n| checked_area(area_circle(n.diameter_m)))
+        .sum::<Result<_, _>>()?;
+    if !op.nozzles.is_empty() {
+        checked_area(total_flow_area_m2)?;
+    }
     let bit_dp = if total_flow_area_m2 > 0.0 {
         rho * q * q / (2.0 * (nozzle_discharge_coefficient * total_flow_area_m2).powi(2))
     } else {
@@ -193,6 +221,9 @@ fn complete_result(
         .ecd_reference_tvd_m
         .unwrap_or(prepared.geometry_reference_depth_m);
     let ecd = if reference_vertical_depth_m > 0.0 {
+        if !(GRAVITY_M_S2 * reference_vertical_depth_m).is_normal() {
+            return Err(SolveError::Numerical);
+        }
         let hydrostatic_pressure_pa = rho * GRAVITY_M_S2 * reference_vertical_depth_m;
         if is_version_two {
             rho + (prepared.total_annulus_pressure_loss_pa + surface_backpressure_pa)
@@ -228,7 +259,7 @@ fn complete_result(
         thermal_assumption: is_version_two.then_some(solver.thermal_assumption),
     };
 
-    HydraulicsAnalysisResult {
+    let result = HydraulicsAnalysisResult {
         contract_version: request.contract_version.clone(),
         analysis_id: request.analysis_id,
         status: if warnings.is_empty() {
@@ -248,7 +279,9 @@ fn complete_result(
         sections: prepared.section_results.clone(),
         evidence,
         warnings,
-    }
+    };
+    validate_result_numbers(&result).map_err(|_| SolveError::Numerical)?;
+    Ok(result)
 }
 
 fn evaluate_section(
@@ -261,7 +294,7 @@ fn evaluate_section(
 ) -> Result<SectionResponse, SolveError> {
     let length_m = (section.bottom_md_m - section.top_md_m).max(0.0);
 
-    let pipe_area_m2 = area_circle(section.string_id_m);
+    let pipe_area_m2 = checked_area(area_circle(section.string_id_m))?;
     let pipe_velocity_m_s = flow_rate_m3_s / pipe_area_m2;
     let pipe_response = evaluate_flow_response(
         flow_correlation,
@@ -279,7 +312,8 @@ fn evaluate_section(
         section.string_id_m,
     );
 
-    let annulus_area_m2 = area_circle(section.hole_id_m) - area_circle(section.string_od_m);
+    let annulus_area_m2 =
+        checked_area(area_circle(section.hole_id_m) - area_circle(section.string_od_m))?;
     let annulus_velocity_m_s = flow_rate_m3_s / annulus_area_m2;
     let annulus_hydraulic_diameter_m = section.hole_id_m - section.string_od_m;
     let annulus_response = evaluate_flow_response(
@@ -324,6 +358,14 @@ fn evaluate_section(
 
 fn area_circle(diameter_m: f64) -> f64 {
     std::f64::consts::PI * diameter_m.powi(2) / 4.0
+}
+
+fn checked_area(area_m2: f64) -> Result<f64, SolveError> {
+    if area_m2.is_normal() && area_m2 > 0.0 {
+        Ok(area_m2)
+    } else {
+        Err(SolveError::Numerical)
+    }
 }
 
 fn fanning_pressure_loss(
