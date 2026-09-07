@@ -51,6 +51,9 @@ test('hydraulics workbook authority is the verified Rust adapter', async () => {
   assert.match(runtime, /Public Function WF_RustExecBounded/);
   assert.match(runtime, /shell\.Run\(hiddenCommand, 0, True\)/);
   assert.doesNotMatch(runtime, /\.Exec\(/i);
+  assert.match(core, /WF_WriteEngineStatus "FAILED", failureSource & ": " & failureDescription/);
+  assert.doesNotMatch(core, /If failureNumber <> 0 Then Err\.Raise/);
+  assert.match(await read('VBA/WellForgeTorqueDragEngine.bas'), /Private Sub WF_TDCaptureSnapshots\(ByRef snapshots As Collection\)/);
   assert.match(builder, /WellForgeHydraulicsEngine\.bas/);
   assert.match(benchmark, /validate-batch[\s\S]*run-batch[\s\S]*verify-batch/);
   assert.match(benchmark, /Single15LaunchMedianMs[\s\S]*Batch3LaunchMedianMs/);

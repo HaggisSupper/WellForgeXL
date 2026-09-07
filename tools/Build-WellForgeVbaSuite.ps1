@@ -118,6 +118,18 @@ function Set-ThisWorkbookEvents {
     finally { Release-ComObject $codeModule; Release-ComObject $component }
 }
 
+function Assert-WellForgeWorkbookStatus {
+    param(
+        [Parameter(Mandatory = $true)][object]$Workbook,
+        [Parameter(Mandatory = $true)][string]$MacroName
+    )
+    $state = [string]$Workbook.Worksheets.Item('Summary').Range('K4').Value2
+    $detail = [string]$Workbook.Worksheets.Item('Summary').Range('K7').Value2
+    if ($state -match '^(FAILED|ERROR)$') {
+        throw ('{0} {1} reported {2}: {3}' -f $Workbook.Name, $MacroName, $state, $detail)
+    }
+}
+
 function Set-WellForgeUnitMapSchema {
     param([Parameter(Mandatory = $true)][object]$Workbook)
     $sheet = $Workbook.Worksheets.Item('Unit Map')
@@ -386,11 +398,14 @@ try {
             }
             else {
                 $excel.Run(("'{0}'!WellForge_BuildInitialize" -f $workbook.Name))
+                Assert-WellForgeWorkbookStatus -Workbook $workbook -MacroName 'WellForge_BuildInitialize'
                 Write-BuildEvent INFO "Build initialization passed for $targetName"
                 $excel.Run(("'{0}'!WellForge_UnitSwitchSelfTest" -f $workbook.Name))
+                Assert-WellForgeWorkbookStatus -Workbook $workbook -MacroName 'WellForge_UnitSwitchSelfTest'
                 Write-BuildEvent INFO "Unit-switch self-test passed for $targetName" @{ modes = @('SI', 'Imperial', 'Custom') }
             }
             $excel.Run(("'{0}'!WellForge_VisualizationSelfTest" -f $workbook.Name))
+            Assert-WellForgeWorkbookStatus -Workbook $workbook -MacroName 'WellForge_VisualizationSelfTest'
             Write-BuildEvent INFO "Visualization self-test passed for $targetName" @{ workbook = $targetName }
             $engineVersion = [string]$workbook.Worksheets('Summary').Range('K5').Value2
             if ($engineVersion -ne '2.0.0-vba') { throw "$targetName did not publish the expected VBA engine version." }

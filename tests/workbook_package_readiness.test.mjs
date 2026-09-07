@@ -265,6 +265,10 @@ test('native entrypoints wire guards before sources, isolate diagnostics and ret
   for (const source of [runner, watchdog]) assert.doesNotMatch(source, /Stop-Process|taskkill|Stop-NewExcelProcesses|baselineExcelProcessIds/);
   assert.match(watchdog, /manual.cleanup/i);
   assert.match(runner, /foreach \(\$name in \$workbookNames\)[\s\S]*Invoke-WorkbookMacro -Workbook \$workbook -Macro 'WellForge_BuildInitialize'/);
+  assert.match(builder, /Assert-WellForgeWorkbookStatus/);
+  assert.match(builder, /Range\('K4'\)/);
+  assert.match(builder, /Range\('K7'\)/);
+  assert.match(builder, /\^\(FAILED\|ERROR\)\$/);
   assert.match(runner, /status --porcelain=v1 --untracked-files=all/);
   assert.equal((runner.match(/'[^'\r\n]+\.xlsm'/g) ?? []).length, 5);
 });
