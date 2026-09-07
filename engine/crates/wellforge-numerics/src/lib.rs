@@ -21,7 +21,8 @@ pub use flow::{FlowEdge, FlowError, continuity_residuals};
 pub use interpolation::{InterpolationError, MonotoneCurve};
 pub use interval::{Interval, IntervalError, partition_boundaries};
 pub use nonlinear::{
-    JacobianProvider, NewtonError, NewtonOptions, NewtonSolution, ResidualModel, solve_newton_system,
+    JacobianProvider, NewtonError, NewtonOptions, NewtonSolution, ResidualModel,
+    solve_newton_system,
 };
 pub use regression::{
     RegressionError, RobustRegressionFit, RobustRegressionOptions, robust_weighted_least_squares,
