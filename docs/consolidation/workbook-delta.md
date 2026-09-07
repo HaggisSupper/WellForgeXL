@@ -55,6 +55,18 @@ from the repaired-template test; passing one does not prove rendering equivalenc
 
 ## Native acceptance and cleanup boundaries
 
+`WellForge_BuildInitialize` retains the first initialization error through
+best-effort application-state restoration, clears its busy latch, and disables
+its handler before propagating that error once. Each setting restoration is
+attempted independently; if initialization succeeded, the first restoration
+failure is propagated instead. State-read failures are handled before any
+application-setting mutation, without restoring uncaptured defaults. The
+successful initialization sequence and workbook ownership rules are unchanged.
+Focused source/structural tests cover this error-path contract, but do not prove
+native VBA semantics. Runtime-injected-error acceptance remains pending safe-close
+and reviewed native execution. This change does not establish the cause of, or
+claim to resolve, the observed native initialization stall.
+
 The bounded runner launches its helper hidden. On timeout it may stop only its
 captured helper handle; it does not infer ownership of descendants or Excel from
 baseline differences, start times or stale PIDs. Failures preserve Excel and

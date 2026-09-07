@@ -86,14 +86,19 @@ Public Sub WellForge_BuildInitialize()
     Dim oldCalc As XlCalculation
     Dim oldEvents As Boolean
     Dim oldScreen As Boolean
+    Dim stateCaptured As Boolean
     Dim failureNumber As Long
+    Dim failureSource As String
     Dim failureDescription As String
     Dim model As String
 
     If WF_Busy Then Exit Sub
     WF_Busy = True
-    oldCalc = Application.Calculation: oldEvents = Application.EnableEvents: oldScreen = Application.ScreenUpdating
     On Error GoTo Failed
+    oldCalc = Application.Calculation
+    oldEvents = Application.EnableEvents
+    oldScreen = Application.ScreenUpdating
+    stateCaptured = True
     Application.Calculation = xlCalculationManual: Application.EnableEvents = False: Application.ScreenUpdating = False
     ' Build initialization publishes value-only results through the model
     ' engines; forcing a workbook-wide formula rebuild here is unnecessary.
@@ -106,11 +111,40 @@ Public Sub WellForge_BuildInitialize()
     WF_RefreshCharts
     WF_WriteEngineStatus "READY", model & " compiled and initialized"
 Cleanup:
-    Application.Calculation = oldCalc: Application.EnableEvents = oldEvents: Application.ScreenUpdating = oldScreen: WF_Busy = False
-    If failureNumber <> 0 Then Err.Raise failureNumber, "WellForge_BuildInitialize", failureDescription
+    ' Attempt every restoration; the initialization error takes precedence.
+    On Error Resume Next
+    If stateCaptured Then
+        Err.Clear
+        Application.Calculation = oldCalc
+        If failureNumber = 0 And Err.Number <> 0 Then
+            failureNumber = Err.Number
+            failureSource = Err.Source
+            failureDescription = Err.Description
+        End If
+        Err.Clear
+        Application.EnableEvents = oldEvents
+        If failureNumber = 0 And Err.Number <> 0 Then
+            failureNumber = Err.Number
+            failureSource = Err.Source
+            failureDescription = Err.Description
+        End If
+        Err.Clear
+        Application.ScreenUpdating = oldScreen
+        If failureNumber = 0 And Err.Number <> 0 Then
+            failureNumber = Err.Number
+            failureSource = Err.Source
+            failureDescription = Err.Description
+        End If
+    End If
+    WF_Busy = False
+    ' A saved failure must escape this procedure, not re-enter Failed.
+    On Error GoTo 0
+    If failureNumber <> 0 Then Err.Raise failureNumber, failureSource, failureDescription
     Exit Sub
 Failed:
-    failureNumber = Err.Number: failureDescription = Err.Description
+    failureNumber = Err.Number
+    failureSource = Err.Source
+    failureDescription = Err.Description
     Resume Cleanup
 End Sub
 

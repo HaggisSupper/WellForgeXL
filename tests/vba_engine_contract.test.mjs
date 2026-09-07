@@ -8,6 +8,76 @@ import { spawnSync } from 'node:child_process';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const read = (relative) => fs.readFile(path.join(root, relative), 'utf8');
 
+// Source contracts only: these do not execute VBA or prove native error semantics.
+async function buildInitializeSource() {
+  const core = await read('VBA/WellForgeCore.bas');
+  const match = core.match(/^Public Sub WellForge_BuildInitialize\(\)\r?\n([\s\S]*?)^End Sub\s*$/m);
+  assert.ok(match, 'BuildInitialize must remain a complete procedure');
+  return match[1].replace(/^\s*'.*$/gm, '').trim();
+}
+
+test('BuildInitialize source disables its handler before propagating the saved error once', async () => {
+  const source = await buildInitializeSource();
+  const [initialization, cleanupAndHandler] = source.split(/^Cleanup:\s*$/m);
+  assert.ok(cleanupAndHandler, 'initialization must have a cleanup path');
+  const [cleanup, handler] = cleanupAndHandler.split(/^Failed:\s*$/m);
+  assert.match(initialization, /On Error GoTo Failed/);
+  assert.equal((source.match(/\bErr\.Raise\b/g) ?? []).length, 1, 'one propagation site for the saved error');
+  assert.match(cleanup, /WF_Busy = False\s+On Error GoTo 0\s+If failureNumber <> 0 Then Err\.Raise failureNumber, failureSource, failureDescription\s+Exit Sub\s*$/,
+    'disable error handling before the final raise so it cannot catch itself or swallow cleanup failure');
+  assert.match(handler, /^\s*failureNumber = Err\.Number\s+failureSource = Err\.Source\s+failureDescription = Err\.Description\s+Resume Cleanup\s*$/,
+    'save the original number/source/description before leaving the active handler');
+  assert.doesNotMatch(cleanup, /On Error GoTo Failed|^\s*Resume\b|\bGoTo Cleanup\b/m);
+});
+
+test('BuildInitialize source attempts all restorations without replacing the first failure', async () => {
+  const source = await buildInitializeSource();
+  const cleanup = source.split(/^Cleanup:\s*$/m)[1]?.split(/^Failed:\s*$/m)[0];
+  assert.ok(cleanup, 'cleanup must be identifiable');
+  assert.match(cleanup, /^\s*On Error Resume Next\s+If stateCaptured Then/,
+    'restoration errors must continue to the next attempt, not re-enter Failed');
+  let previousEnd = 0;
+  for (const [setting, saved] of [
+    ['Calculation', 'oldCalc'], ['EnableEvents', 'oldEvents'], ['ScreenUpdating', 'oldScreen'],
+  ]) {
+    const attempt = new RegExp(`Err\\.Clear\\s+Application\\.${setting} = ${saved}\\s+`
+      + 'If failureNumber = 0 And Err\\.Number <> 0 Then\\s+'
+      + 'failureNumber = Err\\.Number\\s+failureSource = Err\\.Source\\s+'
+      + 'failureDescription = Err\\.Description\\s+End If');
+    const match = attempt.exec(cleanup);
+    assert.ok(match, `${setting}: clear stale Err, attempt restoration, retain only the first failure`);
+    assert.ok(match.index >= previousEnd, `${setting}: each restoration must be attempted in order`);
+    previousEnd = match.index + match[0].length;
+  }
+  const busyClear = cleanup.indexOf('WF_Busy = False');
+  assert.ok(busyClear > previousEnd, 'clear the busy latch even after restoration failures');
+  assert.doesNotMatch(cleanup.slice(0, busyClear), /\b(?:Exit Sub|Err\.Raise|GoTo|Do|Loop|Resume Cleanup)\b/,
+    'no early exit, throw, jump or retry may bypass later restorations or clearing WF_Busy');
+});
+
+test('BuildInitialize source handles capture failure without restoring uncaptured settings', async () => {
+  const source = await buildInitializeSource();
+  assert.match(source, /If WF_Busy Then Exit Sub\s+WF_Busy = True\s+On Error GoTo Failed\s+oldCalc = Application\.Calculation\s+oldEvents = Application\.EnableEvents\s+oldScreen = Application\.ScreenUpdating\s+stateCaptured = True\s+Application\.Calculation = xlCalculationManual/,
+    'catch state-read failures; capture all settings before any application-setting mutation');
+  const cleanup = source.split(/^Cleanup:\s*$/m)[1]?.split(/^Failed:\s*$/m)[0];
+  assert.match(cleanup, /If stateCaptured Then[\s\S]*Application\.Calculation = oldCalc[\s\S]*Application\.EnableEvents = oldEvents[\s\S]*Application\.ScreenUpdating = oldScreen[\s\S]*End If\s+WF_Busy = False/,
+    'restore only a complete snapshot, but always clear the owned busy latch');
+});
+
+test('BuildInitialize source retains the successful initialization sequence and workbook ownership', async () => {
+  const source = await buildInitializeSource();
+  const initialization = source.split(/^Cleanup:\s*$/m)[0];
+  const calls = initialization.split(/\r?\n/).map((line) => line.trim())
+    .filter((line) => /^(?:WF_(?:FreezeAllFormulas|ReplacePocLanguage|InstallControls|UpdateUnitMap|DispatchModel|RefreshCharts|WriteEngineStatus)\b|model = WF_ModelKind\(\))/.test(line));
+  assert.deepEqual(calls, [
+    'WF_FreezeAllFormulas', 'WF_ReplacePocLanguage', 'WF_InstallControls', 'WF_UpdateUnitMap',
+    'model = WF_ModelKind()', 'WF_DispatchModel model', 'WF_RefreshCharts',
+    'WF_WriteEngineStatus "READY", model & " compiled and initialized"',
+  ]);
+  assert.doesNotMatch(source, /CalculateFullRebuild|\b(?:Quit|Close|Terminate|MsgBox)\b/,
+    'initialization must not add rebuilds, UI, workbook closure or process shutdown');
+});
+
 test('VBA engines expose complete calculation entry points and shared SI/unit runtime', async () => {
   const [core, api, hydraulics, hydraulicsEngine, torqueDrag, torqueDragEngine, bha, directional, json] = await Promise.all([
     read('VBA/WellForgeCore.bas'), read('VBA/WellForgeApi7G.bas'), read('VBA/WellForgeHydraulics.bas'),
