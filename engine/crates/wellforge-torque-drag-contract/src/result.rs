@@ -58,6 +58,14 @@ pub enum StiffConvergence {
 pub struct StiffNodeResult {
     /// Measured depth in metres.
     pub md_m: f64,
+    /// Effective axial tension inherited by this stiff node, in newtons.
+    pub effective_tension_n: f64,
+    /// Torque inherited by this stiff node, in newton-metres.
+    pub torque_nm: f64,
+    /// Local normal load per unit length, in newtons per metre.
+    pub normal_load_n_m: f64,
+    /// Local spatial dogleg curvature, in radians per metre.
+    pub dogleg_rad_m: f64,
     /// Local transverse string-center displacement in metres.
     pub displacement_m: f64,
     /// Signed remaining radial clearance in metres; negative indicates penetration before penalty correction.
@@ -113,6 +121,34 @@ pub fn derive_stiff_interval_id(analysis_id: Uuid, start_md_m: f64, end_md_m: f6
     Uuid::new_v5(&analysis_id, &name)
 }
 
+/// How a final station entered the hybrid soft/stiff result.
+#[derive(Clone, Copy, Debug, Deserialize, Eq, JsonSchema, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StiffPointKind {
+    /// An existing soft-string station was replaced by a stiff-string nodal state.
+    Substituted,
+    /// A new station was inserted because the stiff solver reported borehole contact.
+    InsertedContact,
+}
+
+/// Optional stiff-string detail attached to a final station.
+#[derive(Clone, Debug, Deserialize, JsonSchema, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct StiffStationRefinement {
+    /// How this point entered the final station sequence.
+    pub kind: StiffPointKind,
+    /// Local transverse displacement in metres.
+    pub displacement_m: f64,
+    /// Signed remaining radial clearance in metres.
+    pub radial_clearance_m: f64,
+    /// Borehole contact reaction magnitude in newtons.
+    pub contact_force_n: f64,
+    /// Local bending moment magnitude in newton-metres.
+    pub bending_moment_nm: f64,
+    /// Extreme-fibre bending stress in pascals.
+    pub bending_stress_pa: f64,
+}
+
 /// Per-station soft-string result in canonical SI.
 #[derive(Clone, Debug, Deserialize, JsonSchema, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -127,6 +163,19 @@ pub struct StationResult {
     pub normal_load_n_m: f64,
     /// Dogleg severity used at this station in radians per metre.
     pub dogleg_rad_m: f64,
+    /// Optional stiff-string detail; absent for untouched soft-string stations.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub refinement: Option<StiffStationRefinement>,
+}
+
+impl StationResult {
+    /// Borehole contact reaction for this station, or zero for an untouched soft station.
+    #[must_use]
+    pub fn contact_force_n(&self) -> f64 {
+        self.refinement
+            .as_ref()
+            .map_or(0.0, |refinement| refinement.contact_force_n)
+    }
 }
 
 /// Buckling screen result for a station.
