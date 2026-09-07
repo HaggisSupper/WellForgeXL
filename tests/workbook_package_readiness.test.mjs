@@ -68,6 +68,107 @@ test('recursive cleanup guard rejects root, sibling, traversal and reparse targe
   `);
 });
 
+test('trajectory cleanup guard requires its exact run child and rejects traversal aliases', windowsOnly, () => {
+  pass(String.raw`${guards}
+    ${expectThrow}
+    $parent = 'C:\bounded\WellForgeTrajectory'
+    $child = 'release-test-0123456789abcdef0123456789abcdef'
+    Assert-WellForgeCleanupTarget -Path "$parent\$child" -RunDirectory $parent -ExpectedChildName $child
+    foreach ($target in @($parent, "$parent\sibling", "$parent-other\$child", "$parent\other\..\$child", "C:\")) {
+      Expect-Throw { Assert-WellForgeCleanupTarget -Path $target -RunDirectory $parent -ExpectedChildName $child }
+    }
+  `);
+});
+
+test('trajectory helper setup and finally preserve unowned or redirected temporary material', windowsOnly, () => {
+  pass(String.raw`${guards}
+    $tokens = $null; $errors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD 'tools/Test-WellForgeTrajectoryEngine.ps1'), [ref]$tokens, [ref]$errors)
+    if ($errors.Count) { throw 'Trajectory helper parse failed' }
+    $nativeTry = $ast.EndBlock.Statements | Where-Object { $_ -is [System.Management.Automation.Language.TryStatementAst] } | Select-Object -First 1
+    $setupStatements = @(); $inSetup = $false
+    foreach ($statement in $nativeTry.Body.Statements) {
+      if ($statement.Extent.Text -match '^(Assert-WellForgeCleanupTarget|New-Item|New-WellForgeExclusiveDirectory)\b') { $inSetup = $true }
+      if ($statement.Extent.Text -match '^& \$executable validate\b') { break }
+      if ($inSetup) { $setupStatements += $statement.Extent.Text }
+    }
+    if ($setupStatements.Count -eq 0) { throw 'Actual directory setup statements not found' }
+    $setup = [scriptblock]::Create($setupStatements -join [Environment]::NewLine)
+    $cleanup = [scriptblock]::Create($nativeTry.Finally.Extent.Text.Trim().Substring(1).TrimEnd().TrimEnd('}'))
+    # Replace only filesystem boundaries. The actual helper setup/finally and
+    # shared guard execute; no directory is created/deleted and no engine runs.
+    function Test-Path { param($LiteralPath, $PathType) return $true }
+    function Get-Item {
+      param($LiteralPath, [switch]$Force)
+      $attributes = [IO.FileAttributes]::Directory
+      if ($LiteralPath -eq $script:redirectedPath) { $attributes = $attributes -bor [IO.FileAttributes]::ReparsePoint }
+      [pscustomobject]@{ Attributes = $attributes }
+    }
+    function New-Item {
+      param($ItemType, $Path, [switch]$Force)
+      if ($Path -eq $temporaryParent) { $script:parentCreationCalls++; return }
+      if ($script:failCreation) { throw 'Directory already exists: exclusive creation failed' }
+      $script:creationCalls++
+    }
+    function New-WellForgeExclusiveDirectory {
+      param($LiteralPath)
+      if ($LiteralPath -ne "$temporaryParent\$runName") { throw 'Wrong native creation target' }
+      if ($script:failCreation) { throw 'Directory already exists: exclusive creation failed' }
+      $script:creationCalls++
+    }
+    function Remove-Item {
+      param($LiteralPath, [switch]$Recurse, [switch]$Force)
+      $script:deletionCalls++
+      if ($LiteralPath -ne "$temporaryParent\$runName" -or -not $Recurse) { throw 'Wrong deletion target' }
+    }
+    foreach ($scenario in @('unowned-setup-failure', 'exclusive-creation-failure', 'parent-redirect', 'root', 'sibling', 'traversal', 'cleanup-parent-redirect', 'cleanup-child-redirect', 'cleanup-sibling', 'owned-success')) {
+      $temporaryParent = 'C:\bounded\WellForgeTrajectory'
+      $runName = 'release-test-0123456789abcdef0123456789abcdef'
+      $runRoot = "$temporaryParent\$runName"
+      $runDirectoryCreated = $false; $succeeded = $true; $NoPause = $true
+      $script:creationCalls = 0; $script:parentCreationCalls = 0; $script:deletionCalls = 0; $script:redirectedPath = ''
+      $script:failCreation = $scenario -eq 'exclusive-creation-failure'
+      if ($scenario -eq 'parent-redirect') { $script:redirectedPath = $temporaryParent }
+      if ($scenario -eq 'root') { $runRoot = $temporaryParent }
+      if ($scenario -eq 'sibling') { $runRoot = "$temporaryParent\sibling" }
+      if ($scenario -eq 'traversal') { $runRoot = "$temporaryParent\other\..\$runName" }
+      $setupFailed = $false
+      if ($scenario -ne 'unowned-setup-failure') {
+        try { . $setup } catch { $setupFailed = $true }
+      }
+      if ($scenario -eq 'cleanup-parent-redirect') { $script:redirectedPath = $temporaryParent }
+      if ($scenario -eq 'cleanup-child-redirect') { $script:redirectedPath = $runRoot }
+      if ($scenario -eq 'cleanup-sibling') { $runRoot = "$temporaryParent\sibling" }
+      . $cleanup
+      if ($scenario -eq 'owned-success') {
+        if ($setupFailed -or -not $runDirectoryCreated -or $script:creationCalls -ne 1 -or $script:deletionCalls -ne 1 -or -not $succeeded) { throw 'Owned run did not complete its guarded cleanup' }
+      } else {
+        if ($script:deletionCalls -ne 0) { throw "Unsafe deletion selected after $scenario" }
+        if ($scenario.StartsWith('cleanup-') -and $succeeded) { throw "Cleanup failure was accepted: $scenario" }
+        if (-not $scenario.StartsWith('cleanup-') -and $scenario -ne 'unowned-setup-failure' -and -not $setupFailed) { throw "Unsafe setup was accepted: $scenario" }
+        if (-not $scenario.StartsWith('cleanup-') -and ($script:creationCalls -ne 0 -or $runDirectoryCreated)) { throw "Unsuccessful setup claimed ownership: $scenario" }
+        if ($scenario -in @('parent-redirect', 'root', 'sibling', 'traversal') -and $script:parentCreationCalls -ne 0) { throw "Guard ran after filesystem mutation: $scenario" }
+      }
+    }
+  `);
+});
+
+test('trajectory release helper wires exclusive creation and ownership-gated literal cleanup', async () => {
+  const [helper, shared, release] = await Promise.all([
+    read('tools/Test-WellForgeTrajectoryEngine.ps1'), read('tools/WellForgeBuildGuards.ps1'), read('tools/Invoke-WellForgeWindowsRelease.ps1'),
+  ]);
+  assert.match(release, /Test-WellForgeTrajectoryEngine\.ps1/);
+  assert.match(helper, /WellForgeBuildGuards\.ps1/);
+  assert.match(helper, /\$temporaryParent = .*GetFullPath/);
+  assert.match(helper, /\$runDirectoryCreated = \$false/);
+  assert.match(helper, /New-WellForgeExclusiveDirectory -LiteralPath \$runRoot\s+\$runDirectoryCreated = \$true/);
+  assert.match(helper, /Assert-WellForgeCleanupTarget[^\n]*-ExpectedChildName \$runName/g);
+  assert.match(helper, /Assert-WellForgeCleanupTarget[^\n]*\n\s*Remove-Item -LiteralPath \$runRoot -Recurse -Force/);
+  assert.match(helper, /manual cleanup/i);
+  assert.match(shared, /DllImport\("kernel32\.dll",[^\n]*SetLastError = true/);
+  assert.match(shared, /if \(-not \[WellForgeDirectoryNative\]::CreateDirectory/);
+});
+
 test('Excel cleanup fails closed for live, unrelated, reused and unknown identities without terminating anything', windowsOnly, () => {
   pass(String.raw`${guards}
     ${expectThrow}

@@ -20,6 +20,13 @@ processing. Versioned input hashes remain mandatory. BHA end-to-end diagnostics
 installable payload. Recursive temporary/staging cleanup checks containment and
 rejects reparse-point ancestors before deletion.
 
+The trajectory release helper validates its explicit temporary parent and exact
+run child before setup, uses atomic exclusive directory creation, and records
+ownership only after creation succeeds. Its cleanup revalidates that same child
+and all existing ancestors immediately before recursive deletion. Failed setup
+never authorizes deleting an existing directory; uncertain material is retained
+with a blocked/manual-cleanup report.
+
 The installer now includes both `LICENSE` and `LICENSE-APACHE`, all five workbooks,
 and all four executable/sidecar pairs. Installer README and launch conveniences
 remain installer-specific. The strict release archive continues to reject extra

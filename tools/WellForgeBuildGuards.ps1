@@ -17,9 +17,21 @@ function Assert-WellForgeWorkbookNames {
 }
 
 function Assert-WellForgeCleanupTarget {
-    param([Parameter(Mandatory = $true)][string]$Path, [Parameter(Mandatory = $true)][string]$RunDirectory)
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$RunDirectory,
+        [string]$ExpectedChildName
+    )
     $target = [IO.Path]::GetFullPath($Path).TrimEnd('\', '/')
     $boundary = [IO.Path]::GetFullPath($RunDirectory).TrimEnd('\', '/')
+    if ($PSBoundParameters.ContainsKey('ExpectedChildName')) {
+        if ([string]::IsNullOrWhiteSpace($ExpectedChildName) -or $ExpectedChildName -in @('.', '..') -or
+            $ExpectedChildName -match '[\\/]' -or $ExpectedChildName.IndexOfAny([IO.Path]::GetInvalidFileNameChars()) -ge 0 -or
+            $Path -match '(^|[\\/])\.{1,2}([\\/]|$)' -or
+            -not $target.Equals((Join-Path $boundary $ExpectedChildName), [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Cleanup target is not the exact expected run child: $Path"
+        }
+    }
     if (-not $target.StartsWith($boundary + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
         throw "Recursive cleanup target is outside its named run directory: $target"
     }
@@ -32,6 +44,27 @@ function Assert-WellForgeCleanupTarget {
             }
         }
         $ancestor = [IO.Path]::GetDirectoryName($ancestor)
+    }
+}
+
+function New-WellForgeExclusiveDirectory {
+    param([Parameter(Mandatory = $true)][string]$LiteralPath)
+    # CreateDirectory fails atomically if the child already exists. A prior
+    # existence check followed by Directory.CreateDirectory cannot prove ownership.
+    if (-not ('WellForgeDirectoryNative' -as [type])) {
+        Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class WellForgeDirectoryNative {
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool CreateDirectory(string path, IntPtr securityAttributes);
+}
+'@
+    }
+    if (-not [WellForgeDirectoryNative]::CreateDirectory($LiteralPath, [IntPtr]::Zero)) {
+        $creationError = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
+        throw [ComponentModel.Win32Exception]::new($creationError, "Exclusive run-directory creation failed: $LiteralPath")
     }
 }
 

@@ -6,12 +6,16 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'WellForgeBuildGuards.ps1')
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 if ([string]::IsNullOrWhiteSpace($EngineDirectory)) { $EngineDirectory = Join-Path $repositoryRoot 'outputs\vba-engine' }
 $executable = Join-Path $EngineDirectory 'wellforge-trajectory.exe'
 $hashManifest = $executable + '.sha256'
 $fixture = Join-Path $repositoryRoot 'engine\fixtures\requests\trajectory-release-one-minimal.json'
-$runRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('WellForgeTrajectory\release-test-' + [guid]::NewGuid().ToString('N'))
+$temporaryParent = [System.IO.Path]::GetFullPath((Join-Path ([System.IO.Path]::GetTempPath()) 'WellForgeTrajectory'))
+$runName = 'release-test-' + [guid]::NewGuid().ToString('N')
+$runRoot = Join-Path $temporaryParent $runName
+$runDirectoryCreated = $false
 $result = Join-Path $runRoot 'result.json'
 $diagnostics = Join-Path $runRoot 'diagnostics.jsonl'
 $bridge = Join-Path $runRoot 'result.wfbridge'
@@ -26,7 +30,11 @@ try {
     $actualHash = (Get-FileHash -LiteralPath $executable -Algorithm SHA256).Hash.ToLowerInvariant()
     if ($actualHash -ne $expectedHash) { throw 'Trajectory executable hash mismatch.' }
 
-    New-Item -ItemType Directory -Path $runRoot | Out-Null
+    Assert-WellForgeCleanupTarget -Path $runRoot -RunDirectory $temporaryParent -ExpectedChildName $runName
+    New-Item -ItemType Directory -Path $temporaryParent -Force | Out-Null
+    Assert-WellForgeCleanupTarget -Path $runRoot -RunDirectory $temporaryParent -ExpectedChildName $runName
+    New-WellForgeExclusiveDirectory -LiteralPath $runRoot
+    $runDirectoryCreated = $true
     & $executable validate --input $fixture
     if ($LASTEXITCODE -ne 0) { throw 'validate failed' }
     & $executable run --input $fixture --output $result --diagnostics $diagnostics --no-backup
@@ -43,13 +51,30 @@ try {
     $bridgeHeader = Get-Content -LiteralPath $bridge -Encoding UTF8 | Select-Object -First 1
     if (-not $bridgeHeader.StartsWith("H`t1.0.0`t")) { throw 'bridge header is invalid' }
     $succeeded = $true
-    Write-Host 'WellForge trajectory engine release test passed.' -ForegroundColor Green
 }
 catch {
     Write-Host ($_ | Format-List * -Force | Out-String) -ForegroundColor Red
 }
 finally {
-    if (Test-Path -LiteralPath $runRoot -PathType Container) { Remove-Item -LiteralPath $runRoot -Recurse -Force }
+    if ($runDirectoryCreated) {
+        try {
+            Assert-WellForgeCleanupTarget -Path $runRoot -RunDirectory $temporaryParent -ExpectedChildName $runName
+            if (Test-Path -LiteralPath $runRoot) {
+                if (-not (Test-Path -LiteralPath $runRoot -PathType Container)) { throw 'The owned run directory is no longer a directory.' }
+                Assert-WellForgeCleanupTarget -Path $runRoot -RunDirectory $temporaryParent -ExpectedChildName $runName
+                Remove-Item -LiteralPath $runRoot -Recurse -Force
+            }
+        }
+        catch {
+            $succeeded = $false
+            Write-Host "Blocked/manual cleanup: temporary material retained at '$runRoot'. $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
+    elseif (Test-Path -LiteralPath $runRoot) {
+        $succeeded = $false
+        Write-Host "Blocked/manual cleanup: this invocation did not create '$runRoot'; existing material was retained." -ForegroundColor Red
+    }
+    if ($succeeded) { Write-Host 'WellForge trajectory engine release test passed.' -ForegroundColor Green }
     if (-not $NoPause) { [void](Read-Host 'Press Enter to close this window') }
 }
 
