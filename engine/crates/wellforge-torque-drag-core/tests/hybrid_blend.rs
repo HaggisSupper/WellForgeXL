@@ -2,7 +2,7 @@
 
 use wellforge_torque_drag_contract::{
     StiffConvergence, StiffIntervalReason, StiffIntervalResult, StiffNodeResult, StiffPointKind,
-    StiffStringResult,
+    StiffStringResult, TnDAnalysisRequest,
 };
 use wellforge_torque_drag_core::{blend_stiff_refinement, solve_soft_string};
 use wellforge_torque_drag_fixtures::canonical_pickup_case;
@@ -14,21 +14,10 @@ fn near(actual: f64, expected: f64) {
     );
 }
 
-#[test]
-fn stiff_values_substitute_soft_stations_and_only_contact_points_are_inserted() {
-    let request = canonical_pickup_case();
-    let soft = solve_soft_string(&request).expect("soft solve");
-    let original_len = soft.stations.len();
-    let unchanged = soft
-        .stations
-        .iter()
-        .find(|station| (station.md_m - 300.0).abs() <= 1.0e-9)
-        .expect("300 m soft station")
-        .clone();
-
+fn converged_stiff_result(request: &TnDAnalysisRequest) -> StiffStringResult {
     let interval_id =
         wellforge_torque_drag_contract::derive_stiff_interval_id(request.analysis_id, 0.0, 200.0);
-    let stiff = StiffStringResult {
+    StiffStringResult {
         intervals: vec![StiffIntervalResult {
             interval_id,
             start_md_m: 0.0,
@@ -78,7 +67,21 @@ fn stiff_values_substitute_soft_stations_and_only_contact_points_are_inserted() 
                 },
             ],
         }],
-    };
+    }
+}
+
+#[test]
+fn stiff_values_substitute_soft_stations_and_only_contact_points_are_inserted() {
+    let request = canonical_pickup_case();
+    let soft = solve_soft_string(&request).expect("soft solve");
+    let original_len = soft.stations.len();
+    let unchanged = soft
+        .stations
+        .iter()
+        .find(|station| (station.md_m - 300.0).abs() <= 1.0e-9)
+        .expect("300 m soft station")
+        .clone();
+    let stiff = converged_stiff_result(&request);
 
     let blended = blend_stiff_refinement(soft, &stiff);
 
