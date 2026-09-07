@@ -83,24 +83,12 @@ fn converged(norm: f64, initial_norm: f64, options: NewtonOptions) -> bool {
         + options.relative_tolerance * initial_norm.max(options.absolute_tolerance)
 }
 
-/// Solves a bounded square nonlinear system with safeguarded Newton steps and backtracking.
-///
-/// Jacobian values are interpreted as a row-major `n × n` matrix. Every trial state is
-/// projected onto the supplied component bounds before its residual is evaluated.
-///
-/// # Errors
-/// Returns [`NewtonError`] for invalid dimensions/bounds, non-finite values, an unsolved
-/// Jacobian system, or failure to find a converged residual-reducing sequence.
-pub fn solve_newton_system<M>(
-    model: &M,
+fn validate_inputs(
     initial: &[f64],
     lower_bounds: &[f64],
     upper_bounds: &[f64],
     options: NewtonOptions,
-) -> Result<NewtonSolution, NewtonError>
-where
-    M: ResidualModel + JacobianProvider,
-{
+) -> Result<usize, NewtonError> {
     let n = initial.len();
     if n == 0 || lower_bounds.len() != n || upper_bounds.len() != n {
         return Err(NewtonError::DimensionMismatch);
@@ -129,7 +117,28 @@ where
     }) {
         return Err(NewtonError::InvalidBounds);
     }
+    Ok(n)
+}
 
+/// Solves a bounded square nonlinear system with safeguarded Newton steps and backtracking.
+///
+/// Jacobian values are interpreted as a row-major `n × n` matrix. Every trial state is
+/// projected onto the supplied component bounds before its residual is evaluated.
+///
+/// # Errors
+/// Returns [`NewtonError`] for invalid dimensions/bounds, non-finite values, an unsolved
+/// Jacobian system, or failure to find a converged residual-reducing sequence.
+pub fn solve_newton_system<M>(
+    model: &M,
+    initial: &[f64],
+    lower_bounds: &[f64],
+    upper_bounds: &[f64],
+    options: NewtonOptions,
+) -> Result<NewtonSolution, NewtonError>
+where
+    M: ResidualModel + JacobianProvider,
+{
+    let n = validate_inputs(initial, lower_bounds, upper_bounds, options)?;
     let mut x = initial.to_vec();
     let mut residual = vec![0.0; n];
     let initial_norm = evaluate_residual(model, &x, &mut residual)?;
