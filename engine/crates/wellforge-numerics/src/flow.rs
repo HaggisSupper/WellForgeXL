@@ -34,10 +34,7 @@ pub enum FlowError {
 ///
 /// # Errors
 /// Returns [`FlowError`] for an empty network, invalid node index, or non-finite flow.
-pub fn continuity_residuals(
-    node_count: usize,
-    edges: &[FlowEdge],
-) -> Result<Vec<f64>, FlowError> {
+pub fn continuity_residuals(node_count: usize, edges: &[FlowEdge]) -> Result<Vec<f64>, FlowError> {
     if node_count == 0 {
         return Err(FlowError::Empty);
     }
