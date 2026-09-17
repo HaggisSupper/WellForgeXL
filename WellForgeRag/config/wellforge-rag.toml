@@ -1,0 +1,33 @@
+[storage]
+sqlite = "../data/wellforge-rag.sqlite3"
+lancedb = "../data/lancedb"
+okf = "../data/okf"
+
+[server]
+bind = "127.0.0.1:8765"
+
+[ingest]
+roots = ["../../"]
+max_file_bytes = 536870912
+max_extraction_bytes = 67108864
+python = "python"
+python_adapter = "../adapters/extract.py"
+
+[embedding]
+enabled = true
+base_url = "http://127.0.0.1:1234/v1"
+model = "text-embedding-nomic-embed-text-v1.5"
+dimension = 768
+batch_size = 32
+timeout_seconds = 60
+
+[concepts]
+enabled = true
+base_url = "http://127.0.0.1:1234/v1"
+model = "local"
+timeout_seconds = 90
+
+[search]
+lexical_weight = 1.0
+semantic_weight = 1.0
+candidate_limit = 40
