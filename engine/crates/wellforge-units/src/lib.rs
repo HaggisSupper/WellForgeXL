@@ -158,6 +158,7 @@ fn convert(value: f64, unit: &str) -> Result<(QuantityClass, f64), UnitError> {
             QuantityClass::Density,
             MassDensity::new::<kilogram_per_cubic_meter>(value).get::<kilogram_per_cubic_meter>(),
         ),
+        "g/cm3" => (QuantityClass::Density, value * 1000.0),
         "lbm/ft3" => (
             QuantityClass::Density,
             MassDensity::new::<pound_per_cubic_foot>(value).get::<kilogram_per_cubic_meter>(),

@@ -9,7 +9,8 @@ export const UNIT_ROWS = [
   { domain: 'Area', siUnit: 'm2', imperialUnit: 'in2', mixedUnit: 'cm2', imperialMultiplier: 1550.0031, mixedMultiplier: 10000, multiplier: 1550.0031, offset: 0 },
   { domain: 'Volume', siUnit: 'm3', imperialUnit: 'bbl', mixedUnit: 'L', imperialMultiplier: 6.28981077, mixedMultiplier: 1000, multiplier: 6.28981077, offset: 0 },
   { domain: 'Flow rate', siUnit: 'm3/s', imperialUnit: 'gpm', mixedUnit: 'L/min', imperialMultiplier: 15850.32314, mixedMultiplier: 60000, multiplier: 15850.32314, offset: 0 },
-  { domain: 'Density', siUnit: 'kg/m3', imperialUnit: 'ppg', mixedUnit: 'kg/m3', imperialMultiplier: 0.008345404, mixedMultiplier: 1, multiplier: 0.008345404, offset: 0 },
+  // WITSML/Energistics uses g/cm3 for density display; calculations remain kg/m3.
+  { domain: 'Density', siUnit: 'g/cm3', imperialUnit: 'ppg', mixedUnit: 'g/cm3', siMultiplier: 0.001, imperialMultiplier: 0.008345404, mixedMultiplier: 0.001, multiplier: 0.008345404, offset: 0 },
   { domain: 'Force', siUnit: 'N', imperialUnit: 'lbf', mixedUnit: 'kN', imperialMultiplier: 0.224808943, mixedMultiplier: 0.001, multiplier: 0.224808943, offset: 0 },
   { domain: 'Pressure', siUnit: 'Pa', imperialUnit: 'psi', mixedUnit: 'kPa', imperialMultiplier: 0.000145037738, mixedMultiplier: 0.001, multiplier: 0.000145037738, offset: 0 },
   { domain: 'Torque', siUnit: 'N-m', imperialUnit: 'ft-lbf', mixedUnit: 'kN-m', imperialMultiplier: 0.737562149, mixedMultiplier: 0.001, multiplier: 0.737562149, offset: 0 },

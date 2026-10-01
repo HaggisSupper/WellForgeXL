@@ -49,7 +49,12 @@ test('hydraulics workbook authority is the verified Rust adapter', async () => {
   assert.match(engine, /LAST ACCEPTED VALUES PRESERVED/);
   assert.doesNotMatch(engine, /cmd\.exe/i);
   assert.match(runtime, /Public Function WF_RustExecBounded/);
-  assert.match(runtime, /process\.Terminate/);
+  assert.match(runtime, /WF_RustElapsedSeconds\(started\) > TimeoutSeconds[\s\S]*process\.Terminate[\s\S]*ENGINE TIMEOUT/, "runtime timeout must remain enforced against its captured process");
+  assert.doesNotMatch(runtime, /shell\.Run\(hiddenCommand, 0, True\)/, "synchronous hidden waits must not ignore the timeout");
+  assert.match(core, /Err\.Raise failureNumber, failureSource, failureDescription/, "native release failures must propagate");
+  assert.doesNotMatch(core, /If failureNumber <> 0 Then\s+WF_WriteEngineStatus/, "a failure status message cannot replace a raised error");
+  assert.match(await read('VBA/WellForgeTorqueDragEngine.bas'), /Private Sub WF_TDCaptureSnapshots\(ByRef snapshots As Collection\)/);
+  assert.match(await read('VBA/WellForgeTorqueDragEngine.bas'), /If WF_SheetExists\("Hydraulics Dashboard"\) Then Call WF_TDSnapshot/);
   assert.match(builder, /WellForgeHydraulicsEngine\.bas/);
   assert.match(benchmark, /validate-batch[\s\S]*run-batch[\s\S]*verify-batch/);
   assert.match(benchmark, /Single15LaunchMedianMs[\s\S]*Batch3LaunchMedianMs/);

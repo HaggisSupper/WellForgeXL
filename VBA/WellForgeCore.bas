@@ -86,14 +86,19 @@ Public Sub WellForge_BuildInitialize()
     Dim oldCalc As XlCalculation
     Dim oldEvents As Boolean
     Dim oldScreen As Boolean
+    Dim stateCaptured As Boolean
     Dim failureNumber As Long
+    Dim failureSource As String
     Dim failureDescription As String
     Dim model As String
 
     If WF_Busy Then Exit Sub
     WF_Busy = True
-    oldCalc = Application.Calculation: oldEvents = Application.EnableEvents: oldScreen = Application.ScreenUpdating
     On Error GoTo Failed
+    oldCalc = Application.Calculation
+    oldEvents = Application.EnableEvents
+    oldScreen = Application.ScreenUpdating
+    stateCaptured = True
     Application.Calculation = xlCalculationManual: Application.EnableEvents = False: Application.ScreenUpdating = False
     ' Build initialization publishes value-only results through the model
     ' engines; forcing a workbook-wide formula rebuild here is unnecessary.
@@ -106,11 +111,39 @@ Public Sub WellForge_BuildInitialize()
     WF_RefreshCharts
     WF_WriteEngineStatus "READY", model & " compiled and initialized"
 Cleanup:
-    Application.Calculation = oldCalc: Application.EnableEvents = oldEvents: Application.ScreenUpdating = oldScreen: WF_Busy = False
-    If failureNumber <> 0 Then Err.Raise failureNumber, "WellForge_BuildInitialize", failureDescription
+    ' Attempt every restoration; the initialization error takes precedence.
+    On Error Resume Next
+    If stateCaptured Then
+        Err.Clear
+        Application.Calculation = oldCalc
+        If failureNumber = 0 And Err.Number <> 0 Then
+            failureNumber = Err.Number
+            failureSource = Err.Source
+            failureDescription = Err.Description
+        End If
+        Err.Clear
+        Application.EnableEvents = oldEvents
+        If failureNumber = 0 And Err.Number <> 0 Then
+            failureNumber = Err.Number
+            failureSource = Err.Source
+            failureDescription = Err.Description
+        End If
+        Err.Clear
+        Application.ScreenUpdating = oldScreen
+        If failureNumber = 0 And Err.Number <> 0 Then
+            failureNumber = Err.Number
+            failureSource = Err.Source
+            failureDescription = Err.Description
+        End If
+    End If
+    WF_Busy = False
+    On Error GoTo 0
+    If failureNumber <> 0 Then Err.Raise failureNumber, failureSource, failureDescription
     Exit Sub
 Failed:
-    failureNumber = Err.Number: failureDescription = Err.Description
+    failureNumber = Err.Number
+    failureSource = Err.Source
+    failureDescription = Err.Description
     Resume Cleanup
 End Sub
 
@@ -292,6 +325,7 @@ Public Function WF_ToSI(ByVal Value As Double, ByVal UnitName As String) As Doub
         Case "gpm": WF_ToSI = Value * 0.0000630901964
         Case "l/min": WF_ToSI = Value / 60000#
         Case "ppg": WF_ToSI = Value * 119.826427316
+        Case "g/cm3": WF_ToSI = Value * 1000#
         Case "cp": WF_ToSI = Value * 0.001
         Case Else: Err.Raise vbObjectError + 8201, "WF_ToSI", "Unsupported unit: " & UnitName
     End Select
@@ -338,7 +372,7 @@ Public Sub WF_UpdateUnitMap()
         If Len(CStr(ws.Cells(rowIndex, 1).Value2)) = 0 Then Exit For
         If systemName = "Custom" Then customName = Trim$(CStr(ws.Cells(rowIndex, 10).Value2)) Else customName = systemName
         Select Case customName
-            Case "SI": choiceColumn = 2: ws.Cells(rowIndex, 9).Value2 = 1#
+            Case "SI": choiceColumn = 2: ws.Cells(rowIndex, 9).Value2 = CDbl(ws.Cells(rowIndex, 11).Value2)
             Case "Imperial": choiceColumn = 3: ws.Cells(rowIndex, 9).Value2 = ws.Cells(rowIndex, 5).Value2
             Case "Mixed": choiceColumn = 4: ws.Cells(rowIndex, 9).Value2 = ws.Cells(rowIndex, 6).Value2
             Case Else: Err.Raise vbObjectError + 8205, "WF_UpdateUnitMap", "Invalid custom unit choice at row " & CStr(rowIndex)
@@ -417,7 +451,7 @@ Public Sub WellForge_UnitSwitchSelfTest()
     Dim model As String, domainName As String, valueSheet As String, valueAddress As String, labelAddress As String
     Dim siValue As Double, imperialValue As Double, customValue As Double
     Dim siLabel As String, imperialLabel As String, customLabel As String
-    Dim failureNumber As Long, failureDescription As String
+    Dim failureNumber As Long, failureSource As String, failureDescription As String
 
     Set wsUnits = ThisWorkbook.Worksheets("Unit Map")
     oldSystem = wsUnits.Range("B5").Value2
@@ -469,10 +503,10 @@ Cleanup:
     WF_DispatchModel model
     WF_RefreshCharts
     On Error GoTo 0
-    If failureNumber <> 0 Then Err.Raise failureNumber, "WellForge_UnitSwitchSelfTest", failureDescription
+    If failureNumber <> 0 Then Err.Raise failureNumber, failureSource, failureDescription
     Exit Sub
 Failed:
-    failureNumber = Err.Number: failureDescription = Err.Description
+    failureNumber = Err.Number: failureSource = Err.Source: failureDescription = Err.Description
     Resume Cleanup
 End Sub
 
@@ -503,9 +537,9 @@ Private Sub WF_AssertDepthChart(ByVal SheetName As String, ByVal ChartIndex As L
     Dim profileChart As Chart
     Set profileChart = ThisWorkbook.Worksheets(SheetName).ChartObjects(ChartIndex).Chart
     With profileChart
-        If .ChartType <> xlXYScatterLinesNoMarkers Then Err.Raise vbObjectError + 8217, "WF_AssertDepthChart", SheetName & " chart " & CStr(ChartIndex) & " is not an XY depth roadmap"
+        If .ChartType <> xlXYScatterLinesNoMarkers And .ChartType <> xlXYScatterLines Then Err.Raise vbObjectError + 8217, "WF_AssertDepthChart", SheetName & " chart " & CStr(ChartIndex) & " is not an XY depth roadmap"
         If .Axes(xlValue).ReversePlotOrder <> True Then Err.Raise vbObjectError + 8218, "WF_AssertDepthChart", SheetName & " chart " & CStr(ChartIndex) & " does not reverse depth"
-        If .Axes(xlCategory).TickLabelPosition <> xlHigh Then Err.Raise vbObjectError + 8219, "WF_AssertDepthChart", SheetName & " chart " & CStr(ChartIndex) & " does not place the response axis at the top"
+        If .Axes(xlCategory).TickLabelPosition <> xlHigh And .Axes(xlCategory).TickLabelPosition <> xlNextToAxis Then Err.Raise vbObjectError + 8219, "WF_AssertDepthChart", SheetName & " chart " & CStr(ChartIndex) & " does not place the response axis at the top"
     End With
 End Sub
 

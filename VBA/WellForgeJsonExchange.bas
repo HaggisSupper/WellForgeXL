@@ -29,7 +29,7 @@ Private Const UNIT_TABLE_1 As String = _
     "m3|volume|1|0;bbl|volume|0.158987294928|0;gal|volume|0.003785411784|0;L|volume|0.001|0;"
 Private Const UNIT_TABLE_2 As String = _
     "m3/s|flowRate|1|0;L/s|flowRate|0.001|0;L/min|flowRate|0.000016666666666666667|0;" & _
-    "gpm|flowRate|0.0000630901964|0;kg/m3|density|1|0;ppg|density|119.826427316|0;" & _
+    "gpm|flowRate|0.0000630901964|0;kg/m3|density|1|0;g/cm3|density|1000|0;ppg|density|119.826427316|0;" & _
     "lb/ft3|density|16.01846337396|0;N|force|1|0;lbf|force|4.4482301|0;" & _
     "klbf|force|4448.2301|0;kN|force|1000|0;Pa|pressure,stress|1|0;" & _
     "kPa|pressure|1000|0;GPa|pressure,stress|1000000000|0;" & _
@@ -570,12 +570,18 @@ End Function
 
 Public Function ReadUtf8File(ByVal FilePath As String) As String
     Dim stream As Object
+    Dim text As String
     Set stream = CreateObject("ADODB.Stream")
     stream.Type = 2
     stream.Charset = "utf-8"
     stream.Open
     stream.LoadFromFile FilePath
-    ReadUtf8File = stream.ReadText(-1)
+    text = stream.ReadText(-1)
+    ' ADODB.Stream may expose a UTF-8 BOM as U+FEFF (AscW = -257).
+    If Len(text) > 0 Then
+        If AscW(Left$(text, 1)) = -257 Then text = Mid$(text, 2)
+    End If
+    ReadUtf8File = text
     stream.Close
 End Function
 

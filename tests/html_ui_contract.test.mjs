@@ -37,6 +37,8 @@ test('HTML UI is a portable multi-file website with the required engine views', 
   assert.match(app, /event\.key\.toLowerCase\(\) === "k"/);
   assert.match(app, /launcherReturnFocus/);
   assert.match(app, /event\.key === "Tab"/);
+  assert.match(app, /API 7G tensile limit/);
+  assert.match(app, /api7g\?\.sections/);
 });
 
 test('HTML UI contains no prohibited vendor references', async () => {

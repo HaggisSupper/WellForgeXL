@@ -174,7 +174,7 @@ Private Function WF_BuildHydraulicsRequest(ByVal nozzleDiameter As Double) As Ob
         flowType = LCase$(Trim$(WF_Str("Inputs", "G" & CStr(i + 5), "pipe")))
         If sectionLength <= 0# Or flowDiameter <= 0# Or hydraulicDiameter <= 0# Then Err.Raise vbObjectError + 8921, "WF_BuildHydraulicsRequest", "Invalid flow geometry at Inputs row " & CStr(i + 5)
         Set section = CreateObject("Scripting.Dictionary")
-        section.Add "id", "35b15a48-47c1-4d31-a92e-7c5b8f20" & Right$("000" & CStr(i), 3)
+        section.Add "id", "35b15a48-47c1-4d31-a92e-7c5b8f200" & Right$("000" & CStr(i), 3)
         section.Add "name", WF_Str("Inputs", "D" & CStr(i + 5), "Flow section " & CStr(i))
         section.Add "top_md_m", topDepth: topDepth = topDepth + sectionLength
         section.Add "bottom_md_m", topDepth
@@ -284,6 +284,7 @@ Private Sub WF_HydCommitOutputs(ByRef calcData() As Variant, ByRef flowData() As
     Dim wsCalc As Worksheet, wsFlow As Worksheet, wsPressure As Worksheet, wsNozzle As Worksheet, wsGraphs As Worksheet, wsCharts As Worksheet
     Set wsCalc = ThisWorkbook.Worksheets("Calc"): Set wsFlow = ThisWorkbook.Worksheets("Flow Path"): Set wsPressure = ThisWorkbook.Worksheets("Pressure Profile"): Set wsNozzle = ThisWorkbook.Worksheets("Nozzle Cases"): Set wsGraphs = ThisWorkbook.Worksheets("Graphs"): Set wsCharts = ThisWorkbook.Worksheets("Hydraulics Charts")
     wsCalc.Range("A6:J13").Value2 = calcData: wsCalc.Range("L6:Q10").Value2 = nozzleCalc: wsFlow.Range("A6:N13").Value2 = flowData: wsPressure.Range("A6:J13").Value2 = pressureData: wsNozzle.Range("A6:L10").Value2 = nozzleData: wsGraphs.Range("A4:C11").Value2 = WF_FirstColumns(graphData, 8, 3): wsGraphs.Range("A15:C22").Value2 = WF_WaterfallData(calcData, WF_UnitFactor("Pressure")): wsGraphs.Range("E41:H45").Value2 = WF_NozzleGraphData(nozzleCalc, WF_UnitFactor("Diameter"), WF_UnitFactor("Pressure"), WF_Num("Inputs", "B6")): wsCharts.Range("A6:E13").Value2 = pressureRoadmap: wsCharts.Range("A26:D33").Value2 = ecdRoadmap: wsCharts.Range("A45:C52").Value2 = velocityRoadmap: wsCharts.Range("A64:D68").Value2 = nozzleChart
+    WF_HydRefreshLabels
     WF_WriteHydraulicsDashboard pressureData, nozzleChart, WF_UnitFactor("Length"), WF_UnitFactor("Pressure"), WF_UnitFactor("Density"), WF_UnitFactor("Speed"), WF_Num("Inputs", "B6"), WF_ToSI(WF_Num("Inputs", "B9"), WF_Str("Inputs", "C9", "kg/m3")), WF_Num("Inputs", "B14"), WF_Num("Inputs", "B15", 0.5)
 End Sub
 

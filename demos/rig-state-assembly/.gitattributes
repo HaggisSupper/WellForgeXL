@@ -1,0 +1,2 @@
+contracts/*.json text eol=lf
+public/contracts/*.json text eol=lf

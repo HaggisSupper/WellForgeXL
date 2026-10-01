@@ -30,6 +30,7 @@ const releaseTests = [
   'vba_engine_contract.test.mjs',
   'vba_exchange_contract.test.mjs',
   'vba_installer_contract.test.mjs',
+  'workbook_package_readiness.test.mjs',
 ];
 const authoringTests = [
   'api7g.test.mjs',

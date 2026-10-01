@@ -5,6 +5,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'WellForgeBuildGuards.ps1')
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $ifBlankOutput = [string]::IsNullOrWhiteSpace($OutputPath)
@@ -36,6 +37,7 @@ foreach ($name in @($workbookNames + $runtimeNames)) {
 }
 
 if (Test-Path -LiteralPath $stagingDirectory) {
+    Assert-WellForgeCleanupTarget -Path $stagingDirectory -RunDirectory (Join-Path $repositoryRoot 'package')
     Remove-Item -LiteralPath $stagingDirectory -Recurse -Force
 }
 New-Item -ItemType Directory -Path $stagingDirectory -Force | Out-Null
@@ -45,6 +47,7 @@ foreach ($name in @($workbookNames + $runtimeNames)) {
 }
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'README.md') -Destination (Join-Path $stagingDirectory 'README.md')
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'LICENSE') -Destination (Join-Path $stagingDirectory 'LICENSE')
+Copy-Item -LiteralPath (Join-Path $repositoryRoot 'LICENSE-APACHE') -Destination (Join-Path $stagingDirectory 'LICENSE-APACHE')
 
 $installScript = @'
 [CmdletBinding()]
@@ -123,7 +126,7 @@ $sed = @(
 ) + $sourceLines + @('', '[Strings]') + $stringLines
 Set-Content -LiteralPath $sedPath -Value $sed -Encoding ASCII
 
-$iexpress = Start-Process -FilePath 'iexpress.exe' -ArgumentList @('/N', '/Q', $sedPath) -Wait -PassThru
+$iexpress = Start-Process -FilePath 'iexpress.exe' -ArgumentList @('/N', '/Q', $sedPath) -Wait -PassThru -WindowStyle Hidden
 if ($iexpress.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $OutputPath -PathType Leaf)) {
     throw "IExpress failed to create the installer at $OutputPath"
 }

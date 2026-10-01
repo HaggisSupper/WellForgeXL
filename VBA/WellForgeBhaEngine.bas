@@ -378,13 +378,7 @@ Private Function WF_BridgeNumber(ByVal textValue As Variant) As Double
 End Function
 
 Private Function WF_ExecBounded(ByVal commandLine As String, ByVal timeoutSeconds As Double, ByRef stdOutText As String, ByRef stdErrText As String) As Long
-    Dim shell As Object, process As Object, started As Double
-    Set shell = CreateObject("WScript.Shell"): Set process = shell.Exec(commandLine): started = Timer
-    Do While process.Status = 0
-        DoEvents
-        If WF_ElapsedSeconds(started) > timeoutSeconds Then process.Terminate: Err.Raise vbObjectError + 8720, "WF_ExecBounded", "ENGINE TIMEOUT"
-    Loop
-    stdOutText = process.StdOut.ReadAll: stdErrText = process.StdErr.ReadAll: WF_ExecBounded = process.ExitCode
+    WF_ExecBounded = WF_RustExecBounded(commandLine, timeoutSeconds, stdOutText, stdErrText)
 End Function
 
 Private Function WF_FileSha256(ByVal filePath As String) As String

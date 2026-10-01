@@ -1,0 +1,28 @@
+{
+  "name": "wellforge-rig-state-glyph-assembly",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "generate:contracts": "node --experimental-strip-types scripts/generate-contract-artifacts.ts",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc --noEmit --incremental false -p tsconfig.app.json && tsc --noEmit --incremental false -p tsconfig.node.json",
+    "preview": "vite preview --host 127.0.0.1 --strictPort",
+    "test": "node --test --experimental-strip-types test/*.test.ts",
+    "test:watch": "node --test --watch --experimental-strip-types test/*.test.ts"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.8.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.8.3",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3"
+  }
+}

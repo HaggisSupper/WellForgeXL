@@ -8,9 +8,9 @@ export function torqueDragFormulaPlan() {
 }
 
 export function buildTorqueDragWorkbook() {
-  const { workbook, sheets } = createSuiteWorkbook('Torque, Drag and Buckling — SI', { extraSheetNames: ['Wellbore', 'Drillstring', 'Operation Cases', 'ALL', 'PUW', 'SOW', 'BKR', 'SLD', 'ROT', 'DRLG', 'Operation Charts', 'Observed Data', 'Engineering Dashboard'] });
+  const { workbook, sheets } = createSuiteWorkbook('Torque, Drag and Buckling — SI', { extraSheetNames: ['Wellbore', 'Drillstring', 'API 7G Limits', 'Operation Cases', 'ALL', 'PUW', 'SOW', 'BKR', 'SLD', 'ROT', 'DRLG', 'Operation Charts', 'Observed Data', 'Engineering Dashboard'] });
   const { Summary, Inputs, Survey, Results, Graphs, Calc } = sheets;
-  const Wellbore=sheets.Wellbore; const Drillstring=sheets.Drillstring; const OperationCases=sheets['Operation Cases']; const All=sheets.ALL; const OperationCharts=sheets['Operation Charts'];
+  const Wellbore=sheets.Wellbore; const Drillstring=sheets.Drillstring; const Api7gLimits=sheets['API 7G Limits']; const OperationCases=sheets['Operation Cases']; const All=sheets.ALL; const OperationCharts=sheets['Operation Charts'];
   const firstDataRow = 6;
   const lastDataRow = firstDataRow + MOCK_CASE.surveyStations.length - 1;
   sectionHeader(Inputs,'A3:F3','SI operational assumptions');
@@ -18,6 +18,9 @@ export function buildTorqueDragWorkbook() {
   Inputs.getRange('C12').values=[['GPa']];
   Inputs.getRange('C12').dataValidation={rule:{type:'list',values:['GPa','MPa','Pa','Mpsi','psi']}};
   inputTableStyle(Inputs,'B5:B14'); inputTableStyle(Inputs,'C12');
+  Inputs.getRange('C5:C14').values=[['kg/m3'],['1'],['N'],['N-m'],['m'],['m'],['kg/m3'],['GPa'],['N'],['N-m']];
+  Inputs.getRange('B13').formulas=[[`='API 7G Limits'!$B$10`]];
+  Inputs.getRange('B14').formulas=[[`='API 7G Limits'!$B$11`]];
   const youngModulusPa=`(Inputs!$B$12*IF(Inputs!$C$12="GPa",1E9,IF(Inputs!$C$12="MPa",1E6,IF(Inputs!$C$12="Pa",1,IF(Inputs!$C$12="Mpsi",6894757293.168,IF(Inputs!$C$12="psi",6894.757293168,NA()))))))`;
   sectionHeader(Survey,'A3:H3','SI survey stations — inclination and azimuth are radians');
   Survey.getRange('A5:E5').values=[['MD m','Inclination rad','Azimuth rad','Hole ID m','Exchange record ID']];
@@ -76,6 +79,24 @@ export function buildTorqueDragWorkbook() {
   const stringRows=[['ds-bit-sub','BHA','Bit / Sub','bitSub'],['ds-motor','BHA','Motor / RSS','motorRss'],['ds-mwd','BHA','MWD / LWD','mwdLwd'],['ds-dc','BHA','Drill Collar','drillCollar'],['ds-hwdp','Tubular','HWDP','hwdp'],['ds-dp','Tubular','Drill Pipe','drillPipe']];
   stringRows.forEach((row,index)=>{const r=6+index; const t=MOCK_CASE.tubular[row[3]]; Drillstring.getRange(`A${r}:F${r}`).values=[[row[0],row[1],row[2],t.lengthM,t.odM,t.idM]]; Drillstring.getRange(`G${r}:H${r}`).formulas=[[`=PI()/4*(E${r}^2-F${r}^2)`,`=G${r}*'Inputs'!$B$11*9.80665`]]; Drillstring.getRange(`I${r}:L${r}`).values=[['Steel',758000000,'P','Reference connection']]; Drillstring.getRange(`M${r}:N${r}`).formulas=[[index===0?'=0':`=N${r-1}`,index===0?`=D${r}`:`=M${r}+D${r}`]];});
   tableHeader(Drillstring,'A5:N5'); inputTableStyle(Drillstring,'D6:F11'); resultsTableStyle(Drillstring,'G6:N11');
+
+  sectionHeader(Api7gLimits,'A3:H3','API 7G governing limits derived from dimensions, material and derating');
+  Api7gLimits.getRange('A5:C5').values=[['Control','Value','Unit']];
+  Api7gLimits.getRange('A6:C12').values=[
+    ['Grade','S135',''],
+    ['Material yield strength',931000000,'Pa'],
+    ['Wear-class derating',0.8,'1'],
+    ['Safety factor',1.1,'1'],
+    ['Derived tensile limit',null,'N'],
+    ['Derived torsional limit',null,'N-m'],
+    ['Design utilisation limit',0.9,'1'],
+  ];
+  Api7gLimits.getRange('B10').formulas=[[`=PI()/4*(Inputs!$B$9^2-Inputs!$B$10^2)*B7/B9*B8`]];
+  Api7gLimits.getRange('B11').formulas=[[`=(B7/SQRT(3))*(PI()/32*(Inputs!$B$9^4-Inputs!$B$10^4)/(Inputs!$B$9/2))*B8/B9`]];
+  tableHeader(Api7gLimits,'A5:C5'); inputTableStyle(Api7gLimits,'B6:B9'); resultsTableStyle(Api7gLimits,'B10:B12');
+  Api7gLimits.getRange('E5:J5').values=[['API 7G section','Length m','OD m','ID m','Tension limit N','Operating torque N-m']];
+  Api7gLimits.getRange('E6:J11').values=MOCK_CASE.api7g.sections.map((section)=>{const tubular=MOCK_CASE.tubular[section.tubularKey];return [section.name,tubular.lengthM,tubular.odM,tubular.idM,section.tensionLimitN,section.operatingTorqueNm];});
+  tableHeader(Api7gLimits,'E5:J5'); resultsTableStyle(Api7gLimits,'E6:J11');
 
   sectionHeader(OperationCases,'A3:J3','Torque-and-drag operating cases');
   OperationCases.getRange('A5:J5').values=[['Code','Operation','Direction','RPM','Speed m/s','Overpull N','WOB N','Torque factor','Friction factor','Enabled']];

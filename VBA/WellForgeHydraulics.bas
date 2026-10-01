@@ -241,6 +241,29 @@ Private Sub WF_CalcHydraulicsWorksheetModel()
     WF_WriteHydraulicsDashboard pressureData, nozzleChart, lengthFactor, pressureFactor, densityFactor, speedFactor, surfaceLimit, rho, ecdScreen, minimumVelocity
 End Sub
 
+Public Sub WF_HydRefreshLabels()
+    Dim wsFlow As Worksheet, wsPressure As Worksheet, wsNozzle As Worksheet, wsGraphs As Worksheet, wsCharts As Worksheet
+    Set wsFlow = ThisWorkbook.Worksheets("Flow Path"): Set wsPressure = ThisWorkbook.Worksheets("Pressure Profile")
+    Set wsNozzle = ThisWorkbook.Worksheets("Nozzle Cases"): Set wsGraphs = ThisWorkbook.Worksheets("Graphs"): Set wsCharts = ThisWorkbook.Worksheets("Hydraulics Charts")
+    wsFlow.Range("D5").Value2 = "Length " & WF_UnitLabel("Length")
+    wsFlow.Range("E5").Value2 = "Hydraulic dia. " & WF_UnitLabel("Diameter")
+    wsFlow.Range("F5").Value2 = "Area " & WF_UnitLabel("Area")
+    wsFlow.Range("G5").Value2 = "Velocity " & WF_UnitLabel("Speed")
+    wsFlow.Range("K5").Value2 = "Loss " & WF_UnitLabel("Pressure")
+    wsFlow.Range("L5").Value2 = "Cumulative " & WF_UnitLabel("Pressure")
+    wsPressure.Range("B5").Value2 = "Depth / length " & WF_UnitLabel("Length")
+    wsPressure.Range("C5").Value2 = "Velocity " & WF_UnitLabel("Speed")
+    wsPressure.Range("D5").Value2 = "Section loss " & WF_UnitLabel("Pressure")
+    wsPressure.Range("E5").Value2 = "Cumulative loss " & WF_UnitLabel("Pressure")
+    wsPressure.Range("F5").Value2 = "Hydrostatic " & WF_UnitLabel("Pressure")
+    wsPressure.Range("G5").Value2 = "Dynamic pressure " & WF_UnitLabel("Pressure")
+    wsPressure.Range("H5").Value2 = "ECD " & WF_UnitLabel("Density")
+    wsNozzle.Range("B5").Value2 = "Diameter " & WF_UnitLabel("Diameter")
+    wsNozzle.Range("D5").Value2 = "Total area " & WF_UnitLabel("Area")
+    wsNozzle.Range("E5").Value2 = "Velocity " & WF_UnitLabel("Speed")
+    wsCharts.Range("A25:D25").Value2 = WF_HydRow4("MD " & WF_UnitLabel("Length"), "Static mud density " & WF_UnitLabel("Density"), "ECD " & WF_UnitLabel("Density"), "ECD screen " & WF_UnitLabel("Density"))
+End Sub
+
 Public Sub WF_WriteHydraulicsDashboard(ByRef pressureData() As Variant, ByRef nozzleChart() As Variant, ByVal lengthFactor As Double, ByVal pressureFactor As Double, ByVal densityFactor As Double, ByVal speedFactor As Double, ByVal surfaceLimit As Double, ByVal rho As Double, ByVal ecdScreen As Double, ByVal minimumVelocity As Double)
     Dim ws As Worksheet, wsSettings As Worksheet
     Dim pressureFamily(1 To 8, 1 To 6) As Variant, ecdFamily(1 To 8, 1 To 6) As Variant, velocityFamily(1 To 8, 1 To 5) As Variant

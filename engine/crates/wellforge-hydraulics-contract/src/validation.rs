@@ -94,10 +94,13 @@ pub fn validate_request(request: &HydraulicsAnalysisRequest) -> Result<(), Vec<C
         ));
     }
 
-    if request.profile.standard.trim().is_empty() || request.profile.edition.trim().is_empty() {
+    if [&request.profile.standard, &request.profile.edition]
+        .iter()
+        .any(|text| text.trim().is_empty() || text.chars().any(char::is_control))
+    {
         errors.push(ContractError::new(
             "WF-HYD-REQ-002",
-            "profile.standard and profile.edition are both required",
+            "profile.standard and profile.edition are required and must not contain control characters",
         ));
     }
 
@@ -125,22 +128,19 @@ pub fn validate_request(request: &HydraulicsAnalysisRequest) -> Result<(), Vec<C
     }
 
     for (i, s) in request.sections.iter().enumerate() {
-        if is_version_two
-            && (s.id.is_nil() || !section_ids.insert(s.id) || s.name.trim().is_empty())
+        if s.id.is_nil()
+            || !section_ids.insert(s.id)
+            || (is_version_two && s.name.trim().is_empty())
         {
             errors.push(ContractError::new(
                 "WF-HYD-REQ-016",
-                format!("sections[{i}] must have a unique non-nil ID and non-empty name"),
+                format!("sections[{i}] must have a unique non-nil ID and, for contract 0.2.0, a non-empty name"),
             ));
         }
-        let invalid_md = if is_version_two {
-            !s.top_md_m.is_finite()
-                || !s.bottom_md_m.is_finite()
-                || s.top_md_m < 0.0
-                || s.bottom_md_m <= s.top_md_m
-        } else {
-            s.bottom_md_m <= s.top_md_m
-        };
+        let invalid_md = !s.top_md_m.is_finite()
+            || !s.bottom_md_m.is_finite()
+            || s.top_md_m < 0.0
+            || s.bottom_md_m <= s.top_md_m;
         if invalid_md {
             errors.push(ContractError::new(
                 "WF-HYD-REQ-011",
@@ -149,14 +149,10 @@ pub fn validate_request(request: &HydraulicsAnalysisRequest) -> Result<(), Vec<C
                 ),
             ));
         }
-        let invalid_string_geometry = if is_version_two {
-            !s.string_id_m.is_finite()
-                || !s.string_od_m.is_finite()
-                || s.string_id_m <= 0.0
-                || s.string_od_m <= s.string_id_m
-        } else {
-            s.string_od_m <= s.string_id_m
-        };
+        let invalid_string_geometry = !s.string_id_m.is_finite()
+            || !s.string_od_m.is_finite()
+            || s.string_id_m <= 0.0
+            || s.string_od_m <= s.string_id_m;
         if invalid_string_geometry {
             errors.push(ContractError::new(
                 "WF-HYD-REQ-012",
@@ -165,7 +161,7 @@ pub fn validate_request(request: &HydraulicsAnalysisRequest) -> Result<(), Vec<C
                 ),
             ));
         }
-        if (is_version_two && !s.hole_id_m.is_finite()) || s.hole_id_m <= s.string_od_m {
+        if !s.hole_id_m.is_finite() || s.hole_id_m <= s.string_od_m {
             errors.push(ContractError::new(
                 "WF-HYD-REQ-013",
                 format!("sections[{i}] hole_id_m must exceed string_od_m"),
@@ -204,8 +200,7 @@ pub fn validate_request(request: &HydraulicsAnalysisRequest) -> Result<(), Vec<C
             "operating.flow_rate_m3_s must be positive",
         ));
     }
-    if is_version_two && (!op.surface_temperature_k.is_finite() || op.surface_temperature_k <= 0.0)
-    {
+    if !op.surface_temperature_k.is_finite() || op.surface_temperature_k <= 0.0 {
         errors.push(ContractError::new(
             "WF-HYD-REQ-025",
             "operating.surface_temperature_k must be finite and positive",

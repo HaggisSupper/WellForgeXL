@@ -158,14 +158,11 @@ test('Windows release workflow targets a qualified Excel runner and always retai
   assert.match(acceptance, /independently_extracted_and_reopened_workbooks/);
 });
 
-test('Windows acceptance watchdog owns newly created Excel processes and kills them on failure', async () => {
+test('Windows acceptance watchdog preserves unproven Excel owners on timeout and failure', async () => {
   const source = await read('tools/Invoke-WellForgeWindowsReleaseBounded.ps1');
-  assert.match(source, /baselineExcelProcessIds/);
-  assert.match(source, /Get-Process -Name EXCEL/);
-  assert.match(source, /foreach \(\$excelProcess in @\(Get-Process -Name EXCEL -ErrorAction SilentlyContinue\)\) \{\s*\$baselineExcelProcessIds \+= \$excelProcess\.Id/s);
-  assert.doesNotMatch(source, /\(Get-Process -Name EXCEL -ErrorAction SilentlyContinue\)\.Id/);
-  assert.match(source, /taskkill\.exe \/PID \$excelProcess\.Id \/T \/F/);
-  assert.match(source, /Stop-NewExcelProcesses/);
+  assert.doesNotMatch(source, /Get-Process -Name EXCEL|taskkill|Stop-Process|baselineExcelProcessIds/);
+  assert.match(source, /-WindowStyle Hidden/);
+  assert.match(source, /manual.cleanup/i);
 });
 
 test('Windows evidence writer delegates to fail-closed per-gate evidence validation', async () => {

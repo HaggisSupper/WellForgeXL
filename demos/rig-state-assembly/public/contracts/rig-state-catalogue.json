@@ -1,0 +1,120 @@
+[
+  {
+    "id": "ROTATE_ON_BOTTOM",
+    "label": "Rotate on bottom",
+    "activityId": "ROTATE_ON_BOTTOM",
+    "dysfunctionIds": []
+  },
+  {
+    "id": "SLIDE_ON_BOTTOM",
+    "label": "Slide on bottom",
+    "activityId": "SLIDE_ON_BOTTOM",
+    "dysfunctionIds": []
+  },
+  {
+    "id": "CIRCULATE_OFF_BOTTOM",
+    "label": "Circulate off bottom",
+    "activityId": "CIRCULATE_OFF_BOTTOM",
+    "dysfunctionIds": []
+  },
+  {
+    "id": "CIRC_ROTATE_OFF_BOTTOM",
+    "label": "Circulate and rotate off bottom",
+    "activityId": "CIRC_ROTATE_OFF_BOTTOM",
+    "dysfunctionIds": []
+  },
+  {
+    "id": "FLOW_CHECK",
+    "label": "Flow check",
+    "activityId": "HOLD_OBSERVE_RETURNS",
+    "dysfunctionIds": []
+  },
+  {
+    "id": "TRIP_IN",
+    "label": "Trip in",
+    "activityId": "TRIP_IN",
+    "dysfunctionIds": []
+  },
+  {
+    "id": "TRIP_OUT",
+    "label": "Trip out",
+    "activityId": "TRIP_OUT",
+    "dysfunctionIds": []
+  },
+  {
+    "id": "REAM",
+    "label": "Ream",
+    "activityId": "REAM",
+    "dysfunctionIds": []
+  },
+  {
+    "id": "BACKREAM",
+    "label": "Backream",
+    "activityId": "BACKREAM",
+    "dysfunctionIds": []
+  },
+  {
+    "id": "CORING",
+    "label": "Coring",
+    "activityId": "CORING",
+    "dysfunctionIds": []
+  },
+  {
+    "id": "CEMENT_CIRC",
+    "label": "Cement circulation",
+    "activityId": "CEMENT_CIRC",
+    "dysfunctionIds": []
+  },
+  {
+    "id": "PACK_OFF",
+    "label": "Pack-off",
+    "activityId": "CIRCULATE_OFF_BOTTOM",
+    "dysfunctionIds": [
+      "PACK_OFF"
+    ]
+  },
+  {
+    "id": "WASHOUT",
+    "label": "Washout",
+    "activityId": "ROTATE_ON_BOTTOM",
+    "dysfunctionIds": [
+      "WASHOUT"
+    ]
+  },
+  {
+    "id": "LOSS",
+    "label": "Losses",
+    "activityId": "CIRCULATE_OFF_BOTTOM",
+    "dysfunctionIds": [
+      "LOSS"
+    ]
+  },
+  {
+    "id": "INFLUX",
+    "label": "Influx / kick",
+    "activityId": "CIRCULATE_OFF_BOTTOM",
+    "dysfunctionIds": [
+      "INFLUX"
+    ]
+  },
+  {
+    "id": "WHIRL",
+    "label": "Whirl",
+    "activityId": "ROTATE_ON_BOTTOM",
+    "dysfunctionIds": [
+      "WHIRL"
+    ]
+  },
+  {
+    "id": "WELL_CONTROL",
+    "label": "Well control",
+    "activityId": "WELL_CONTROL",
+    "dysfunctionIds": []
+  },
+  {
+    "id": "UNKNOWN",
+    "label": "Unknown",
+    "activityId": "UNCLASSIFIED",
+    "dysfunctionIds": []
+  }
+]

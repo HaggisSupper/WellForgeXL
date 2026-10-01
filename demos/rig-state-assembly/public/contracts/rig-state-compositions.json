@@ -1,0 +1,206 @@
+{
+  "$schema": "./rig-state-composition.schema.json",
+  "version": "0.1.0",
+  "states": [
+    {
+      "id": "ROTATE_ON_BOTTOM",
+      "activityId": "ROTATE_ON_BOTTOM",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "ROTATION"
+      ],
+      "dysfunctionIds": []
+    },
+    {
+      "id": "SLIDE_ON_BOTTOM",
+      "activityId": "SLIDE_ON_BOTTOM",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "SLIDE_KINK"
+      ],
+      "dysfunctionIds": []
+    },
+    {
+      "id": "CIRCULATE_OFF_BOTTOM",
+      "activityId": "CIRCULATE_OFF_BOTTOM",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "FLOW_LOOP"
+      ],
+      "dysfunctionIds": []
+    },
+    {
+      "id": "CIRC_ROTATE_OFF_BOTTOM",
+      "activityId": "CIRC_ROTATE_OFF_BOTTOM",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "ROTATION",
+        "FLOW_LOOP"
+      ],
+      "dysfunctionIds": []
+    },
+    {
+      "id": "FLOW_CHECK",
+      "activityId": "HOLD_OBSERVE_RETURNS",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "RETURNS_OBSERVE"
+      ],
+      "dysfunctionIds": []
+    },
+    {
+      "id": "TRIP_IN",
+      "activityId": "TRIP_IN",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "MOVE_DOWN"
+      ],
+      "dysfunctionIds": []
+    },
+    {
+      "id": "TRIP_OUT",
+      "activityId": "TRIP_OUT",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "MOVE_UP"
+      ],
+      "dysfunctionIds": []
+    },
+    {
+      "id": "REAM",
+      "activityId": "REAM",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "ROTATION",
+        "MOVE_DOWN",
+        "REAM"
+      ],
+      "dysfunctionIds": []
+    },
+    {
+      "id": "BACKREAM",
+      "activityId": "BACKREAM",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "ROTATION",
+        "MOVE_UP",
+        "BACKREAM"
+      ],
+      "dysfunctionIds": []
+    },
+    {
+      "id": "CORING",
+      "activityId": "CORING",
+      "layerIds": [
+        "PIPE",
+        "CORE",
+        "MOVE_DOWN"
+      ],
+      "dysfunctionIds": []
+    },
+    {
+      "id": "CEMENT_CIRC",
+      "activityId": "CEMENT_CIRC",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "CEMENT"
+      ],
+      "dysfunctionIds": []
+    },
+    {
+      "id": "PACK_OFF",
+      "activityId": "CIRCULATE_OFF_BOTTOM",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "FLOW_LOOP",
+        "PACK_OFF"
+      ],
+      "dysfunctionIds": [
+        "PACK_OFF"
+      ]
+    },
+    {
+      "id": "WASHOUT",
+      "activityId": "ROTATE_ON_BOTTOM",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "ROTATION",
+        "WASHOUT"
+      ],
+      "dysfunctionIds": [
+        "WASHOUT"
+      ]
+    },
+    {
+      "id": "LOSS",
+      "activityId": "CIRCULATE_OFF_BOTTOM",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "FLOW_LOOP",
+        "LOSS"
+      ],
+      "dysfunctionIds": [
+        "LOSS"
+      ]
+    },
+    {
+      "id": "INFLUX",
+      "activityId": "CIRCULATE_OFF_BOTTOM",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "FLOW_LOOP",
+        "INFLUX"
+      ],
+      "dysfunctionIds": [
+        "INFLUX"
+      ]
+    },
+    {
+      "id": "WHIRL",
+      "activityId": "ROTATE_ON_BOTTOM",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "ROTATION",
+        "WHIRL"
+      ],
+      "dysfunctionIds": [
+        "WHIRL"
+      ]
+    },
+    {
+      "id": "WELL_CONTROL",
+      "activityId": "WELL_CONTROL",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "WELL_CONTROL"
+      ],
+      "dysfunctionIds": []
+    },
+    {
+      "id": "UNKNOWN",
+      "activityId": "UNCLASSIFIED",
+      "layerIds": [
+        "PIPE",
+        "BIT",
+        "RETURNS_OBSERVE"
+      ],
+      "dysfunctionIds": []
+    }
+  ]
+}

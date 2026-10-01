@@ -34,13 +34,29 @@ Failed:
     Err.Raise WF_RUST_RUNTIME_ERROR, "WF_RustExecBounded", Err.Description
 End Function
 
+Private Function WF_RustReadProcessExitCode(ByVal ExitCodePath As String) As Long
+    Dim textValue As String
+    If Len(Dir$(ExitCodePath, vbNormal)) = 0 Then WF_RustReadProcessExitCode = 1: Exit Function
+    textValue = Trim$(ReadUtf8File(ExitCodePath))
+    If IsNumeric(textValue) Then WF_RustReadProcessExitCode = CLng(textValue) Else WF_RustReadProcessExitCode = 1
+End Function
+
 Public Function WF_RustFileSha256(ByVal FilePath As String) As String
-    Dim outputText As String, errorText As String, exitCode As Long
-    exitCode = WF_RustExecBounded("powershell.exe -NoProfile -NonInteractive -Command " & _
-        WF_RustQuote("(Get-FileHash -Algorithm SHA256 -LiteralPath '" & Replace$(FilePath, "'", "''") & "').Hash"), _
+    Dim outputText As String, normalizedOutput As String, errorText As String, exitCode As Long
+    Dim line As Variant, candidate As String
+    exitCode = WF_RustExecBounded("certutil.exe -hashfile " & WF_RustQuote(FilePath) & " SHA256", _
         30#, outputText, errorText)
     If exitCode <> 0 Then Err.Raise WF_RUST_RUNTIME_ERROR + 2, "WF_RustFileSha256", "Unable to hash engine: " & Trim$(errorText)
-    WF_RustFileSha256 = LCase$(Trim$(outputText))
+    ' certutil emits a header and a spaced digest; accept only the canonical 64-hex line.
+    normalizedOutput = Replace$(outputText, vbCr, vbNullString)
+    For Each line In Split(normalizedOutput, vbLf)
+        candidate = Replace$(Trim$(CStr(line)), " ", vbNullString)
+        If WF_RustIsSha256(candidate) Then
+            WF_RustFileSha256 = LCase$(candidate)
+            Exit Function
+        End If
+    Next line
+    Err.Raise WF_RUST_RUNTIME_ERROR + 2, "WF_RustFileSha256", "Unable to parse SHA256 digest for engine: " & FilePath
 End Function
 
 Public Function WF_RustIsSha256(ByVal Value As String) As Boolean
