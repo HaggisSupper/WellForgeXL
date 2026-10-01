@@ -9,6 +9,9 @@ use wellforge_bha_contract::{
 use wellforge_bha_model::BhaModel;
 use wellforge_bha_static::StaticSolution;
 
+/// Numerical backend used for generalized-eigen mass normalization.
+pub const MODAL_MASS_TRANSFORM_BACKEND: &str = "nalgebra/cholesky-triangular-solves";
+
 /// Modal solve failure.
 #[derive(Debug, Error)]
 pub enum ModalSolveError {
@@ -18,6 +21,24 @@ pub enum ModalSolveError {
     /// Dynamic stiffness could not be solved.
     #[error("singular dynamic stiffness at {0} Hz")]
     SingularDynamicStiffness(f64),
+}
+
+fn mass_normalized_stiffness(
+    static_solution: &StaticSolution,
+) -> Result<(DMatrix<f64>, DMatrix<f64>), ModalSolveError> {
+    let cholesky = static_solution
+        .mass
+        .clone()
+        .cholesky()
+        .ok_or(ModalSolveError::NonPositiveMass)?;
+    let l = cholesky.l();
+    let left = l
+        .solve_lower_triangular(&static_solution.stiffness)
+        .ok_or(ModalSolveError::NonPositiveMass)?;
+    let transformed_transpose = l
+        .solve_lower_triangular(&left.transpose())
+        .ok_or(ModalSolveError::NonPositiveMass)?;
+    Ok((transformed_transpose.transpose(), l))
 }
 
 /// Computes direct complex receptance using library complex LU factorization.
@@ -33,16 +54,7 @@ pub fn solve_frequency_response(
     points: usize,
 ) -> Result<Vec<FrequencyResponsePoint>, ModalSolveError> {
     let count = points.max(2);
-    let cholesky = static_solution
-        .mass
-        .clone()
-        .cholesky()
-        .ok_or(ModalSolveError::NonPositiveMass)?;
-    let l_inv = cholesky
-        .l()
-        .try_inverse()
-        .ok_or(ModalSolveError::NonPositiveMass)?;
-    let transformed = &l_inv * &static_solution.stiffness * l_inv.transpose();
+    let (transformed, _) = mass_normalized_stiffness(static_solution)?;
     let eigen = SymmetricEigen::new((transformed.clone() + transformed.transpose()) * 0.5);
     let first_omega = eigen
         .eigenvalues
@@ -111,28 +123,18 @@ pub fn build_campbell_map(
     output
 }
 
-/// Solves the generalized undamped eigenproblem using library Cholesky and symmetric eigendecomposition.
+/// Solves the generalized undamped eigenproblem using Cholesky triangular solves and symmetric
+/// eigendecomposition.
 ///
 /// # Errors
 ///
 /// Returns [`ModalSolveError`] when the mass matrix is not positive definite.
-#[allow(clippy::redundant_closure_for_method_calls)]
 pub fn solve_modes(
     model: &BhaModel,
     request: &BhaAnalysisRequest,
     static_solution: &StaticSolution,
 ) -> Result<Vec<ModeResult>, ModalSolveError> {
-    let cholesky = static_solution
-        .mass
-        .clone()
-        .cholesky()
-        .ok_or(ModalSolveError::NonPositiveMass)?;
-    let l = cholesky.l();
-    let l_inv = l
-        .clone()
-        .try_inverse()
-        .ok_or(ModalSolveError::NonPositiveMass)?;
-    let transformed = &l_inv * &static_solution.stiffness * l_inv.transpose();
+    let (transformed, l) = mass_normalized_stiffness(static_solution)?;
     let eigen = SymmetricEigen::new((transformed.clone() + transformed.transpose()) * 0.5);
     let mut pairs: Vec<(f64, DVector<f64>)> = eigen
         .eigenvalues
@@ -142,39 +144,38 @@ pub fn solve_modes(
             eigen
                 .eigenvectors
                 .column_iter()
-                .map(|column| column.into_owned()),
+                .map(nalgebra::Matrix::into_owned),
         )
         .filter(|(value, _)| *value > 1.0e-9)
         .collect();
     pairs.sort_by(|left, right| left.0.total_cmp(&right.0));
     let count = request.solver.requested_modes.min(pairs.len());
-    Ok(pairs
-        .into_iter()
-        .take(count)
-        .enumerate()
-        .map(|(index, (lambda, vector))| {
-            let physical = l_inv.transpose() * vector;
-            let amplitudes: Vec<f64> = (0..model.nodes.len())
-                .map(|node| {
-                    if node == 0 {
-                        0.0
-                    } else {
-                        physical[2 * node - 2]
-                    }
-                })
-                .collect();
-            let max = amplitudes
-                .iter()
-                .map(|value| value.abs())
-                .fold(0.0_f64, f64::max)
-                .max(f64::EPSILON);
-            let frequency = lambda.sqrt() / std::f64::consts::TAU;
-            ModeResult {
-                mode_number: index + 1,
-                natural_frequency_hz: frequency,
-                critical_speed_rpm: frequency * 60.0,
-                normalized_shape: amplitudes.into_iter().map(|value| value / max).collect(),
-            }
-        })
-        .collect())
+    let mut output = Vec::with_capacity(count);
+    for (index, (lambda, vector)) in pairs.into_iter().take(count).enumerate() {
+        let physical = l
+            .tr_solve_lower_triangular(&vector)
+            .ok_or(ModalSolveError::NonPositiveMass)?;
+        let amplitudes: Vec<f64> = (0..model.nodes.len())
+            .map(|node| {
+                if node == 0 {
+                    0.0
+                } else {
+                    physical[2 * node - 2]
+                }
+            })
+            .collect();
+        let max = amplitudes
+            .iter()
+            .map(|value| value.abs())
+            .fold(0.0_f64, f64::max)
+            .max(f64::EPSILON);
+        let frequency = lambda.sqrt() / std::f64::consts::TAU;
+        output.push(ModeResult {
+            mode_number: index + 1,
+            natural_frequency_hz: frequency,
+            critical_speed_rpm: frequency * 60.0,
+            normalized_shape: amplitudes.into_iter().map(|value| value / max).collect(),
+        });
+    }
+    Ok(output)
 }

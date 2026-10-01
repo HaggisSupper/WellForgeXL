@@ -1,0 +1,131 @@
+{
+  "baseline": "b15bd31f66036a5caa9a6af96a80f1619fdf97cc",
+  "branches": [
+    {
+      "branch": "feat/foundational-numerics",
+      "sha": "20f5e9f350f8f3f472e980c2e03519469f2dacec",
+      "archive_tag": "archive/pre-consolidation/feat/foundational-numerics"
+    },
+    {
+      "branch": "feat/tnd-spatial-stiff-priorities",
+      "sha": "a9dc63da87a0d6003c3ba3d88f91cb498b85adbc",
+      "archive_tag": "archive/pre-consolidation/feat/tnd-spatial-stiff-priorities"
+    },
+    {
+      "branch": "feature/kytau-merge-foundation",
+      "sha": "2bb87bb987796859c277733c6b3cb685b4963e37",
+      "archive_tag": "archive/pre-consolidation/feature/kytau-merge-foundation"
+    },
+    {
+      "branch": "fix/full-release-hardening",
+      "sha": "581682c4affc9d944e36a3fef566da0b1e8cd870",
+      "archive_tag": "archive/pre-consolidation/fix/full-release-hardening"
+    },
+    {
+      "branch": "fix/refresh-trajectory-lockfile-fixture",
+      "sha": "cf025379fa2f0dddcb25b86654fc10a566c8f69e",
+      "archive_tag": "archive/pre-consolidation/fix/refresh-trajectory-lockfile-fixture"
+    },
+    {
+      "branch": "haggissupper-codebase-hardening",
+      "sha": "52f1e520a97f12f7a3e2433003757a6c36b7641c",
+      "archive_tag": "archive/pre-consolidation/haggissupper-codebase-hardening"
+    },
+    {
+      "branch": "main",
+      "sha": "b15bd31f66036a5caa9a6af96a80f1619fdf97cc",
+      "archive_tag": "archive/pre-consolidation/main"
+    },
+    {
+      "branch": "merge/all-to-main",
+      "sha": "99a38f5ac3a38b3f7b3d610433c2c1544cc19002",
+      "archive_tag": "archive/pre-consolidation/merge/all-to-main"
+    },
+    {
+      "branch": "merge/all-to-main-finalize",
+      "sha": "88d35662b6a6a3718c5dc939de5d77bcdf6fd9e3",
+      "archive_tag": "archive/pre-consolidation/merge/all-to-main-finalize"
+    },
+    {
+      "branch": "merge/all-to-main-format-rag",
+      "sha": "cfd02b69184db7c4e2b4c4ee3a10f61983b89fe7",
+      "archive_tag": "archive/pre-consolidation/merge/all-to-main-format-rag"
+    },
+    {
+      "branch": "merge/all-to-main-helper-base",
+      "sha": "cfd02b69184db7c4e2b4c4ee3a10f61983b89fe7",
+      "archive_tag": "archive/pre-consolidation/merge/all-to-main-helper-base"
+    },
+    {
+      "branch": "research/production-workover-workbooks",
+      "sha": "1d461e1c4e54be3983fb4232fc8cb72773eabac0",
+      "archive_tag": "archive/pre-consolidation/research/production-workover-workbooks"
+    },
+    {
+      "branch": "research/public-drilling-workbooks",
+      "sha": "cf025379fa2f0dddcb25b86654fc10a566c8f69e",
+      "archive_tag": "archive/pre-consolidation/research/public-drilling-workbooks"
+    }
+  ],
+  "selected_import_paths": [
+    ".github/workflows/bha-static-sparse-ci.yml",
+    ".github/workflows/foundational-numerics-ci.yml",
+    ".github/workflows/sparse-numerics-ci.yml",
+    ".github/workflows/windows-release-verification.yml",
+    "docs/PHASE1_FOUNDATIONAL_NUMERICS.md",
+    "docs/superpowers/plans/2026-09-06-foundational-numerical-method-contract-governance.md",
+    "docs/superpowers/plans/2026-09-06-foundational-numerical-method.md",
+    "docs/superpowers/specs/2026-09-06-foundational-numerical-method-contract-governance-addendum.md",
+    "docs/superpowers/specs/2026-09-06-foundational-numerical-method-design.md",
+    "engine/Cargo.lock",
+    "engine/Cargo.toml",
+    "engine/crates/wellforge-bha-contract/Cargo.toml",
+    "engine/crates/wellforge-bha-contract/src/lib.rs",
+    "engine/crates/wellforge-bha-modal/src/lib.rs",
+    "engine/crates/wellforge-bha-modal/tests/foundational_modal.rs",
+    "engine/crates/wellforge-bha-static/Cargo.toml",
+    "engine/crates/wellforge-bha-static/src/lib.rs",
+    "engine/crates/wellforge-bha-static/tests/foundational_sparse.rs",
+    "engine/crates/wellforge-contract-governance/Cargo.toml",
+    "engine/crates/wellforge-contract-governance/src/lib.rs",
+    "engine/crates/wellforge-contract-governance/src/registry.rs",
+    "engine/crates/wellforge-contract-governance/tests/governance.rs",
+    "engine/crates/wellforge-contract-registry/Cargo.toml",
+    "engine/crates/wellforge-contract-registry/src/lib.rs",
+    "engine/crates/wellforge-contract-registry/tests/registry.rs",
+    "engine/crates/wellforge-hydraulics-contract/Cargo.toml",
+    "engine/crates/wellforge-hydraulics-contract/src/lib.rs",
+    "engine/crates/wellforge-numerics-acceptance/Cargo.toml",
+    "engine/crates/wellforge-numerics-acceptance/src/lib.rs",
+    "engine/crates/wellforge-numerics-acceptance/tests/production_primitives.rs",
+    "engine/crates/wellforge-numerics/Cargo.toml",
+    "engine/crates/wellforge-numerics/src/circular.rs",
+    "engine/crates/wellforge-numerics/src/complementarity.rs",
+    "engine/crates/wellforge-numerics/src/flow.rs",
+    "engine/crates/wellforge-numerics/src/interpolation.rs",
+    "engine/crates/wellforge-numerics/src/interval.rs",
+    "engine/crates/wellforge-numerics/src/lib.rs",
+    "engine/crates/wellforge-numerics/src/nonlinear.rs",
+    "engine/crates/wellforge-numerics/src/regression.rs",
+    "engine/crates/wellforge-numerics/src/root.rs",
+    "engine/crates/wellforge-numerics/src/sparse.rs",
+    "engine/crates/wellforge-numerics/src/transport.rs",
+    "engine/crates/wellforge-numerics/src/volume.rs",
+    "engine/crates/wellforge-numerics/tests/calibration_math.rs",
+    "engine/crates/wellforge-numerics/tests/complementarity.rs",
+    "engine/crates/wellforge-numerics/tests/foundational_phase1.rs",
+    "engine/crates/wellforge-numerics/tests/interval_volume.rs",
+    "engine/crates/wellforge-numerics/tests/public_contract.rs",
+    "engine/crates/wellforge-numerics/tests/root.rs",
+    "engine/crates/wellforge-numerics/tests/sparse.rs",
+    "engine/crates/wellforge-torque-drag-contract/Cargo.toml",
+    "engine/crates/wellforge-torque-drag-contract/src/lib.rs",
+    "engine/crates/wellforge-torque-drag-contract/src/result.rs",
+    "engine/crates/wellforge-torque-drag-core/src/lib.rs",
+    "engine/crates/wellforge-torque-drag-core/tests/hybrid_blend.rs",
+    "engine/crates/wellforge-trajectory-contract/Cargo.toml",
+    "engine/crates/wellforge-trajectory-contract/src/lib.rs",
+    "engine/fixtures/expected/trajectory-release-one-minimal.result.json"
+  ],
+  "policy": "Retain latest main elsewhere; preserved branch tags retain all discarded/unfinished variants"
+}

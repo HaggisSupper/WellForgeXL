@@ -2,7 +2,7 @@ name: T&D priority verification
 
 on:
   push:
-    branches: [feat/tnd-spatial-stiff-priorities]
+    branches: [main]
     paths:
       - 'engine/crates/wellforge-torque-drag-*/**'
       - 'engine/Cargo.toml'

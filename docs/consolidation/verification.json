@@ -1,0 +1,84 @@
+{
+  "date": "2026-10-01",
+  "checks": [
+    {
+      "check": "engine_tests",
+      "status": "passed",
+      "rust_tests_passed": 264,
+      "log": "/tmp/consolidation-engine-tests.log"
+    },
+    {
+      "check": "engine_clippy",
+      "status": "passed",
+      "rust_tests_passed": null,
+      "log": "/tmp/consolidation-engine-clippy.log"
+    },
+    {
+      "check": "engine_release",
+      "status": "passed",
+      "rust_tests_passed": null,
+      "log": "/tmp/consolidation-engine-release.log"
+    },
+    {
+      "check": "node_release",
+      "status": "passed",
+      "rust_tests_passed": null,
+      "log": "/tmp/consolidation-node.log",
+      "tests_passed": 110
+    },
+    {
+      "check": "desktop_frontend_build",
+      "status": "passed",
+      "rust_tests_passed": null,
+      "log": "/tmp/consolidation-desktop-build.log"
+    },
+    {
+      "check": "desktop_frontend_tests",
+      "status": "passed",
+      "rust_tests_passed": null,
+      "log": "/tmp/consolidation-desktop-tests.log",
+      "tests_passed": 32
+    },
+    {
+      "check": "desktop_rust_without_native_app",
+      "status": "passed",
+      "rust_tests_passed": 118,
+      "log": "/tmp/consolidation-desktop-rust.log"
+    },
+    {
+      "check": "dependency_policy",
+      "status": "passed",
+      "rust_tests_passed": null,
+      "log": "/tmp/consolidation-deny.log"
+    },
+    {
+      "check": "RAG",
+      "status": "passed",
+      "tests_passed": 11,
+      "log": "/tmp/consolidation-rag-tests.log",
+      "formatting": "passed",
+      "clippy": "passed"
+    },
+    {
+      "check": "standalone_analytics",
+      "status": "passed",
+      "tests_passed": 18,
+      "log": "/tmp/consolidation-analytics-tests.log",
+      "clippy": "passed",
+      "formatting": "passed"
+    },
+    {
+      "check": "native_linux_desktop",
+      "status": "blocked",
+      "reason": "Missing GTK/WebKit system development libraries; non-root process cannot install system packages."
+    },
+    {
+      "check": "Windows_Excel_and_release",
+      "status": "not_run",
+      "reason": "Requires Windows and Excel."
+    }
+  ],
+  "backup": "Verified full Git bundle, restored into a separate checkout; original branch tips published as remote archival tags.",
+  "scope": "Source consolidation; not a product release certification.",
+  "configuration_draft": "Install script and start instructions saved; publication of the environment remains a user product action."
+}

@@ -1,6 +1,9 @@
 [workspace]
 resolver = "3"
 members = [
+  "crates/wellforge-contract-governance",
+  "crates/wellforge-contract-registry",
+  "crates/wellforge-numerics",
   "crates/wellforge-numerics-acceptance",
   "crates/wellforge-units",
   "crates/wellforge-witsml",

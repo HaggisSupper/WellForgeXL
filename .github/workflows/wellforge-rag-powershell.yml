@@ -3,7 +3,7 @@ name: WellForgeRag PowerShell
 on:
   push:
     branches:
-      - feat/wellforge-rag
+      - main
     paths:
       - 'WellForgeRag/scripts/**'
       - '.github/workflows/wellforge-rag-powershell.yml'
