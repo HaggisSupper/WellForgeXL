@@ -78,7 +78,7 @@
       "reason": "Requires Windows and Excel."
     }
   ],
-  "backup": "Verified full Git bundle, restored into a separate checkout; original branch tips published as remote archival tags.",
+  "backup": "Backup was verified during consolidation, then archive tags and local backup copies were removed at the owner\u2019s request.",
   "scope": "Source consolidation; not a product release certification.",
   "configuration_draft": "Install script and start instructions saved; publication of the environment remains a user product action."
 }

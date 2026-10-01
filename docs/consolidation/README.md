@@ -2,7 +2,7 @@
 
 Consolidation baseline: `b15bd31f66036a5caa9a6af96a80f1619fdf97cc`.
 
-The latest numerical implementation from `merge/all-to-main` is integrated with the newer application, workbook, research, RAG and hardening work already in main. Older application files were not used to replace newer main implementations. Branch tips and their full histories remain recoverable through the remote tags in `branch-archive.json` and a verified local Git bundle.
+The latest numerical implementation from `merge/all-to-main` is integrated with the newer application, workbook, research, RAG and hardening work already in main. Older application files were not used to replace newer main implementations. The historical branch SHAs remain documented in `branch-archive.json`. Archive tags and local backup copies were subsequently removed at the owner’s request.
 
 ## Integrated capability
 
@@ -24,6 +24,6 @@ Sparse factorization is implemented, but dense BHA mass/stiffness storage remain
 
 Before a paid release, prioritize independently validated engineering benchmark cases and failure envelopes, complete the actual stiff torque/drag solver, validate workbook-to-engine units/contracts and provenance, and establish reproducible signed desktop/Excel releases. RAG and standalone analytics are separate supporting tools and require their own dependency and product validation.
 
-## Recovery
+## Storage cleanup
 
-Fetch tags and create a branch at the corresponding `archive/pre-consolidation/...` tag to restore any former branch. The cloud only contains its current working checkout; desktop worktrees must be inventoried on that desktop before removal. Archive mirrors and the backup bundle are retained intentionally.
+At the owner’s request, all consolidation archive tags, backup mirrors, the backup bundle and restored backup checkout were removed. Generated Rust build directories were also cleared; future builds regenerate them. Historical SHAs in the disposition files are audit records, not retained recovery references. Main is the only active branch. Desktop worktrees were not accessible from this cloud environment.
