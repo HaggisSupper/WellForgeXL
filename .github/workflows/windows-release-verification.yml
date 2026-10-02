@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   windows-excel:
-    runs-on: [self-hosted, Windows, wellforgexl-excel]
+    runs-on: windows-latest
     timeout-minutes: 90
     env:
       WELLFORGE_RELEASE_RUN_ROOT: ${{ github.workspace }}\outputs\windows-release\${{ github.run_id }}-${{ github.run_attempt }}
@@ -17,6 +17,27 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
+      - name: Require licensed desktop Excel for the unchanged acceptance gate
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path $env:WELLFORGE_RELEASE_RUN_ROOT | Out-Null
+          $excel = $null
+          try {
+            $excel = New-Object -ComObject Excel.Application
+            "Excel COM is available. Version: $($excel.Version)" | Set-Content "$env:WELLFORGE_RELEASE_RUN_ROOT\runner-prerequisites.txt"
+          }
+          catch {
+            $message = 'Release acceptance is blocked: this GitHub-hosted runner has no licensed desktop Excel COM installation. The Excel, rollback, rendering, and package gates remain required; no local or self-hosted runner fallback is permitted.'
+            $message | Set-Content "$env:WELLFORGE_RELEASE_RUN_ROOT\runner-prerequisites.txt"
+            throw $message
+          }
+          finally {
+            if ($null -ne $excel) {
+              $excel.Quit()
+              [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($excel)
+            }
+          }
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: '24.19.0'
@@ -55,3 +76,4 @@ jobs:
             ${{ env.WELLFORGE_RELEASE_RUN_ROOT }}/gate-results.json
             ${{ env.WELLFORGE_RELEASE_RUN_ROOT }}/logs/**
             ${{ env.WELLFORGE_RELEASE_RUN_ROOT }}/chart-renders/**
+            ${{ env.WELLFORGE_RELEASE_RUN_ROOT }}/runner-prerequisites.txt
